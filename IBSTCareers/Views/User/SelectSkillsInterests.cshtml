@@ -1,0 +1,61 @@
+﻿@model SelectSkillsInterestsViewModel
+
+<h2 class="mb-3">Your skills & strengths</h2>
+<p class="text-muted">Select all that apply — be honest, it helps match you better.</p>
+
+<form asp-action="SelectSkillsInterests" method="post">
+    <input type="hidden" asp-for="UserId" />
+
+    <!-- TECHNICAL SKILLS -->
+    <h5 class="mt-4">TECHNICAL SKILLS</h5>
+    <div class="d-flex flex-wrap gap-2">
+        @for (int i = 0; i < Model.Skills.Count; i++)
+        {
+            <!-- ID -->
+            <input type="hidden" asp-for="Skills[i].Id" />
+
+            <!-- IMPORTANT: send false -->
+            <input type="hidden" name="Skills[@i].IsSelected" value="false" />
+
+            <!-- checkbox true -->
+            <input type="checkbox"
+                   name="Skills[@i].IsSelected"
+                   value="true"
+                   id="skill_@i"
+                   @(Model.Skills[i].IsSelected ? "checked" : "")
+                   hidden />
+
+            <label for="skill_@i" class="skill-pill">
+                @Model.Skills[i].Name
+            </label>
+        }
+    </div>
+
+    <!-- SOFT SKILLS -->
+    <h5 class="mt-4">SOFT SKILLS</h5>
+    <div class="d-flex flex-wrap gap-2">
+        @for (int i = 0; i < Model.Interests.Count; i++)
+        {
+            <!-- ID -->
+            <input type="hidden" asp-for="Interests[i].Id" />
+
+            <!-- IMPORTANT -->
+            <input type="hidden" name="Interests[@i].IsSelected" value="false" />
+
+            <input type="checkbox"
+                   name="Interests[@i].IsSelected"
+                   value="true"
+                   id="interest_@i"
+                   @(Model.Interests[i].IsSelected ? "checked" : "")
+                   hidden />
+
+            <label for="interest_@i" class="skill-pill">
+                @Model.Interests[i].Name
+            </label>
+        }
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Next →</button>
+    </div>
+</form>

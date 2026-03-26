@@ -1,0 +1,47 @@
+﻿@model IBSTCareers.Models.Carriere.Experience
+
+<h2>Add Experience</h2>
+
+<form asp-action="Create" method="post">
+    <input type="hidden" asp-for="UserId" />
+
+    <div class="mb-2">
+        <label>Title</label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label>Company</label>
+        <input asp-for="Company" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label>Start Date</label>
+        <input asp-for="StartDate" type="date" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label>End Date</label>
+        <input asp-for="EndDate" type="date" class="form-control" />
+    </div>
+
+    <div class="mb-2">
+        <label>Description</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success">+ Add Experience</button>
+</form>
+<h4 class="mt-4">Your Experiences</h4>
+
+@if (ViewBag.Experiences != null)
+{
+    foreach (var exp in ViewBag.Experiences)
+    {
+        <div class="card mb-2 p-2">
+            <strong >@exp.Title</strong> - @exp.Company <br />
+            <small>@exp.StartDate - @exp.EndDate</small>
+            <p>@exp.Description</p>
+        </div>
+    }
+}

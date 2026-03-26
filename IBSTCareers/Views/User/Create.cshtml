@@ -1,0 +1,218 @@
+﻿@model IBSTCareers.Models.Carriere.User
+@{
+    ViewData["Title"] = "Add User";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+    :root {
+        --bg: #03071E;
+        --surface: #0d1233;
+        --accent: #E85D04;
+        --border: rgba(232, 93, 4, 0.25);
+        --muted: #8892b0;
+        --text: #e8e8e8;
+    }
+
+    body {
+        background: var(--bg) !important;
+    }
+
+    .uf-wrap {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .uf-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 2.5rem 2rem;
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .uf-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #D00000, #E85D04, #DC2F02);
+        }
+
+    .uf-glow {
+        position: absolute;
+        top: -80px;
+        right: -80px;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(232,93,4,0.12) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .uf-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 2.4rem;
+        letter-spacing: 2px;
+        color: #fff;
+        margin: 0 0 0.25rem;
+        line-height: 1;
+    }
+
+    .uf-subtitle {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0 0 2rem;
+    }
+
+    .uf-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .uf-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 6px;
+    }
+
+    .uf-input {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 14px;
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s, background 0.2s;
+    }
+
+        .uf-input:focus {
+            border-color: var(--accent);
+            background: rgba(232, 93, 4, 0.05);
+        }
+
+        .uf-input::placeholder {
+            color: #4a5568;
+        }
+
+        .uf-input option {
+            background: #0d1233;
+            color: #e8e8e8;
+        }
+
+    .uf-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #D00000, #E85D04);
+        border: none;
+        border-radius: 8px;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 1.1rem;
+        letter-spacing: 2px;
+        color: #fff;
+        cursor: pointer;
+        margin-top: 0.5rem;
+        transition: opacity 0.2s, transform 0.1s;
+    }
+
+        .uf-btn:hover {
+            opacity: 0.9;
+        }
+
+        .uf-btn:active {
+            transform: scale(0.99);
+        }
+
+    .uf-back {
+        display: block;
+        text-align: center;
+        margin-top: 1rem;
+        font-size: 13px;
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+        .uf-back:hover {
+            color: var(--accent);
+        }
+
+    .uf-divider {
+        border: none;
+        border-top: 1px solid var(--border);
+        margin: 1.5rem 0;
+    }
+
+    span.text-danger {
+        font-size: 12px;
+        color: #E85D04 !important;
+        margin-top: 4px;
+        display: block;
+    }
+</style>
+
+<div class="uf-wrap">
+    <div class="uf-card">
+        <div class="uf-glow"></div>
+        <div class="uf-title">Add User</div>
+        <p class="uf-subtitle">Fill in the details to create a new account</p>
+
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="uf-group">
+                <label asp-for="FullName" class="uf-label"></label>
+                <input asp-for="FullName" class="uf-input" placeholder="John Doe" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="uf-group">
+                <label asp-for="Email" class="uf-label"></label>
+                <input asp-for="Email" class="uf-input" placeholder="john@example.com" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="uf-group">
+                <label asp-for="PasswordHash" class="uf-label"></label>
+                <input asp-for="PasswordHash" type="password" class="uf-input" placeholder="••••••••" />
+                <span asp-validation-for="PasswordHash" class="text-danger"></span>
+            </div>
+
+            <hr class="uf-divider" />
+
+            <div class="uf-group">
+                <label class="uf-label">Role</label>
+                <select name="RoleId" class="uf-input" asp-items="ViewBag.Roles">
+                    <option value="">— Select Role —</option>
+                </select>
+            </div>
+
+            <button type="submit" class="uf-btn">Create Account</button>
+        </form>
+
+        <a asp-action="Index" class="uf-back">← Back to list</a>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

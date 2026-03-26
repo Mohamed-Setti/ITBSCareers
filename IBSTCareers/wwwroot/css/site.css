@@ -1,0 +1,59 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+:root {
+    --bg: #03071E;
+    --surface: #0d1233;
+    --accent: #E85D04;
+    --accent2: #DC2F02;
+    --border: rgba(232, 93, 4, 0.25);
+    --muted: #8892b0;
+    --text: #e8e8e8;
+}
+
+body {
+    margin-bottom: 60px;
+    background: var(--bg) !important;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+}
+
+.skill-pill {
+    padding: 8px 16px;
+    border: 1px solid #d0d5dd;
+    border-radius: 20px;
+    background-color: #f9fafb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+ /* Hover */
+ .skill-pill:hover {
+     color: cornflowerblue ;
+     background-color: #eef2ff;
+     border-color: #6366f1;
+ }
+
+/* Selected state */
+input[type="checkbox"]:checked + .skill-pill {
+    background-color: #6366f1;
+    color: cornflowerblue;
+    border-color: #6366f1;
+}
