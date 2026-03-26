@@ -1,0 +1,314 @@
+--1. Create Users Tabel--
+
+CREATE TABLE [dbo].[Users] (
+    UserID INT PRIMARY KEY IDENTITY,
+    FullName NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100) UNIQUE NOT NULL,
+    PasswordHash NVARCHAR(255) NOT NULL,
+    CreatedAt DATETIME DEFAULT GETDATE()
+);
+
+--2. Create Students Tabel--
+
+CREATE TABLE [dbo].[Students] (
+    [StudentID] INT            NOT NULL,
+    [DegreeID]  INT NOT NULL ,
+    [Field]     NVARCHAR (100) NULL,
+    [Level]     NVARCHAR (50)  NULL,
+    PRIMARY KEY CLUSTERED ([StudentID] ASC),
+    FOREIGN KEY ([StudentID]) REFERENCES [dbo].[Users] ([UserID]),
+	FOREIGN KEY ([DegreeID]) REFERENCES [dbo].[Degrees] ([DegreeID])
+)
+
+-- Degrees --
+
+CREATE TABLE [dbo].[Degrees] (
+    DegreeID INT PRIMARY KEY IDENTITY,
+    Name NVARCHAR(50) NOT NULL UNIQUE
+)
+
+-- Interests --
+CREATE TABLE [dbo].[Interests] (
+    InterestID INT PRIMARY KEY IDENTITY,
+    Name NVARCHAR(100) NOT NULL UNIQUE
+);
+
+-- UserInterests --
+
+CREATE TABLE [dbo].[UserInterests] (
+    UserID INT,
+    InterestID INT,
+    PRIMARY KEY (UserID, InterestID),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (InterestID) REFERENCES Interests(InterestID)
+);
+
+
+--3. Create Alumnis Tabel--
+
+CREATE TABLE [dbo].[Alumnis] (
+    AlumniID INT PRIMARY KEY,
+    CompanyName NVARCHAR(100),
+    Position NVARCHAR(100),
+    ExperienceYears INT,
+    FOREIGN KEY (AlumniID) REFERENCES Users(UserID)
+)
+
+
+--4. Create Roles Table-- 
+
+CREATE TABLE [dbo].[Roles] (
+    RoleID INT PRIMARY KEY IDENTITY,
+    Name NVARCHAR(50) NOT NULL
+)
+
+
+--5. User Roles--
+
+CREATE TABLE [dbo].[UserRoles] (
+    UserRoleID INT PRIMARY KEY IDENTITY,
+    UserID INT,
+    RoleID INT,
+    FOREIGN KEY (UserID) REFERENCES Users(UserID),
+    FOREIGN KEY (RoleID) REFERENCES Roles(RoleID)
+)
+
+--6. SKills Table--
+
+CREATE TABLE [dbo].[Skills]
+(
+	 SkillID INT PRIMARY KEY IDENTITY,
+    Name NVARCHAR(100) NOT NULL UNIQUE
+)
+
+--7. User Skills --
+
+CREATE TABLE [dbo].[UserSkills] (
+    [UserID]  INT NOT NULL,
+    [SkillID] INT NOT NULL,
+    PRIMARY KEY CLUSTERED ([UserID] ASC, [SkillID] ASC),
+    FOREIGN KEY ([UserID]) REFERENCES [dbo].[Users] ([UserID]),
+    FOREIGN KEY ([SkillID]) REFERENCES [dbo].[Skills] ([SkillID])
+)
+
+--8. Experirnces --
+
+CREATE TABLE [dbo].[Experiences] (
+    ExperienceID INT PRIMARY KEY IDENTITY,
+    UserID INT,
+    Title NVARCHAR(100),
+    Company NVARCHAR(100),
+    StartDate DATE,
+    EndDate DATE,
+    Description NVARCHAR(MAX),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+)
+
+--9. CVs --
+
+CREATE TABLE [dbo].[CVs] (
+    CVID INT PRIMARY KEY IDENTITY,
+    UserID INT NOT NULL,
+    FilePath NVARCHAR(255) NOT NULL,
+    UploadedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+)
+
+--9. Job Offers --
+
+CREATE TABLE [dbo].[JobOffers] (
+    JobID INT PRIMARY KEY IDENTITY,
+    AlumniID INT NOT NULL,
+    Title NVARCHAR(100) NOT NULL,
+    Description NVARCHAR(MAX),
+    Type NVARCHAR(50), -- Stage / Emploi
+    Location NVARCHAR(100),
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (AlumniID) REFERENCES Users(UserID)
+)
+
+
+-- 10. Applications --
+CREATE TABLE [dbo].[Applications] (
+    ApplicationID INT PRIMARY KEY IDENTITY,
+    JobID INT NOT NULL,
+    StudentID INT NOT NULL,
+    CVID INT,
+    Status NVARCHAR(50) DEFAULT 'Pending', -- Pending / Accepted / Rejected
+    AppliedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (JobID) REFERENCES JobOffers(JobID),
+    FOREIGN KEY (StudentID) REFERENCES Users(UserID),
+    FOREIGN KEY (CVID) REFERENCES CVs(CVID)
+)
+
+-- 11. Conversations--
+
+CREATE TABLE [dbo].[Conversations] (
+    [ConversationID] INT      IDENTITY (1, 1) NOT NULL,
+    [CreatedAt]      DATETIME DEFAULT (getdate()) NULL,
+    PRIMARY KEY CLUSTERED ([ConversationID] ASC)
+);
+
+-- 12. Messages --
+
+CREATE TABLE [dbo].[Messages] (
+    [MessageID]      INT            IDENTITY (1, 1) NOT NULL,
+    [ConversationID] INT            NOT NULL,
+    [SenderID]       INT            NOT NULL,
+    [ReceiverID]     INT            NOT NULL,
+    [Content]        NVARCHAR (MAX) NULL,
+    [SentAt]         DATETIME       DEFAULT (getdate()) NULL,
+    PRIMARY KEY CLUSTERED ([MessageID] ASC),
+    FOREIGN KEY ([ConversationID]) REFERENCES [dbo].[Conversations] ([ConversationID]),
+    FOREIGN KEY ([SenderID]) REFERENCES [dbo].[Users] ([UserID]),
+    FOREIGN KEY ([ReceiverID]) REFERENCES [dbo].[Users] ([UserID])
+);
+
+
+-- 13. Notifications --
+CREATE TABLE [dbo].[Notifications] (
+    NotificationID INT PRIMARY KEY IDENTITY,
+    UserID INT NOT NULL,
+    Content NVARCHAR(255),
+    Type NVARCHAR(50), -- Message, Job, Application
+    IsRead BIT DEFAULT 0,
+    CreatedAt DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+);
+
+
+---- Remplissage des tableaux --
+
+INSERT INTO Degrees (Name)
+VALUES 
+('BI'),           -- Business Intelligence
+('GL'),           -- Génie Logiciel
+('Reseaux'),      -- Réseaux & Télécom
+('IOT');          -- Internet of Things
+
+
+--------------------------------
+
+
+INSERT INTO Interests (Name)
+VALUES
+-- Data / AI
+('Data Science'),
+('Machine Learning'),
+('Deep Learning'),
+('Big Data'),
+('Data Visualization'),
+
+-- Software
+('Web Development'),
+('Mobile Development'),
+('Game Development'),
+('Software Engineering'),
+
+-- Infra / Network
+('Cybersecurity'),
+('Cloud Computing'),
+('DevOps'),
+('Networking'),
+
+-- Hardware / IoT
+('Embedded Systems'),
+('Robotics'),
+('IoT Systems'),
+
+-- Business / Other
+('Entrepreneurship'),
+('Project Management'),
+('UI/UX Design'),
+('Product Management');
+
+--------------------------------
+
+INSERT INTO Skills (Name)
+VALUES
+-- Programming Languages
+('Python'),
+('Java'),
+('C'),
+('C++'),
+('C#'),
+('JavaScript'),
+('TypeScript'),
+('Go'),
+('Rust'),
+('PHP'),
+
+-- Web Development
+('HTML'),
+('CSS'),
+('React'),
+('Angular'),
+('Vue.js'),
+('ASP.NET'),
+('Node.js'),
+('Django'),
+('Flask'),
+
+-- Data & AI
+('Machine Learning'),
+('Deep Learning'),
+('Data Analysis'),
+('Data Mining'),
+('Natural Language Processing'),
+('Computer Vision'),
+('TensorFlow'),
+('PyTorch'),
+('Pandas'),
+('NumPy'),
+
+-- Databases
+('SQL'),
+('MySQL'),
+('SQL Server'),
+('PostgreSQL'),
+('MongoDB'),
+('NoSQL'),
+
+-- DevOps & Cloud
+('Docker'),
+('Kubernetes'),
+('CI/CD'),
+('Git'),
+('GitHub'),
+('Azure'),
+('AWS'),
+('Google Cloud'),
+
+-- Cybersecurity
+('Network Security'),
+('Penetration Testing'),
+('Cryptography'),
+
+-- Networking
+('TCP/IP'),
+('Routing'),
+('Switching'),
+('Network Administration'),
+
+-- IoT / Embedded
+('Arduino'),
+('Raspberry Pi'),
+('Embedded C'),
+('Sensors Integration'),
+
+-- Soft Skills
+('Teamwork'),
+('Communication'),
+('Problem Solving'),
+('Leadership'),
+('Time Management');
+
+--------------------------------------------------------------------------
+
+"ConnectionStrings": {
+  "CarriereCS": "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=CarriereDB;Integrated Security=True;Pooling=False;Encrypt=True;Trust Server Certificate=False"
+}
+
+
+
+Scaffold-DbContext "Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=CarriereDB"Microsoft.EntityFrameworkCore.SqlServer -OutPutDir Models/Carriere
