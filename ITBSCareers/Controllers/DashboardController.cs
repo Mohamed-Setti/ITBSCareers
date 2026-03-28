@@ -2,35 +2,45 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace IBSTCareers.Controllers
+namespace ITBSCareers.Controllers
 {
-    public class RolesController : Controller
+    public class DashboardController : Controller
     {
         CarriereDbContext _context;
 
-        public RolesController(CarriereDbContext context)
+        public DashboardController(CarriereDbContext context)
         {
             _context = context;
         }
-        // GET: RolesController
+        //int? userId = HttpContext.Session.GetInt32("UserId");
+        // GET: DashboardController
         public ActionResult Index()
         {
+           
+            var userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
             return View();
+        
         }
 
-        // GET: RolesController/Details/5
+        // GET: DashboardController/Details/5
         public ActionResult Details(int id)
         {
             return View();
         }
 
-        // GET: RolesController/Create
+        // GET: DashboardController/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: RolesController/Create
+        // POST: DashboardController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(IFormCollection collection)
@@ -45,13 +55,13 @@ namespace IBSTCareers.Controllers
             }
         }
 
-        // GET: RolesController/Edit/5
+        // GET: DashboardController/Edit/5
         public ActionResult Edit(int id)
         {
             return View();
         }
 
-        // POST: RolesController/Edit/5
+        // POST: DashboardController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
@@ -66,13 +76,13 @@ namespace IBSTCareers.Controllers
             }
         }
 
-        // GET: RolesController/Delete/5
+        // GET: DashboardController/Delete/5
         public ActionResult Delete(int id)
         {
             return View();
         }
 
-        // POST: RolesController/Delete/5
+        // POST: DashboardController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)

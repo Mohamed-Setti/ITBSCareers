@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace IBSTCareers.Models.Carriere;
+namespace ITBSCareers.Models.Carriere;
 
 public partial class Experience
 {

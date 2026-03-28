@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace IBSTCareers.Models.Carriere;
+namespace ITBSCareers.Models.Carriere;
 
 public partial class Skill
 {
@@ -9,5 +9,5 @@ public partial class Skill
 
     public string Name { get; set; } = null!;
 
-    public virtual ICollection<User> Users { get; set; } = new List<User>();
+    public virtual ICollection<UserSkill> UserSkills { get; set; } = new List<UserSkill>();
 }

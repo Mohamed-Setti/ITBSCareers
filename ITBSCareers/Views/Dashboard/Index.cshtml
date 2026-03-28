@@ -1,0 +1,49 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+
+<h2>Welcome to your Dashboard</h2>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Dashboard</h2> 
+
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="list-group shadow-sm">
+                <a asp-controller="Dashboard" asp-action="Index" class="list-group-item list-group-item-action active">
+                    Home
+                </a>
+                <a class="list-group-item list-group-item-action active" asp-controller="User" asp-action="Profile">
+                    Profile
+                </a>
+                <a asp-controller="Experience" asp-action="Create" class="list-group-item list-group-item-action">
+                    Add Experience
+                </a>
+                <a asp-controller="Career" asp-action="Index" class="list-group-item list-group-item-action">
+                    Career Path
+                </a>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="col-md-9">
+            <div class="card shadow-sm p-4">
+                <h4>Welcome 👋</h4>
+                <p>This is your dashboard. Manage your career journey here.</p>
+
+                <hr />
+
+                <h5>Quick Actions</h5>
+                <a asp-controller="Experience" asp-action="Create" class="btn btn-success">
+                    + Add Experience
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

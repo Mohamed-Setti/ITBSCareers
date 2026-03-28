@@ -1,4 +1,4 @@
-﻿using IBSTCareers.Models.Carriere;
+﻿using ITBSCareers.Models.Carriere;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,29 +26,44 @@ namespace IBSTCareers.Controllers
         }
 
         // GET: ExperienceController/Create
-        public ActionResult Create(int userId)
+        public ActionResult Create()
         {
+            var userId = HttpContext.Session.GetInt32("UserId");
             var experiences = _context.Experiences
-                .Where(e => e.UserId == userId)
+                .Where(e => e.UserId == userId.Value)
                 .ToList();
 
             ViewBag.Experiences = experiences;
 
-            return View(new Experience { UserId = userId });
+            Console.WriteLine("************************userId =  "+userId.Value);
+
+            return View(new Experience { UserId = userId.Value });
         }
 
         // POST: ExperienceController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(Experience exp)
+        public ActionResult Create(Experience exp, string action)
         {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            exp.UserId = userId.Value;
+
             if (ModelState.IsValid)
             {
                 _context.Experiences.Add(exp);
                 _context.SaveChanges();
 
-                // stay on same page to add more
-                return RedirectToAction("Create", new { userId = exp.UserId });
+                if (action == "dashboard")
+                {
+                    return RedirectToAction("Index", "Dashboard");
+                }
+
+                return RedirectToAction("Create", userId.Value);
             }
 
             return View(exp);

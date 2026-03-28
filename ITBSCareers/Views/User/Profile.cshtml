@@ -1,0 +1,83 @@
+﻿@model ITBSCareers.Models.Carriere.User
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2>@Model.FullName's Profile</h2>
+
+    <div class="row mt-3">
+        <!-- User Info -->
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm">
+                <h5>Personal Info</h5>
+                <p><strong>Email:</strong> @Model.Email</p>
+                <p><strong>Role:</strong> @Model.UserRoles.FirstOrDefault()?.Role.Name</p>
+                <p><strong>Joined:</strong> @Model.CreatedAt?.ToString("MMM dd, yyyy")</p>
+            </div>
+
+            <div class="card p-3 mt-3 shadow-sm">
+                <h5>Skills</h5>
+                @if (Model.UserSkills != null && Model.UserSkills.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var us in Model.UserSkills)
+                        {
+                            <li class="list-group-item">@us.Skill.Name</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No skills added yet.</p>
+                }
+            </div>
+
+            <div class="card p-3 mt-3 shadow-sm">
+                <h5>Interests</h5>
+                @if (Model.UserInterests != null && Model.UserInterests.Any())
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var ui in Model.UserInterests)
+                        {
+                            <li class="list-group-item">@ui.Interest.Name</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p>No interests selected yet.</p>
+                }
+            </div>
+        </div>
+
+        <!-- Experiences -->
+        <div class="col-md-8">
+            <div class="card p-3 shadow-sm">
+                <h5>Experiences</h5>
+
+                @if (Model.Experiences != null && Model.Experiences.Any())
+                {
+                    @foreach (var exp in Model.Experiences)
+                    {
+                        <div class="border-bottom mb-2 pb-2">
+                            <h6>@exp.Title at @exp.Company</h6>
+                            <small>
+                                @exp.StartDate?.ToString("MMM yyyy") - @exp.EndDate?.ToString("MMM yyyy")
+                            </small>
+                            <p>@exp.Description</p>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p>No experiences added yet.</p>
+                }
+
+                <a asp-controller="Experience" asp-action="Create" class="btn btn-success mt-2">
+                    + Add Experience
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

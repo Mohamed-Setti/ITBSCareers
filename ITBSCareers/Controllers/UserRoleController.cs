@@ -1,4 +1,4 @@
-﻿using IBSTCareers.Models.Carriere;
+﻿using ITBSCareers.Models.Carriere;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;

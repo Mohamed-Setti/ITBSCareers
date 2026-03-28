@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace IBSTCareers.Models.Carriere;
+namespace ITBSCareers.Models.Carriere;
 
 public partial class CarriereDbContext : DbContext
 {
@@ -45,11 +45,15 @@ public partial class CarriereDbContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserInterest> UserInterests { get; set; }
+
     public virtual DbSet<UserRole> UserRoles { get; set; }
+
+    public virtual DbSet<UserSkill> UserSkills { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CarriereDB");
+        => optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=CarriereDB;Integrated Security=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -290,44 +294,25 @@ public partial class CarriereDbContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(100);
             entity.Property(e => e.FullName).HasMaxLength(100);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
+        });
 
-            entity.HasMany(d => d.Interests).WithMany(p => p.Users)
-                .UsingEntity<Dictionary<string, object>>(
-                    "UserInterest",
-                    r => r.HasOne<Interest>().WithMany()
-                        .HasForeignKey("InterestId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__UserInter__Inter__797309D9"),
-                    l => l.HasOne<User>().WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__UserInter__UserI__787EE5A0"),
-                    j =>
-                    {
-                        j.HasKey("UserId", "InterestId").HasName("PK__UserInte__7580FE6C4F64836B");
-                        j.ToTable("UserInterests");
-                        j.IndexerProperty<int>("UserId").HasColumnName("UserID");
-                        j.IndexerProperty<int>("InterestId").HasColumnName("InterestID");
-                    });
+        modelBuilder.Entity<UserInterest>(entity =>
+        {
+            entity.HasKey(e => e.UserInterestId).HasName("PK__tmp_ms_x__28E6EBDE0FCD1380");
 
-            entity.HasMany(d => d.Skills).WithMany(p => p.Users)
-                .UsingEntity<Dictionary<string, object>>(
-                    "UserSkill",
-                    r => r.HasOne<Skill>().WithMany()
-                        .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__UserSkill__Skill__4BAC3F29"),
-                    l => l.HasOne<User>().WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__UserSkill__UserI__4AB81AF0"),
-                    j =>
-                    {
-                        j.HasKey("UserId", "SkillId").HasName("PK__UserSkil__7A72C5B2F63E0BD8");
-                        j.ToTable("UserSkills");
-                        j.IndexerProperty<int>("UserId").HasColumnName("UserID");
-                        j.IndexerProperty<int>("SkillId").HasColumnName("SkillID");
-                    });
+            entity.Property(e => e.UserInterestId).HasColumnName("UserInterestID");
+            entity.Property(e => e.InterestId).HasColumnName("InterestID");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+
+            entity.HasOne(d => d.Interest).WithMany(p => p.UserInterests)
+                .HasForeignKey(d => d.InterestId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserInter__Inter__07C12930");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserInterests)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserInter__UserI__06CD04F7");
         });
 
         modelBuilder.Entity<UserRole>(entity =>
@@ -345,6 +330,25 @@ public partial class CarriereDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.UserRoles)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK__UserRoles__UserI__4222D4EF");
+        });
+
+        modelBuilder.Entity<UserSkill>(entity =>
+        {
+            entity.HasKey(e => e.UserSkillId).HasName("PK__tmp_ms_x__2F28BFB6F21BEA6D");
+
+            entity.Property(e => e.UserSkillId).HasColumnName("UserSkillID");
+            entity.Property(e => e.SkillId).HasColumnName("SkillID");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+
+            entity.HasOne(d => d.Skill).WithMany(p => p.UserSkills)
+                .HasForeignKey(d => d.SkillId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserSkill__Skill__03F0984C");
+
+            entity.HasOne(d => d.User).WithMany(p => p.UserSkills)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__UserSkill__UserI__02FC7413");
         });
 
         OnModelCreatingPartial(modelBuilder);

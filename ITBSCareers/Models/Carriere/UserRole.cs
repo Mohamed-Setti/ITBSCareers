@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace IBSTCareers.Models.Carriere;
+namespace ITBSCareers.Models.Carriere;
 
 public partial class UserRole
 {
@@ -14,6 +14,4 @@ public partial class UserRole
     public virtual Role? Role { get; set; }
 
     public virtual User? User { get; set; }
-
-    
 }

@@ -1,9 +1,11 @@
-﻿@model IBSTCareers.Models.Carriere.Experience
+﻿@model ITBSCareers.Models.Carriere.Experience
 
 <h2>Add Experience</h2>
-
+<a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary">
+    Go to Dashboard
+</a>
 <form asp-action="Create" method="post">
-    <input type="hidden" asp-for="UserId" />
+    <input type="hidden" asp-for="UserId" value="@Context.Session.GetInt32("UserId")" />
 
     <div class="mb-2">
         <label>Title</label>
@@ -30,7 +32,13 @@
         <textarea asp-for="Description" class="form-control"></textarea>
     </div>
 
-    <button type="submit" class="btn btn-success">+ Add Experience</button>
+    <button type="submit" name="action" value="stay" class="btn btn-success">
+        + Add Experience
+    </button>
+
+    <button type="submit" name="action" value="dashboard" class="btn btn-primary">
+        Save & Go to Dashboard
+    </button>
 </form>
 <h4 class="mt-4">Your Experiences</h4>
 
