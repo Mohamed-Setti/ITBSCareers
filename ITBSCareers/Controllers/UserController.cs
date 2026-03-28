@@ -199,7 +199,7 @@ namespace IBSTCareers.Controllers
                 .Where(x => x.IsSelected)
                 .Select(x => x.Id)
                 .ToList();
-
+            Console.WriteLine($"Adding skill {skillId} to user {user.UserId}");
             foreach (var skillId in selectedSkillIds)
             {
                 Console.WriteLine($"Adding skill {skillId} to user {user.UserId}");
