@@ -157,6 +157,9 @@ namespace IBSTCareers.Controllers
             var userSkillIds = user.UserSkills.Select(us => us.SkillId).ToList();
             var userInterestIds = user.UserInterests.Select(ui => ui.InterestId).ToList();
 
+            Console.WriteLine($"User Skill IDs: {string.Join(", ", userSkillIds)}");
+            Console.WriteLine($"User Interest IDs: {string.Join(", ", userInterestIds)}");
+
             // Build view model
             var vm = new SelectSkillsInterestsViewModel
             {
@@ -177,6 +180,19 @@ namespace IBSTCareers.Controllers
                 }).ToList()
             };
 
+
+            Console.WriteLine("*****Skills in ViewModel:******");
+            foreach (var skill in vm.Skills)
+            {
+                Console.WriteLine($"  ID: {skill.Id}, Name: {skill.Name}, Selected: {skill.IsSelected}");
+            }
+
+            Console.WriteLine("Interests in ViewModel:");
+            foreach (var interest in vm.Interests)
+            {
+                Console.WriteLine($"  ID: {interest.Id}, Name: {interest.Name}, Selected: {interest.IsSelected}");
+            }
+
             return View(vm);
         }
 
@@ -185,7 +201,7 @@ namespace IBSTCareers.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult SelectSkillsInterests(SelectSkillsInterestsViewModel vm)
         {
-            Console.WriteLine($"---------------------SelectSkillsInterests : Received VM for user {vm.UserId}");
+            Console.WriteLine($"--------SelectSkillsInterests : Received VM for user {vm.UserId}-------------");
 
             // Load the user without multiple Includes (load join tables separately)
             var user = _context.Users.FirstOrDefault(u => u.UserId == vm.UserId);
@@ -222,11 +238,12 @@ namespace IBSTCareers.Controllers
             foreach (var interestId in selectedInterestIds)
             {
                 Console.WriteLine($"Adding interest {interestId} to user {user.UserId}");
-                _context.UserInterests.Add(new UserInterest
+                UserInterest userInterest =  new UserInterest
                 {
                     UserId = user.UserId,
                     InterestId = interestId
-                });
+                };
+                _context.UserInterests.Add(userInterest);
             }
 
             _context.SaveChanges();
