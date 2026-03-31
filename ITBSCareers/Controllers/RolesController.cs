@@ -38,7 +38,7 @@ namespace IBSTCareers.Controllers
             try
             {
                 return RedirectToAction(nameof(Index));
-                Console.WriteLine("aaaa");
+                Console.WriteLine("test");
             }
             catch
             {
