@@ -26,39 +26,466 @@
                 <p><strong>Email:</strong> @Model.Email</p>
                 <p><strong>Roles:</strong> @(roleNames.Any() ? string.Join(", ", roleNames) : "No role")</p>
                 <p><strong>Joined:</strong> @Model.CreatedAt?.ToString("MMM dd, yyyy")</p>
+    var initials = string.Concat(Model.FullName.Split(' ').Take(2).Select(w => char.ToUpper(w[0])));
+    var role = Model.UserRoles.FirstOrDefault()?.Role?.Name ?? "User";
+    var joined = Model.CreatedAt?.ToString("MMM dd, yyyy") ?? "—";
+    var cvs = Model.Cvs?.OrderByDescending(c => c.UploadedAt).ToList() ?? new List<ITBSCareers.Models.Carriere.Cv>();
+}
+
+<style>
+    .profile-wrap {
+        padding: 1.5rem 0;
+    }
+
+    .avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: #E6F1FB;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 500;
+        color: #0C447C;
+        flex-shrink: 0;
+    }
+
+    .profile-card {
+        background: #fff;
+        border: 0.5px solid rgba(0,0,0,0.12);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .card-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 0.75rem;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 0;
+        border-bottom: 0.5px solid rgba(0,0,0,0.08);
+        font-size: 14px;
+    }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+    .info-key {
+        color: #888;
+        min-width: 48px;
+    }
+
+    .info-val {
+        color: #1a1a1a;
+        font-weight: 500;
+        word-break: break-all;
+    }
+
+    .badge-role {
+        font-size: 11px;
+        padding: 2px 9px;
+        border-radius: 999px;
+        background: #EEEDFE;
+        color: #3C3489;
+        border: 0.5px solid #AFA9EC;
+        font-weight: 500;
+    }
+
+    .pill {
+        display: inline-block;
+        font-size: 12px;
+        padding: 3px 10px;
+        border-radius: 999px;
+        margin: 3px;
+    }
+
+    .pill-skill {
+        background: #E6F1FB;
+        color: #0C447C;
+        border: 0.5px solid #B5D4F4;
+    }
+
+    .pill-interest {
+        background: #E1F5EE;
+        color: #085041;
+        border: 0.5px solid #9FE1CB;
+    }
+
+    .exp-item {
+        position: relative;
+        padding-left: 20px;
+        padding-bottom: 1.25rem;
+    }
+
+        .exp-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #E6F1FB;
+            border: 2px solid #378ADD;
+        }
+
+        .exp-item::after {
+            content: '';
+            position: absolute;
+            left: 3.5px;
+            top: 16px;
+            bottom: 0;
+            width: 1px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .exp-item:last-child::after {
+            display: none;
+        }
+
+    .exp-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1a1a1a;
+        margin: 0 0 2px;
+    }
+
+    .exp-company {
+        font-size: 13px;
+        color: #555;
+        margin: 0 0 3px;
+    }
+
+    .exp-date {
+        font-size: 12px;
+        color: #999;
+        margin: 0 0 6px;
+    }
+
+    .exp-desc {
+        font-size: 13px;
+        color: #555;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .add-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        padding: 5px 13px;
+        border-radius: 8px;
+        border: 0.5px solid rgba(0,0,0,0.2);
+        color: #555;
+        background: transparent;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+        .add-btn:hover {
+            background: #f5f5f5;
+            color: #333;
+            text-decoration: none;
+        }
+
+    .empty-text {
+        font-size: 13px;
+        color: #aaa;
+        font-style: italic;
+        padding: 4px 0;
+    }
+
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .cv-upload-zone {
+        border: 1.5px dashed rgba(0,0,0,0.18);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: background 0.15s;
+        margin-bottom: 0.75rem;
+    }
+
+        .cv-upload-zone:hover {
+            background: #f8f8f8;
+        }
+
+        .cv-upload-zone input[type="file"] {
+            display: none;
+        }
+
+    .cv-upload-label {
+        font-size: 13px;
+        color: #888;
+        display: block;
+        cursor: pointer;
+    }
+
+        .cv-upload-label strong {
+            color: #378ADD;
+        }
+
+    .cv-file-name {
+        font-size: 12px;
+        color: #555;
+        margin-top: 5px;
+    }
+
+    .cv-submit-btn {
+        width: 100%;
+        padding: 8px;
+        border-radius: 8px;
+        background: #378ADD;
+        color: #fff;
+        border: none;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+        .cv-submit-btn:hover {
+            background: #185FA5;
+        }
+
+        .cv-submit-btn:disabled {
+            background: #bbb;
+            cursor: not-allowed;
+        }
+
+    .cv-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 0.5px solid rgba(0,0,0,0.07);
+    }
+
+        .cv-item:last-child {
+            border-bottom: none;
+        }
+
+    .cv-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #FAECE7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 10px;
+        font-weight: 500;
+        color: #993C1D;
+        letter-spacing: 0.03em;
+    }
+
+    .cv-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: #1a1a1a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cv-date {
+        font-size: 11px;
+        color: #aaa;
+    }
+
+    .cv-btn-view {
+        font-size: 12px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        border: 0.5px solid #B5D4F4;
+        color: #0C447C;
+        background: #E6F1FB;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+        .cv-btn-view:hover {
+            background: #B5D4F4;
+            color: #042C53;
+            text-decoration: none;
+        }
+
+    .cv-btn-del {
+        font-size: 12px;
+        padding: 3px 10px;
+        border-radius: 6px;
+        border: 0.5px solid #F7C1C1;
+        color: #A32D2D;
+        background: #FCEBEB;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .cv-btn-del:hover {
+            background: #F7C1C1;
+        }
+
+    .alert-cv {
+        font-size: 13px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+    }
+
+        .alert-cv.success {
+            background: #EAF3DE;
+            color: #3B6D11;
+            border: 0.5px solid #C0DD97;
+        }
+
+        .alert-cv.error {
+            background: #FCEBEB;
+            color: #A32D2D;
+            border: 0.5px solid #F7C1C1;
+        }
+
+    @@media (max-width: 600px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="container mt-4 profile-wrap">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="avatar">@initials</div>
+        <div>
+            <h2 class="mb-1" style="font-size:20px;font-weight:500;">@Model.FullName</h2>
+            <span class="badge-role">@role</span>
+        </div>
+    </div>
+
+    <div class="profile-grid">
+
+        <!-- LEFT COLUMN -->
+        <div>
+
+            <!-- Personal Info -->
+            <div class="profile-card">
+                <div class="card-label">Personal info</div>
+                <div class="info-row">
+                    <span class="info-key">Email</span>
+                    <span class="info-val" style="font-size:13px;">@Model.Email</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-key">Joined</span>
+                    <span class="info-val">@joined</span>
+                </div>
             </div>
 
-            <div class="card p-3 mt-3 shadow-sm">
-                <h5>Skills</h5>
+            <!-- CV Card -->
+            <div class="profile-card">
+                <div class="card-label">My CVs</div>
+
+                @if (TempData["CvSuccess"] != null)
+                {
+                    <div class="alert-cv success">@TempData["CvSuccess"]</div>
+                }
+                @if (TempData["CvError"] != null)
+                {
+                    <div class="alert-cv error">@TempData["CvError"]</div>
+                }
+
+                <form asp-controller="Cv" asp-action="Upload" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="cv-upload-zone" onclick="document.getElementById('cvFileInput').click()">
+                        <label class="cv-upload-label">
+                            <strong>Choose a PDF</strong> or drag and drop
+                        </label>
+                        <div class="cv-file-name" id="cvFileName">No file selected — max 5 MB</div>
+                        <input type="file" name="cvFile" id="cvFileInput" accept=".pdf" />
+                    </div>
+                    <button type="submit" class="cv-submit-btn" id="cvSubmitBtn" disabled>Upload CV</button>
+                </form>
+
+                @if (cvs.Any())
+                {
+                    <div class="mt-3">
+                        @foreach (var cv in cvs)
+                        {
+                            <div class="cv-item">
+                                <div class="cv-icon">PDF</div>
+                                <div style="flex:1;min-width:0;">
+                                    <div class="cv-name">CV — @cv.UploadedAt?.ToString("MMM dd, yyyy")</div>
+                                    <div class="cv-date">@cv.UploadedAt?.ToString("hh:mm tt")</div>
+                                </div>
+                                <a href="@cv.FilePath" target="_blank" class="cv-btn-view">View</a>
+                                <form asp-controller="Cv" asp-action="Delete" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@cv.Cvid" />
+                                    <button type="submit" class="cv-btn-del"
+                                            onclick="return confirm('Delete this CV?')">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="empty-text mt-2">No CVs uploaded yet.</p>
+                }
+            </div>
+
+            <!-- Skills -->
+            <div class="profile-card">
+                <div class="card-label">Skills</div>
                 @if (Model.UserSkills != null && Model.UserSkills.Any())
                 {
-                    <ul class="list-group list-group-flush">
+                    <div>
                         @foreach (var us in Model.UserSkills)
                         {
-                            <li class="list-group-item">@us.Skill.Name</li>
+                            <span class="pill pill-skill">@us.Skill.Name</span>
                         }
-                    </ul>
+                    </div>
                 }
                 else
                 {
-                    <p>No skills added yet.</p>
+                    <p class="empty-text">No skills added yet.</p>
                 }
             </div>
 
-            <div class="card p-3 mt-3 shadow-sm">
-                <h5>Interests</h5>
+            <!-- Interests -->
+            <div class="profile-card">
+                <div class="card-label">Interests</div>
                 @if (Model.UserInterests != null && Model.UserInterests.Any())
                 {
-                    <ul class="list-group list-group-flush">
+                    <div>
                         @foreach (var ui in Model.UserInterests)
                         {
-                            <li class="list-group-item">@ui.Interest.Name</li>
+                            <span class="pill pill-interest">@ui.Interest.Name</span>
                         }
-                    </ul>
+                    </div>
                 }
                 else
                 {
-                    <p>No interests selected yet.</p>
+                    <p class="empty-text">No interests selected yet.</p>
                 }
             </div>
 
@@ -80,33 +507,70 @@
             </div>
         </div>
 
-        <!-- Experiences -->
-        <div class="col-md-8">
-            <div class="card p-3 shadow-sm">
-                <h5>Experiences</h5>
-
-                @if (Model.Experiences != null && Model.Experiences.Any())
-                {
-                    @foreach (var exp in Model.Experiences)
-                    {
-                        <div class="border-bottom mb-2 pb-2">
-                            <h6>@exp.Title at @exp.Company</h6>
-                            <small>
-                                @exp.StartDate?.ToString("MMM yyyy") - @exp.EndDate?.ToString("MMM yyyy")
-                            </small>
-                            <p>@exp.Description</p>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <p>No experiences added yet.</p>
-                }
-
-                <a asp-controller="Experience" asp-action="Create" class="btn btn-success mt-2">
-                    + Add Experience
-                </a>
+        <!-- RIGHT COLUMN: Experience -->
+        <div class="profile-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="card-label mb-0">Experience</div>
+                <a asp-controller="Experience" asp-action="Create"
+                   asp-route-userId="@Model.UserId"
+                   class="add-btn">+ Add experience</a>
             </div>
+
+            @if (Model.Experiences != null && Model.Experiences.Any())
+            {
+                @foreach (var exp in Model.Experiences)
+                {
+                    <div class="exp-item">
+                        <p class="exp-title">@exp.Title</p>
+                        <p class="exp-company">@exp.Company</p>
+                        <p class="exp-date">
+                            @exp.StartDate?.ToString("MMM yyyy") —
+                            @(exp.EndDate.HasValue? exp.EndDate.Value.ToString("MMM yyyy") : "Present")
+                        </p>
+                        @if (!string.IsNullOrWhiteSpace(exp.Description))
+                        {
+                            <p class="exp-desc">@exp.Description</p>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="empty-text">No experiences added yet.</p>
+            }
         </div>
+
     </div>
 </div>
+
+<script>
+    const input = document.getElementById('cvFileInput');
+    const label = document.getElementById('cvFileName');
+    const btn   = document.getElementById('cvSubmitBtn');
+
+    input.addEventListener('change', function () {
+        if (this.files && this.files[0]) {
+            label.textContent = this.files[0].name;
+            btn.disabled = false;
+        } else {
+            label.textContent = 'No file selected — max 5 MB';
+            btn.disabled = true;
+        }
+    });
+
+    const zone = document.querySelector('.cv-upload-zone');
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.background = '#f0f7ff'; });
+    zone.addEventListener('dragleave', () => { zone.style.background = ''; });
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.style.background = '';
+        const files = e.dataTransfer.files;
+        if (files.length) {
+            const dt = new DataTransfer();
+            dt.items.add(files[0]);
+            input.files = dt.files;
+            label.textContent = files[0].name;
+            btn.disabled = false;
+        }
+    });
+</script>

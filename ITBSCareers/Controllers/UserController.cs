@@ -241,15 +241,23 @@ namespace IBSTCareers.Controllers
                     SkillId = skillId
                 });
             }
+            // Read selected IDs directly from form (checked checkboxes only)
+            var selectedSkillIds = Request.Form["SkillIds"]
+                .Select(int.Parse)
+                .ToList();
+
+            var selectedInterestIds = Request.Form["InterestIds"]
+                .Select(int.Parse)
+                .ToList();
+
+            // --- Update skills ---
+            var existingSkills = _context.UserSkills.Where(us => us.UserId == user.UserId).ToList();
+            _context.UserSkills.RemoveRange(existingSkills);
+            foreach (var skillId in selectedSkillIds)
+                _context.UserSkills.Add(new UserSkill { UserId = user.UserId, SkillId = skillId });
 
             var existingInterests = _context.UserInterests.Where(ui => ui.UserId == user.UserId).ToList();
             _context.UserInterests.RemoveRange(existingInterests);
-
-            var selectedInterestIds = vm.Interests
-                .Where(x => x.IsSelected)
-                .Select(x => x.Id)
-                .ToList();
-
             foreach (var interestId in selectedInterestIds)
             {
                 UserInterest userInterest = new UserInterest
@@ -259,9 +267,9 @@ namespace IBSTCareers.Controllers
                 };
                 _context.UserInterests.Add(userInterest);
             }
+                _context.UserInterests.Add(new UserInterest { UserId = user.UserId, InterestId = interestId });
 
             _context.SaveChanges();
-
             return RedirectToAction("Create", "Experience", new { userId = user.UserId });
         }
 
@@ -276,6 +284,8 @@ namespace IBSTCareers.Controllers
                     .ThenInclude(ur => ur.Role)
                 .Include(u => u.UserSkills)
                     .ThenInclude(us => us.Skill)
+                .Include(u => u.UserRoles)        
+                    .ThenInclude(ur => ur.Role)
                 .Include(u => u.UserInterests)
                     .ThenInclude(ui => ui.Interest)
                 .Include(u => u.Experiences)
