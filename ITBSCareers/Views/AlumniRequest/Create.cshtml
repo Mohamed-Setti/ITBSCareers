@@ -1,0 +1,36 @@
+@model ITBSCareers.Models.Carriere.AlumniRequest
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Alumni Request";
+}
+
+<div class="container mt-4">
+    <h2>Request Alumni Access</h2>
+
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="mb-3">
+            <label asp-for="CompanyName" class="form-label"></label>
+            <input asp-for="CompanyName" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Position" class="form-label"></label>
+            <input asp-for="Position" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ProofFilePath" class="form-label">Proof (optional URL/path)</label>
+            <input asp-for="ProofFilePath" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Submit request</button>
+        <a asp-controller="User" asp-action="Profile" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

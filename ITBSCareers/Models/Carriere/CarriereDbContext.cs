@@ -17,6 +17,8 @@ public partial class CarriereDbContext : DbContext
 
     public virtual DbSet<Alumni> Alumnis { get; set; }
 
+    public virtual DbSet<AlumniRequest> AlumniRequests { get; set; }
+
     public virtual DbSet<Application> Applications { get; set; }
 
     public virtual DbSet<Conversation> Conversations { get; set; }
@@ -71,6 +73,25 @@ public partial class CarriereDbContext : DbContext
                 .HasForeignKey<Alumni>(d => d.AlumniId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Alumnis__AlumniI__3D5E1FD2");
+        });
+
+        modelBuilder.Entity<AlumniRequest>(entity =>
+        {
+            entity.HasKey(e => e.AlumniRequestId);
+
+            entity.Property(e => e.AlumniRequestId).HasColumnName("AlumniRequestID");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+            entity.Property(e => e.ReviewedBy).HasColumnName("ReviewedBy");
+            entity.Property(e => e.CompanyName).HasMaxLength(100);
+            entity.Property(e => e.Position).HasMaxLength(100);
+            entity.Property(e => e.ProofFilePath).HasMaxLength(255);
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("Pending");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ReviewedAt).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Application>(entity =>
@@ -298,9 +319,8 @@ public partial class CarriereDbContext : DbContext
 
         modelBuilder.Entity<UserInterest>(entity =>
         {
-            entity.HasKey(e => e.UserInterestId).HasName("PK__tmp_ms_x__28E6EBDE0FCD1380");
+            entity.HasKey(e => new { e.UserId, e.InterestId }).HasName("PK__tmp_ms_x__28E6EBDE0FCD1380");
 
-            entity.Property(e => e.UserInterestId).HasColumnName("UserInterestID");
             entity.Property(e => e.InterestId).HasColumnName("InterestID");
             entity.Property(e => e.UserId).HasColumnName("UserID");
 
@@ -334,9 +354,8 @@ public partial class CarriereDbContext : DbContext
 
         modelBuilder.Entity<UserSkill>(entity =>
         {
-            entity.HasKey(e => e.UserSkillId).HasName("PK__tmp_ms_x__2F28BFB6F21BEA6D");
+            entity.HasKey(e => new { e.UserId, e.SkillId }).HasName("PK__tmp_ms_x__2F28BFB6F21BEA6D");
 
-            entity.Property(e => e.UserSkillId).HasColumnName("UserSkillID");
             entity.Property(e => e.SkillId).HasColumnName("SkillID");
             entity.Property(e => e.UserId).HasColumnName("UserID");
 

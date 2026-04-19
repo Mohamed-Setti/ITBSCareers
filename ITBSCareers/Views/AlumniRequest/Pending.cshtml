@@ -1,0 +1,53 @@
+@model IEnumerable<ITBSCareers.Models.Carriere.AlumniRequest>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Pending Alumni Requests";
+}
+
+<div class="container mt-4">
+    <h2>Pending Alumni Requests</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">No pending requests.</div>
+    }
+    else
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Company</th>
+                    <th>Position</th>
+                    <th>Proof</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var request in Model)
+            {
+                <tr>
+                    <td>@request.UserId</td>
+                    <td>@request.CompanyName</td>
+                    <td>@request.Position</td>
+                    <td>@request.ProofFilePath</td>
+                    <td>@request.CreatedAt</td>
+                    <td>
+                        <form asp-action="Approve" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@request.AlumniRequestId" />
+                            <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                        </form>
+                        <form asp-action="Reject" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@request.AlumniRequestId" />
+                            <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>

@@ -1,6 +1,31 @@
 ﻿@model ITBSCareers.Models.Carriere.User
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var roleNames = Model.UserRoles
+        .Where(ur => ur.Role != null)
+        .Select(ur => ur.Role!.Name)
+        .Distinct()
+        .ToList();
+    var isStudent = roleNames.Contains("Student");
+    var isAlumni = roleNames.Contains("Alumni");
+}
+
+<div class="container mt-4">
+    <h2>@Model.FullName's Profile</h2>
+
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info">@TempData["Message"]</div>
+    }
+
+    <div class="row mt-3">
+        <!-- User Info -->
+        <div class="col-md-4">
+            <div class="card p-3 shadow-sm">
+                <h5>Personal Info</h5>
+                <p><strong>Email:</strong> @Model.Email</p>
+                <p><strong>Roles:</strong> @(roleNames.Any() ? string.Join(", ", roleNames) : "No role")</p>
+                <p><strong>Joined:</strong> @Model.CreatedAt?.ToString("MMM dd, yyyy")</p>
     var initials = string.Concat(Model.FullName.Split(' ').Take(2).Select(w => char.ToUpper(w[0])));
     var role = Model.UserRoles.FirstOrDefault()?.Role?.Name ?? "User";
     var joined = Model.CreatedAt?.ToString("MMM dd, yyyy") ?? "—";
@@ -464,6 +489,22 @@
                 }
             </div>
 
+            <div class="card p-3 mt-3 shadow-sm">
+                <h5>Alumni Access</h5>
+                @if (isAlumni)
+                {
+                    <p class="text-success">Your alumni status is active.</p>
+                    <a asp-controller="Alumni" asp-action="Index" class="btn btn-primary btn-sm">Open alumni space</a>
+                }
+                else if (isStudent)
+                {
+                    <a asp-controller="AlumniRequest" asp-action="Create" class="btn btn-outline-primary btn-sm">Request alumni status</a>
+                }
+                else
+                {
+                    <p class="text-muted">Only students can request alumni status.</p>
+                }
+            </div>
         </div>
 
         <!-- RIGHT COLUMN: Experience -->

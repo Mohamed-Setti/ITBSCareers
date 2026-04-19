@@ -1,0 +1,18 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Verified Alumni Space";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm p-4" style="border:1px solid rgba(232,93,4,0.25)">
+        <h3 class="mb-2">Verified Alumni Space</h3>
+        <p class="text-muted mb-3">
+            Access granted. Your account passed admin validation and alumni policy checks.
+        </p>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary">Back to dashboard</a>
+            <a asp-controller="User" asp-action="Profile" class="btn btn-primary">My profile</a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,22 @@
+@model ITBSCareers.Models.Carriere.Role
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Delete Role";
+}
+
+<div class="container mt-4">
+    <h2>Delete Role</h2>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="alert alert-warning">
+        Are you sure you want to delete role <strong>@Model.Name</strong>?
+    </div>
+
+    <form asp-action="Delete" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="RoleId" />
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

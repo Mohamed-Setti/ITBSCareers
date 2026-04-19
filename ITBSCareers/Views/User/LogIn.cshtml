@@ -11,7 +11,8 @@
             <div class="alert alert-danger">@ViewBag.Error</div>
         }
 
-        <form method="post">
+        <form asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
             <div class="mb-3">
                 <label>Email</label>
                 <input type="email" name="email" class="form-control" required />

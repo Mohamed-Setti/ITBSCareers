@@ -5,8 +5,6 @@ namespace ITBSCareers.Models.Carriere;
 
 public partial class UserInterest
 {
-    public int UserInterestId { get; set; }
-
     public int UserId { get; set; }
 
     public int InterestId { get; set; }
