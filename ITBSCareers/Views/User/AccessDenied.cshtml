@@ -1,0 +1,11 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="container mt-4">
+    <div class="alert alert-warning">
+        You do not have permission to access this page.
+    </div>
+    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary">Back to dashboard</a>
+</div>

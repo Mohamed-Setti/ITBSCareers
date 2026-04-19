@@ -1,100 +1,122 @@
-﻿using ITBSCareers.Models.Carriere;
-using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
+using IBSTCareers.Models;
+using ITBSCareers.Models.Carriere;
+using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ITBSCareers.Controllers
 {
+    [Authorize]
     public class DashboardController : Controller
     {
-        CarriereDbContext _context;
+        private readonly CarriereDbContext _context;
 
         public DashboardController(CarriereDbContext context)
         {
             _context = context;
         }
-        //int? userId = HttpContext.Session.GetInt32("UserId");
-        // GET: DashboardController
-        public ActionResult Index()
-        {
-           
-            var userId = HttpContext.Session.GetInt32("UserId");
 
+        // GET: DashboardController
+        public async Task<ActionResult> Index()
+        {
+            var userId = GetCurrentUserId();
             if (userId == null)
             {
                 return RedirectToAction("Login", "User");
             }
 
-            return View();
-        
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.Experiences)
+                .Include(u => u.UserSkills)
+                .Include(u => u.UserInterests)
+                .FirstOrDefaultAsync(u => u.UserId == userId.Value);
+
+            if (user == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            var roleNames = user.UserRoles
+                .Where(ur => ur.Role != null)
+                .Select(ur => ur.Role!.Name)
+                .Distinct()
+                .ToList();
+
+            var alumniRequestsAvailable = await IsAlumniRequestsTableAvailableAsync();
+            string? latestRequestStatus = null;
+            var hasApprovedRequest = false;
+            var pendingAlumniRequestsCount = 0;
+
+            if (alumniRequestsAvailable)
+            {
+                latestRequestStatus = await _context.AlumniRequests
+                    .Where(r => r.UserId == userId.Value)
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => r.Status)
+                    .FirstOrDefaultAsync();
+
+                hasApprovedRequest = await _context.AlumniRequests
+                    .AnyAsync(r => r.UserId == userId.Value && r.Status == "Approved");
+
+                if (roleNames.Contains("Admin"))
+                {
+                    pendingAlumniRequestsCount = await _context.AlumniRequests
+                        .CountAsync(r => r.Status == "Pending");
+                }
+            }
+
+            var isVerifiedAlumni = await _context.Alumnis.AnyAsync(a => a.AlumniId == userId.Value)
+                                  && hasApprovedRequest
+                                  && roleNames.Contains("Alumni");
+
+            var vm = new DashboardViewModel
+            {
+                FullName = user.FullName,
+                Roles = roleNames,
+                ExperiencesCount = user.Experiences.Count,
+                SkillsCount = user.UserSkills.Count,
+                InterestsCount = user.UserInterests.Count,
+                IsStudent = roleNames.Contains("Student"),
+                IsAdmin = roleNames.Contains("Admin"),
+                IsVerifiedAlumni = isVerifiedAlumni,
+                AlumniRequestStatus = latestRequestStatus,
+                PendingAlumniRequestsCount = pendingAlumniRequestsCount
+            };
+
+            if (!alumniRequestsAvailable)
+            {
+                ViewBag.Warning = "Alumni requests module is disabled because table 'AlumniRequests' is missing.";
+            }
+
+            return View(vm);
         }
 
-        // GET: DashboardController/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: DashboardController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: DashboardController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        private async Task<bool> IsAlumniRequestsTableAvailableAsync()
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                await _context.Database.ExecuteSqlRawAsync("SELECT TOP (1) 1 FROM [dbo].[AlumniRequests]");
+                return true;
             }
-            catch
+            catch (SqlException ex) when (ex.Message.Contains("Invalid object name 'AlumniRequests'"))
             {
-                return View();
+                return false;
             }
         }
 
-        // GET: DashboardController/Edit/5
-        public ActionResult Edit(int id)
+        private int? GetCurrentUserId()
         {
-            return View();
-        }
+            var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(claim, out var userId))
+            {
+                return userId;
+            }
 
-        // POST: DashboardController/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: DashboardController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: DashboardController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            return HttpContext.Session.GetInt32("UserId");
         }
     }
 }

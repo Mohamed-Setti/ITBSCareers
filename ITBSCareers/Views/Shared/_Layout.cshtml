@@ -36,11 +36,36 @@
                             <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy"
                                style="color: #8892b0; font-family: 'DM Sans', sans-serif; font-size: 13px;">Privacy</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="User" asp-action="Create"
-                               style="color: #E85D04; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;">User</a>
-                        </li>
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="User" asp-action="Profile"
+                                   style="color: #E85D04; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;">Profile</a>
+                            </li>
+
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-controller="AlumniRequest" asp-action="Pending"
+                                       style="color: #E85D04; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;">Alumni Requests</a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="User" asp-action="Create"
+                                   style="color: #E85D04; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;">Register</a>
+                            </li>
+                        }
                     </ul>
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <form asp-controller="User" asp-action="Logout" method="post" class="d-flex">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-outline-light">Logout</button>
+                        </form>
+                    }
                 </div>
             </div>
         </nav>

@@ -1,49 +1,132 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
-
+﻿@model IBSTCareers.Models.DashboardViewModel
 @{
+    Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Dashboard";
 }
 
+<style>
+    .dash-hero {
+        background: linear-gradient(135deg, #03071E, #0d1233);
+        color: #fff;
+        border-radius: 14px;
+        padding: 1.5rem;
+        border: 1px solid rgba(232, 93, 4, 0.25);
+        margin-bottom: 1rem;
+    }
 
-<h2>Welcome to your Dashboard</h2>
+    .dash-role-badge {
+        background: rgba(232, 93, 4, 0.2);
+        color: #E85D04;
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        margin-right: 0.4rem;
+        font-size: 0.8rem;
+        display: inline-block;
+        margin-bottom: 0.4rem;
+    }
+
+    .dash-card {
+        border: 1px solid rgba(232, 93, 4, 0.18);
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,.05);
+    }
+
+    .dash-stat {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #E85D04;
+    }
+</style>
 
 <div class="container mt-4">
-    <h2 class="mb-4">Dashboard</h2> 
+    @if (ViewBag.Warning != null)
+    {
+        <div class="alert alert-warning">@ViewBag.Warning</div>
+    }
 
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3">
-            <div class="list-group shadow-sm">
-                <a asp-controller="Dashboard" asp-action="Index" class="list-group-item list-group-item-action active">
-                    Home
-                </a>
-                <a class="list-group-item list-group-item-action active" asp-controller="User" asp-action="Profile">
-                    Profile
-                </a>
-                <a asp-controller="Experience" asp-action="Create" class="list-group-item list-group-item-action">
-                    Add Experience
-                </a>
-                <a asp-controller="Career" asp-action="Index" class="list-group-item list-group-item-action">
-                    Career Path
-                </a>
+    <div class="dash-hero">
+        <h3 class="mb-1">Welcome, @Model.FullName 👋</h3>
+        <p class="mb-2">Manage your career journey from one place.</p>
+        @foreach (var role in Model.Roles)
+        {
+            <span class="dash-role-badge">@role</span>
+        }
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="card dash-card p-3">
+                <div class="text-muted">Experiences</div>
+                <div class="dash-stat">@Model.ExperiencesCount</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dash-card p-3">
+                <div class="text-muted">Skills</div>
+                <div class="dash-stat">@Model.SkillsCount</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card dash-card p-3">
+                <div class="text-muted">Interests</div>
+                <div class="dash-stat">@Model.InterestsCount</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card dash-card p-3 h-100">
+                <h5>My Space</h5>
+                <p class="text-muted">Complete and maintain your profile.</p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-controller="User" asp-action="Profile" class="btn btn-outline-primary btn-sm">View profile</a>
+                    <a asp-controller="Experience" asp-action="Create" class="btn btn-success btn-sm">Add experience</a>
+                </div>
             </div>
         </div>
 
-        <!-- Content -->
-        <div class="col-md-9">
-            <div class="card shadow-sm p-4">
-                <h4>Welcome 👋</h4>
-                <p>This is your dashboard. Manage your career journey here.</p>
+        <div class="col-md-6">
+            <div class="card dash-card p-3 h-100">
+                <h5>Alumni Verification</h5>
 
-                <hr />
+                @if (Model.IsVerifiedAlumni)
+                {
+                    <p class="text-success mb-2">Your alumni profile is verified by admin.</p>
+                    <a asp-controller="Alumni" asp-action="Index" class="btn btn-primary btn-sm">Open alumni space</a>
+                }
+                else if (Model.IsStudent)
+                {
+                    <p class="text-muted mb-2">Current request status: <strong>@(Model.AlumniRequestStatus ?? "No request")</strong></p>
 
-                <h5>Quick Actions</h5>
-                <a asp-controller="Experience" asp-action="Create" class="btn btn-success">
-                    + Add Experience
-                </a>
+                    if (Model.AlumniRequestStatus == "Pending")
+                    {
+                        <button class="btn btn-secondary btn-sm" disabled>Request pending approval</button>
+                    }
+                    else
+                    {
+                        <a asp-controller="AlumniRequest" asp-action="Create" class="btn btn-primary btn-sm">Request alumni status</a>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">Alumni access requires admin validation.</p>
+                }
             </div>
         </div>
+
+        @if (Model.IsAdmin)
+        {
+            <div class="col-12">
+                <div class="card dash-card p-3">
+                    <h5>Admin Actions</h5>
+                    <p class="mb-2">Pending alumni requests: <strong>@Model.PendingAlumniRequestsCount</strong></p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a asp-controller="AlumniRequest" asp-action="Pending" class="btn btn-warning btn-sm">Review requests</a>
+                        <a asp-controller="Roles" asp-action="Index" class="btn btn-outline-dark btn-sm">Manage roles</a>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>

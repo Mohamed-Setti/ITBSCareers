@@ -1,27 +1,40 @@
 ﻿using ITBSCareers.Models.Carriere;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace IBSTCareers.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class RolesController : Controller
     {
-        CarriereDbContext _context;
+        private readonly CarriereDbContext _context;
 
         public RolesController(CarriereDbContext context)
         {
             _context = context;
         }
+
         // GET: RolesController
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            return View();
+            var roles = await _context.Roles
+                .OrderBy(r => r.Name)
+                .ToListAsync();
+
+            return View(roles);
         }
 
         // GET: RolesController/Details/5
-        public ActionResult Details(int id)
+        public async Task<ActionResult> Details(int id)
         {
-            return View();
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleId == id);
+            if (role == null)
+            {
+                return NotFound();
+            }
+
+            return View(role);
         }
 
         // GET: RolesController/Create
@@ -33,59 +46,100 @@ namespace IBSTCareers.Controllers
         // POST: RolesController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Create(Role role)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                return RedirectToAction(nameof(Index));
-                Console.WriteLine("test");
+                return View(role);
             }
-            catch
+
+            role.Name = role.Name.Trim();
+
+            var exists = await _context.Roles.AnyAsync(r => r.Name == role.Name);
+            if (exists)
             {
-                return View();
+                ModelState.AddModelError(nameof(Role.Name), "This role already exists.");
+                return View(role);
             }
+
+            _context.Roles.Add(role);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: RolesController/Edit/5
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> Edit(int id)
         {
-            return View();
+            var role = await _context.Roles.FindAsync(id);
+            if (role == null)
+            {
+                return NotFound();
+            }
+
+            return View(role);
         }
 
         // POST: RolesController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(int id, Role role)
         {
-            try
+            if (id != role.RoleId)
             {
-                return RedirectToAction(nameof(Index));
+                return BadRequest();
             }
-            catch
+
+            if (!ModelState.IsValid)
             {
-                return View();
+                return View(role);
             }
+
+            role.Name = role.Name.Trim();
+            var duplicate = await _context.Roles.AnyAsync(r => r.RoleId != id && r.Name == role.Name);
+            if (duplicate)
+            {
+                ModelState.AddModelError(nameof(Role.Name), "Another role already uses this name.");
+                return View(role);
+            }
+
+            _context.Roles.Update(role);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: RolesController/Delete/5
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            return View();
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleId == id);
+            if (role == null)
+            {
+                return NotFound();
+            }
+
+            return View(role);
         }
 
         // POST: RolesController/Delete/5
-        [HttpPost]
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            try
+            var role = await _context.Roles.FindAsync(id);
+            if (role == null)
             {
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
-            catch
+
+            var used = await _context.UserRoles.AnyAsync(ur => ur.RoleId == id);
+            if (used)
             {
-                return View();
+                ModelState.AddModelError(string.Empty, "Cannot delete a role that is already assigned to users.");
+                return View("Delete", role);
             }
+
+            _context.Roles.Remove(role);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
     }
 }
