@@ -82,6 +82,15 @@ namespace IBSTCareers.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(string email, string password)
         {
+            email = (email ?? string.Empty).Trim();
+            password = (password ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+            {
+                ViewBag.Error = "Invalid email or password";
+                return View("LogIn");
+            }
+
             var user = await _context.Users
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)

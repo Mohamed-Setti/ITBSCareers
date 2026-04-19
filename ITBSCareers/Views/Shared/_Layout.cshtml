@@ -46,6 +46,10 @@
                             @if (User.IsInRole("Admin"))
                             {
                                 <li class="nav-item">
+                                    <a class="nav-link" asp-controller="Admin" asp-action="Index"
+                                       style="color: #E85D04; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;">Admin Dashboard</a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link" asp-controller="AlumniRequest" asp-action="Pending"
                                        style="color: #E85D04; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;">Alumni Requests</a>
                                 </li>

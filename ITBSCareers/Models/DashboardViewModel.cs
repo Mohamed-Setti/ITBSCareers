@@ -7,6 +7,14 @@ public class DashboardViewModel
     public int ExperiencesCount { get; set; }
     public int SkillsCount { get; set; }
     public int InterestsCount { get; set; }
+
+    public int StudentApplicationsCount { get; set; }
+    public int NewOffersCount { get; set; }
+
+    public int AlumniPublishedOffersCount { get; set; }
+    public int AlumniApplicationsReceivedCount { get; set; }
+    public int AlumniActiveMenteesCount { get; set; }
+
     public bool IsStudent { get; set; }
     public bool IsAdmin { get; set; }
     public bool IsVerifiedAlumni { get; set; }
