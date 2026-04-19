@@ -303,6 +303,20 @@ VALUES
 ('Leadership'),
 ('Time Management');
 
+
+CREATE TABLE [dbo].[AlumniRequests] (
+    [AlumniRequestID] INT IDENTITY(1,1) PRIMARY KEY,
+    [UserID] INT NOT NULL,
+    [CompanyName] NVARCHAR(100) NULL,
+    [Position] NVARCHAR(100) NULL,
+    [ProofFilePath] NVARCHAR(255) NULL,
+    [Status] NVARCHAR(20) NOT NULL CONSTRAINT [DF_AlumniRequests_Status] DEFAULT ('Pending'),
+    [ReviewedBy] INT NULL,
+    [ReviewedAt] DATETIME NULL,
+    [CreatedAt] DATETIME NOT NULL CONSTRAINT [DF_AlumniRequests_CreatedAt] DEFAULT (GETDATE()),
+    CONSTRAINT [FK_AlumniRequests_User] FOREIGN KEY ([UserID]) REFERENCES [dbo].[Users]([UserID]),
+    CONSTRAINT [FK_AlumniRequests_ReviewedBy] FOREIGN KEY ([ReviewedBy]) REFERENCES [dbo].[Users]([UserID])
+);
 --------------------------------------------------------------------------
 
 "ConnectionStrings": {
