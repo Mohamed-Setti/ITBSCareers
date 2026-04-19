@@ -1,0 +1,65 @@
+@model IEnumerable<ITBSCareers.Models.Carriere.AlumniRequest>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Dashboard Admin";
+}
+
+<div class="container mt-4">
+    <h2>Dashboard Admin</h2>
+
+    @if (ViewBag.Warning != null)
+    {
+        <div class="alert alert-warning">@ViewBag.Warning</div>
+    }
+
+    <div class="card shadow-sm p-3 mb-3">
+        <h5 class="mb-1">Demandes en attente</h5>
+        <p class="text-muted mb-0">Total: <strong>@Model.Count()</strong></p>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">Aucune demande en attente.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Company</th>
+                        <th>Position</th>
+                        <th>Proof</th>
+                        <th>Créée le</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var request in Model)
+                {
+                    <tr>
+                        <td>@request.UserId</td>
+                        <td>@request.CompanyName</td>
+                        <td>@request.Position</td>
+                        <td>@request.ProofFilePath</td>
+                        <td>@request.CreatedAt</td>
+                        <td>
+                            <form asp-controller="AlumniRequest" asp-action="Approve" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@request.AlumniRequestId" />
+                                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                            </form>
+                            <form asp-controller="AlumniRequest" asp-action="Reject" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@request.AlumniRequestId" />
+                                <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

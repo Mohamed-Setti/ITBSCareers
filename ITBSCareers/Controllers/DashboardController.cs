@@ -33,6 +33,9 @@ namespace ITBSCareers.Controllers
                 .Include(u => u.Experiences)
                 .Include(u => u.UserSkills)
                 .Include(u => u.UserInterests)
+                .Include(u => u.Applications)
+                .Include(u => u.JobOffers)
+                    .ThenInclude(j => j.Applications)
                 .FirstOrDefaultAsync(u => u.UserId == userId.Value);
 
             if (user == null)
@@ -73,6 +76,9 @@ namespace ITBSCareers.Controllers
                                   && hasApprovedRequest
                                   && roleNames.Contains("Alumni");
 
+            var newOffersCount = await _context.JobOffers
+                .CountAsync(j => j.CreatedAt != null && j.CreatedAt >= DateTime.Now.AddDays(-14));
+
             var vm = new DashboardViewModel
             {
                 FullName = user.FullName,
@@ -80,6 +86,14 @@ namespace ITBSCareers.Controllers
                 ExperiencesCount = user.Experiences.Count,
                 SkillsCount = user.UserSkills.Count,
                 InterestsCount = user.UserInterests.Count,
+
+                StudentApplicationsCount = user.Applications.Count,
+                NewOffersCount = newOffersCount,
+
+                AlumniPublishedOffersCount = user.JobOffers.Count,
+                AlumniApplicationsReceivedCount = user.JobOffers.SelectMany(o => o.Applications).Count(),
+                AlumniActiveMenteesCount = 0,
+
                 IsStudent = roleNames.Contains("Student"),
                 IsAdmin = roleNames.Contains("Admin"),
                 IsVerifiedAlumni = isVerifiedAlumni,
