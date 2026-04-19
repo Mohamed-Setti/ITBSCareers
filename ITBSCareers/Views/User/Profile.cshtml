@@ -1,6 +1,11 @@
-﻿@model ITBSCareers.Models.Carriere.User
+﻿@using ITBSCareers.Models.Carriere
+@model ITBSCareers.Models.Carriere.User
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var initials = string.Concat(Model.FullName.Split(' ').Take(2).Select(w => char.ToUpper(w[0])));
+    var role = Model.UserRoles.FirstOrDefault()?.Role?.Name ?? "User";
+    var joined = Model.CreatedAt?.ToString("MMM dd, yyyy") ?? "—";
+    var cvs = Model.Cvs?.OrderByDescending(c => c.UploadedAt).ToList() ?? new List<Cv>();
     var roleNames = Model.UserRoles
         .Where(ur => ur.Role != null)
         .Select(ur => ur.Role!.Name)
@@ -8,28 +13,6 @@
         .ToList();
     var isStudent = roleNames.Contains("Student");
     var isAlumni = roleNames.Contains("Alumni");
-}
-
-<div class="container mt-4">
-    <h2>@Model.FullName's Profile</h2>
-
-    @if (TempData["Message"] != null)
-    {
-        <div class="alert alert-info">@TempData["Message"]</div>
-    }
-
-    <div class="row mt-3">
-        <!-- User Info -->
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm">
-                <h5>Personal Info</h5>
-                <p><strong>Email:</strong> @Model.Email</p>
-                <p><strong>Roles:</strong> @(roleNames.Any() ? string.Join(", ", roleNames) : "No role")</p>
-                <p><strong>Joined:</strong> @Model.CreatedAt?.ToString("MMM dd, yyyy")</p>
-    var initials = string.Concat(Model.FullName.Split(' ').Take(2).Select(w => char.ToUpper(w[0])));
-    var role = Model.UserRoles.FirstOrDefault()?.Role?.Name ?? "User";
-    var joined = Model.CreatedAt?.ToString("MMM dd, yyyy") ?? "—";
-    var cvs = Model.Cvs?.OrderByDescending(c => c.UploadedAt).ToList() ?? new List<ITBSCareers.Models.Carriere.Cv>();
 }
 
 <style>
@@ -362,6 +345,14 @@
             border: 0.5px solid #F7C1C1;
         }
 
+    .alumni-card {
+        background: #fff;
+        border: 0.5px solid rgba(0,0,0,0.12);
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
     @@media (max-width: 600px) {
         .profile-grid {
             grid-template-columns: 1fr;
@@ -489,22 +480,25 @@
                 }
             </div>
 
-            <div class="card p-3 mt-3 shadow-sm">
-                <h5>Alumni Access</h5>
+            <!-- Alumni Access -->
+            <div class="alumni-card">
+                <div class="card-label">Alumni access</div>
                 @if (isAlumni)
                 {
-                    <p class="text-success">Your alumni status is active.</p>
+                    <p style="font-size:13px;color:#3B6D11;margin-bottom:0.75rem;">Your alumni status is active.</p>
                     <a asp-controller="Alumni" asp-action="Index" class="btn btn-primary btn-sm">Open alumni space</a>
                 }
                 else if (isStudent)
                 {
+                    <p style="font-size:13px;color:#555;margin-bottom:0.75rem;">You can request alumni status once you graduate.</p>
                     <a asp-controller="AlumniRequest" asp-action="Create" class="btn btn-outline-primary btn-sm">Request alumni status</a>
                 }
                 else
                 {
-                    <p class="text-muted">Only students can request alumni status.</p>
+                    <p style="font-size:13px;color:#aaa;margin:0;">Only students can request alumni status.</p>
                 }
             </div>
+
         </div>
 
         <!-- RIGHT COLUMN: Experience -->

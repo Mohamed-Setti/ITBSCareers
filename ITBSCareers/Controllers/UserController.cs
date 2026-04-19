@@ -225,22 +225,6 @@ namespace IBSTCareers.Controllers
             var user = _context.Users.FirstOrDefault(u => u.UserId == vm.UserId);
             if (user == null) return NotFound();
 
-            var existingSkills = _context.UserSkills.Where(us => us.UserId == user.UserId).ToList();
-            _context.UserSkills.RemoveRange(existingSkills);
-
-            var selectedSkillIds = vm.Skills
-                .Where(x => x.IsSelected)
-                .Select(x => x.Id)
-                .ToList();
-
-            foreach (var skillId in selectedSkillIds)
-            {
-                _context.UserSkills.Add(new UserSkill
-                {
-                    UserId = user.UserId,
-                    SkillId = skillId
-                });
-            }
             // Read selected IDs directly from form (checked checkboxes only)
             var selectedSkillIds = Request.Form["SkillIds"]
                 .Select(int.Parse)
@@ -256,17 +240,10 @@ namespace IBSTCareers.Controllers
             foreach (var skillId in selectedSkillIds)
                 _context.UserSkills.Add(new UserSkill { UserId = user.UserId, SkillId = skillId });
 
+            // --- Update interests ---
             var existingInterests = _context.UserInterests.Where(ui => ui.UserId == user.UserId).ToList();
             _context.UserInterests.RemoveRange(existingInterests);
             foreach (var interestId in selectedInterestIds)
-            {
-                UserInterest userInterest = new UserInterest
-                {
-                    UserId = user.UserId,
-                    InterestId = interestId
-                };
-                _context.UserInterests.Add(userInterest);
-            }
                 _context.UserInterests.Add(new UserInterest { UserId = user.UserId, InterestId = interestId });
 
             _context.SaveChanges();
