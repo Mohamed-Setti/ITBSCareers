@@ -201,53 +201,31 @@ namespace IBSTCareers.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult SelectSkillsInterests(SelectSkillsInterestsViewModel vm)
         {
-            Console.WriteLine($"--------SelectSkillsInterests : Received VM for user {vm.UserId}-------------");
-
-            // Load the user without multiple Includes (load join tables separately)
             var user = _context.Users.FirstOrDefault(u => u.UserId == vm.UserId);
             if (user == null) return NotFound();
+
+            // Read selected IDs directly from form (checked checkboxes only)
+            var selectedSkillIds = Request.Form["SkillIds"]
+                .Select(int.Parse)
+                .ToList();
+
+            var selectedInterestIds = Request.Form["InterestIds"]
+                .Select(int.Parse)
+                .ToList();
 
             // --- Update skills ---
             var existingSkills = _context.UserSkills.Where(us => us.UserId == user.UserId).ToList();
             _context.UserSkills.RemoveRange(existingSkills);
-
-            var selectedSkillIds = vm.Skills
-                .Where(x => x.IsSelected)
-                .Select(x => x.Id)
-                .ToList();
-            Console.WriteLine($"Adding skill to user {user.UserId}");
             foreach (var skillId in selectedSkillIds)
-            {
-                Console.WriteLine($"Adding skill {skillId} to user {user.UserId}");
-                _context.UserSkills.Add(new UserSkill
-                {
-                    UserId = user.UserId,
-                    SkillId = skillId
-                });
-            }
+                _context.UserSkills.Add(new UserSkill { UserId = user.UserId, SkillId = skillId });
 
             // --- Update interests ---
             var existingInterests = _context.UserInterests.Where(ui => ui.UserId == user.UserId).ToList();
             _context.UserInterests.RemoveRange(existingInterests);
-
-            var selectedInterestIds = vm.Interests
-                .Where(x => x.IsSelected)
-                .Select(x => x.Id)
-                .ToList();
-
             foreach (var interestId in selectedInterestIds)
-            {
-                Console.WriteLine($"Adding interest {interestId} to user {user.UserId}");
-                UserInterest userInterest =  new UserInterest
-                {
-                    UserId = user.UserId,
-                    InterestId = interestId
-                };
-                _context.UserInterests.Add(userInterest);
-            }
+                _context.UserInterests.Add(new UserInterest { UserId = user.UserId, InterestId = interestId });
 
             _context.SaveChanges();
-
             return RedirectToAction("Create", "Experience", new { userId = user.UserId });
         }
         public IActionResult Profile()
@@ -258,6 +236,8 @@ namespace IBSTCareers.Controllers
             var user = _context.Users
                 .Include(u => u.UserSkills)
                     .ThenInclude(us => us.Skill)
+                .Include(u => u.UserRoles)        
+                    .ThenInclude(ur => ur.Role)
                 .Include(u => u.UserInterests)
                     .ThenInclude(ui => ui.Interest)
                 .Include(u => u.Experiences)
