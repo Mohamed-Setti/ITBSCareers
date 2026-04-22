@@ -1,10 +1,12 @@
 ﻿using ITBSCareers.Models.Carriere;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace IBSTCareers.Controllers
 {
+    [Authorize]
     public class ExperienceController : Controller
     {
         CarriereDbContext _context;
@@ -29,13 +31,17 @@ namespace IBSTCareers.Controllers
         public ActionResult Create()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
             var experiences = _context.Experiences
                 .Where(e => e.UserId == userId.Value)
+                .OrderByDescending(e => e.StartDate)
                 .ToList();
 
             ViewBag.Experiences = experiences;
-
-            Console.WriteLine("************************userId =  "+userId.Value);
 
             return View(new Experience { UserId = userId.Value });
         }
@@ -63,8 +69,13 @@ namespace IBSTCareers.Controllers
                     return RedirectToAction("Index", "Dashboard");
                 }
 
-                return RedirectToAction("Create", userId.Value);
+                return RedirectToAction(nameof(Create));
             }
+
+            ViewBag.Experiences = _context.Experiences
+                .Where(e => e.UserId == userId.Value)
+                .OrderByDescending(e => e.StartDate)
+                .ToList();
 
             return View(exp);
         }

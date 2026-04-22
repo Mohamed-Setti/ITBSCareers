@@ -1,55 +1,164 @@
 ﻿@model ITBSCareers.Models.Carriere.Experience
+@{
+    ViewData["Title"] = "Experience";
+}
 
-<h2>Add Experience</h2>
-<a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary">
-    Go to Dashboard
-</a>
-<form asp-action="Create" method="post">
-    <input type="hidden" asp-for="UserId" value="@Context.Session.GetInt32("UserId")" />
-
-    <div class="mb-2">
-        <label>Title</label>
-        <input asp-for="Title" class="form-control" />
-    </div>
-
-    <div class="mb-2">
-        <label>Company</label>
-        <input asp-for="Company" class="form-control" />
-    </div>
-
-    <div class="mb-2">
-        <label>Start Date</label>
-        <input asp-for="StartDate" type="date" class="form-control" />
-    </div>
-
-    <div class="mb-2">
-        <label>End Date</label>
-        <input asp-for="EndDate" type="date" class="form-control" />
-    </div>
-
-    <div class="mb-2">
-        <label>Description</label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-    </div>
-
-    <button type="submit" name="action" value="stay" class="btn btn-success">
-        + Add Experience
-    </button>
-
-    <button type="submit" name="action" value="dashboard" class="btn btn-primary">
-        Save & Go to Dashboard
-    </button>
-</form>
-<h4 class="mt-4">Your Experiences</h4>
-
-@if (ViewBag.Experiences != null)
-{
-    foreach (var exp in ViewBag.Experiences)
-    {
-        <div class="card mb-2 p-2">
-            <strong >@exp.Title</strong> - @exp.Company <br />
-            <small>@exp.StartDate - @exp.EndDate</small>
-            <p>@exp.Description</p>
-        </div>
+<style>
+    .exp-wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 1rem 0 2rem;
     }
+
+    .exp-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 1rem;
+    }
+
+    .exp-card {
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 14px;
+        padding: 1.1rem;
+        box-shadow: 0 8px 20px rgba(24,95,165,.06);
+    }
+
+    .exp-title {
+        font-family: 'Bebas Neue', sans-serif;
+        letter-spacing: 1px;
+        font-size: 1.9rem;
+        margin-bottom: .2rem;
+    }
+
+    .exp-sub { color: #64646E; margin-bottom: .9rem; }
+
+    .exp-label {
+        font-size: .76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64646E;
+        margin-bottom: .25rem;
+    }
+
+    .exp-input {
+        border: 1px solid #DCDCE1;
+        border-radius: 10px;
+        padding: .55rem .7rem;
+        font-size: .92rem;
+    }
+
+    .exp-input:focus {
+        border-color: #185FA5;
+        box-shadow: 0 0 0 .15rem rgba(24,95,165,.12);
+    }
+
+    .btn-save {
+        border: 0;
+        border-radius: 8px;
+        padding: .55rem .9rem;
+        background: linear-gradient(135deg, #185FA5, #0F6E56);
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .btn-lightx {
+        border: 1px solid #DCDCE1;
+        border-radius: 8px;
+        padding: .55rem .9rem;
+        background: #F6F7F9;
+        color: #32323C;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .exp-list-item {
+        border-top: 1px solid #eee;
+        padding-top: .55rem;
+        margin-top: .55rem;
+    }
+
+    .exp-company { color: #64646E; font-size: .86rem; }
+    .exp-date { color: #888; font-size: .8rem; }
+
+    @@media (max-width: 900px) {
+        .exp-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="container exp-wrap">
+    <div class="exp-grid">
+        <div class="exp-card">
+            <div class="exp-title">Ajouter une expérience</div>
+            <div class="exp-sub">Renforcez votre profil en ajoutant vos expériences académiques et professionnelles.</div>
+
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="UserId" value="@Context.Session.GetInt32("UserId")" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+                <div class="mb-2">
+                    <label class="exp-label">Title</label>
+                    <input asp-for="Title" class="form-control exp-input" />
+                </div>
+
+                <div class="mb-2">
+                    <label class="exp-label">Company</label>
+                    <input asp-for="Company" class="form-control exp-input" />
+                </div>
+
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="exp-label">Start Date</label>
+                        <input asp-for="StartDate" type="date" class="form-control exp-input" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="exp-label">End Date</label>
+                        <input asp-for="EndDate" type="date" class="form-control exp-input" />
+                    </div>
+                </div>
+
+                <div class="mt-2 mb-3">
+                    <label class="exp-label">Description</label>
+                    <textarea asp-for="Description" class="form-control exp-input" rows="4"></textarea>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" name="action" value="stay" class="btn-save">Enregistrer & continuer</button>
+                    <button type="submit" name="action" value="dashboard" class="btn-lightx">Enregistrer & Dashboard</button>
+                    <a asp-controller="User" asp-action="Profile" class="btn-lightx">Retour profil</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="exp-card">
+            <div class="exp-title" style="font-size:1.45rem;">Mes expériences</div>
+            <div class="exp-sub">Historique de vos expériences enregistrées.</div>
+
+            @if (ViewBag.Experiences != null && ViewBag.Experiences.Count > 0)
+            {
+                foreach (var exp in ViewBag.Experiences)
+                {
+                    <div class="exp-list-item">
+                        <div><strong>@exp.Title</strong></div>
+                        <div class="exp-company">@exp.Company</div>
+                        <div class="exp-date">@exp.StartDate - @exp.EndDate</div>
+                        @if (!string.IsNullOrWhiteSpace((string?)exp.Description))
+                        {
+                            <div class="exp-company">@exp.Description</div>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-muted">Aucune expérience pour le moment.</div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 }

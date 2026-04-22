@@ -1,208 +1,137 @@
 ﻿@model ITBSCareers.Models.Carriere.User
 @{
-    ViewData["Title"] = "Add User";
+    ViewData["Title"] = "Inscription";
 }
 
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
-
 <style>
-    :root {
-        --bg: #03071E;
-        --surface: #0d1233;
-        --accent: #E85D04;
-        --border: rgba(232, 93, 4, 0.25);
-        --muted: #8892b0;
-        --text: #e8e8e8;
-    }
-
-    body {
-        background: var(--bg) !important;
-    }
-
-    .uf-wrap {
-        min-height: 80vh;
+    .auth-wrap {
+        min-height: 76vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 2rem;
-        font-family: 'DM Sans', sans-serif;
     }
 
-    .uf-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 2.5rem 2rem;
+    .auth-card {
         width: 100%;
-        max-width: 480px;
+        max-width: 520px;
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 14px;
+        padding: 1.6rem;
+        box-shadow: 0 8px 20px rgba(24, 95, 165, 0.08);
         position: relative;
-        overflow: hidden;
     }
 
-        .uf-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #D00000, #E85D04, #DC2F02);
-        }
-
-    .uf-glow {
+    .auth-card::before {
+        content: '';
         position: absolute;
-        top: -80px;
-        right: -80px;
-        width: 220px;
-        height: 220px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(232,93,4,0.12) 0%, transparent 70%);
-        pointer-events: none;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        border-radius: 14px 14px 0 0;
+        background: linear-gradient(90deg, #185FA5, #0F6E56);
     }
 
-    .uf-title {
+    .auth-title {
         font-family: 'Bebas Neue', sans-serif;
-        font-size: 2.4rem;
-        letter-spacing: 2px;
-        color: #fff;
-        margin: 0 0 0.25rem;
-        line-height: 1;
+        font-size: 2rem;
+        color: #1E1E28;
+        letter-spacing: 1px;
+        margin-bottom: .15rem;
     }
 
-    .uf-subtitle {
-        font-size: 13px;
-        color: var(--muted);
-        margin: 0 0 2rem;
+    .auth-sub {
+        color: #64646E;
+        font-size: .9rem;
+        margin-bottom: 1.2rem;
     }
 
-    .uf-group {
-        margin-bottom: 1.25rem;
-    }
-
-    .uf-label {
-        display: block;
-        font-size: 11px;
-        font-weight: 500;
-        letter-spacing: 1.2px;
+    .auth-label {
+        font-size: .78rem;
         text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 6px;
+        font-weight: 700;
+        color: #64646E;
+        margin-bottom: .35rem;
     }
 
-    .uf-input {
-        width: 100%;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px 14px;
-        font-size: 14px;
-        color: var(--text);
-        font-family: 'DM Sans', sans-serif;
-        outline: none;
-        box-sizing: border-box;
-        transition: border-color 0.2s, background 0.2s;
+    .auth-input {
+        border: 1px solid #DCDCE1;
+        border-radius: 10px;
+        padding: .65rem .75rem;
+        font-size: .95rem;
     }
 
-        .uf-input:focus {
-            border-color: var(--accent);
-            background: rgba(232, 93, 4, 0.05);
-        }
+    .auth-input:focus {
+        border-color: #185FA5;
+        box-shadow: 0 0 0 .15rem rgba(24, 95, 165, 0.12);
+    }
 
-        .uf-input::placeholder {
-            color: #4a5568;
-        }
-
-        .uf-input option {
-            background: #0d1233;
-            color: #e8e8e8;
-        }
-
-    .uf-btn {
+    .btn-auth {
         width: 100%;
-        padding: 12px;
-        background: linear-gradient(135deg, #D00000, #E85D04);
-        border: none;
-        border-radius: 8px;
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 1.1rem;
-        letter-spacing: 2px;
+        border: 0;
+        border-radius: 10px;
+        padding: .72rem;
+        background: linear-gradient(135deg, #185FA5, #0F6E56);
         color: #fff;
-        cursor: pointer;
-        margin-top: 0.5rem;
-        transition: opacity 0.2s, transform 0.1s;
+        font-weight: 700;
     }
 
-        .uf-btn:hover {
-            opacity: 0.9;
-        }
+    .auth-note {
+        margin-top: .9rem;
+        background: #E6F1FB;
+        color: #185FA5;
+        border-radius: 10px;
+        padding: .6rem .7rem;
+        font-size: .82rem;
+    }
 
-        .uf-btn:active {
-            transform: scale(0.99);
-        }
-
-    .uf-back {
-        display: block;
-        text-align: center;
-        margin-top: 1rem;
-        font-size: 13px;
-        color: var(--muted);
+    .auth-link {
+        color: #185FA5;
         text-decoration: none;
-        transition: color 0.2s;
+        font-weight: 600;
     }
 
-        .uf-back:hover {
-            color: var(--accent);
-        }
-
-    .uf-divider {
-        border: none;
-        border-top: 1px solid var(--border);
-        margin: 1.5rem 0;
-    }
-
-    span.text-danger {
-        font-size: 12px;
-        color: #E85D04 !important;
-        margin-top: 4px;
-        display: block;
-    }
+    span.text-danger { font-size: .8rem; }
 </style>
 
-<div class="uf-wrap">
-    <div class="uf-card">
-        <div class="uf-glow"></div>
-        <div class="uf-title">Add User</div>
-        <p class="uf-subtitle">Fill in the details to create a new account</p>
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-title">Créer un compte</div>
+        <div class="auth-sub">Rejoignez la plateforme carrière de l'ITBS.</div>
 
         <form asp-action="Create" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
-            <div class="uf-group">
-                <label asp-for="FullName" class="uf-label"></label>
-                <input asp-for="FullName" class="uf-input" placeholder="John Doe" />
+            <div class="mb-3">
+                <label asp-for="FullName" class="auth-label"></label>
+                <input asp-for="FullName" class="form-control auth-input" placeholder="Nom complet" />
                 <span asp-validation-for="FullName" class="text-danger"></span>
             </div>
 
-            <div class="uf-group">
-                <label asp-for="Email" class="uf-label"></label>
-                <input asp-for="Email" class="uf-input" placeholder="john@example.com" />
+            <div class="mb-3">
+                <label asp-for="Email" class="auth-label"></label>
+                <input asp-for="Email" class="form-control auth-input" placeholder="exemple@itbs.tn" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
-            <div class="uf-group">
-                <label asp-for="PasswordHash" class="uf-label"></label>
-                <input asp-for="PasswordHash" type="password" class="uf-input" placeholder="••••••••" />
+            <div class="mb-3">
+                <label asp-for="PasswordHash" class="auth-label">Password</label>
+                <input asp-for="PasswordHash" type="password" class="form-control auth-input" placeholder="••••••••" />
                 <span asp-validation-for="PasswordHash" class="text-danger"></span>
             </div>
 
-            <hr class="uf-divider" />
+            <button type="submit" class="btn-auth">Créer mon compte</button>
 
-            <p class="uf-subtitle">All new accounts are created as Student by default.</p>
-
-            <button type="submit" class="uf-btn">Create Account</button>
+            <div class="auth-note">
+                Les nouveaux comptes sont créés avec le rôle <strong>Student</strong> par défaut.
+            </div>
         </form>
 
-        <a asp-action="Index" class="uf-back">← Back to list</a>
+        <div class="text-center mt-3">
+            <span class="text-muted">Déjà inscrit ? </span>
+            <a asp-controller="User" asp-action="Login" class="auth-link">Se connecter</a>
+        </div>
     </div>
 </div>
 
