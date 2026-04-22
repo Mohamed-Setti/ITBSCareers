@@ -1,19 +1,67 @@
 ﻿using ITBSCareers.Models.Carriere;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace IBSTCareers.Controllers
 {
+    [Authorize]
     public class CvController : Controller
     {
         private readonly CarriereDbContext _context;
         private readonly IWebHostEnvironment _env;
+        private readonly IAuthorizationService _authorizationService;
 
-        public CvController(CarriereDbContext context, IWebHostEnvironment env)
+        public CvController(CarriereDbContext context, IWebHostEnvironment env, IAuthorizationService authorizationService)
         {
             _context = context;
             _env = env;
+            _authorizationService = authorizationService;
+        }
+
+        // GET: /Cv/Open/5
+        [HttpGet]
+        public async Task<IActionResult> Open(int id)
+        {
+            var cv = await _context.Cvs.FirstOrDefaultAsync(c => c.Cvid == id);
+            if (cv == null)
+            {
+                return NotFound();
+            }
+
+            int? currentUserId = HttpContext.Session.GetInt32("UserId");
+            if (currentUserId == null && int.TryParse(User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value, out var claimUserId))
+            {
+                currentUserId = claimUserId;
+            }
+
+            var isOwner = currentUserId.HasValue && cv.UserId == currentUserId.Value;
+            if (!isOwner)
+            {
+                var authResult = await _authorizationService.AuthorizeAsync(User, null, "VerifiedAlumni");
+                if (!authResult.Succeeded)
+                {
+                    return Forbid();
+                }
+            }
+
+            if (Uri.TryCreate(cv.FilePath, UriKind.Absolute, out var uri)
+                && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+            {
+                return Redirect(cv.FilePath);
+            }
+
+            var relativePath = cv.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+            var fullPath = Path.Combine(_env.WebRootPath, relativePath);
+
+            if (!System.IO.File.Exists(fullPath))
+            {
+                return NotFound("CV file not found on server. Add the file under wwwroot or set an absolute URL in CVs.FilePath.");
+            }
+
+            var fileName = Path.GetFileName(fullPath);
+            return PhysicalFile(fullPath, "application/pdf", fileName, enableRangeProcessing: true);
         }
 
         // POST: /Cv/Upload
@@ -43,6 +91,22 @@ namespace IBSTCareers.Controllers
                 return RedirectToAction("Profile", "User");
             }
 
+            var existingCvs = await _context.Cvs.Where(c => c.UserId == userId.Value).ToListAsync();
+            foreach (var existingCv in existingCvs)
+            {
+                if (!string.IsNullOrWhiteSpace(existingCv.FilePath) &&
+                    !Uri.TryCreate(existingCv.FilePath, UriKind.Absolute, out _))
+                {
+                    var existingFullPath = Path.Combine(_env.WebRootPath, existingCv.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                    if (System.IO.File.Exists(existingFullPath))
+                    {
+                        System.IO.File.Delete(existingFullPath);
+                    }
+                }
+            }
+            _context.Cvs.RemoveRange(existingCvs);
+            await _context.SaveChangesAsync();
+
             // Build storage path: wwwroot/uploads/cvs/{userId}/
             var userFolder = Path.Combine(_env.WebRootPath, "uploads", "cvs", userId.ToString());
             Directory.CreateDirectory(userFolder);
@@ -55,7 +119,6 @@ namespace IBSTCareers.Controllers
                 await cvFile.CopyToAsync(stream);
             }
 
-            // Relative URL stored in DB (served as static file)
             var relativePath = $"/uploads/cvs/{userId}/{fileName}";
 
             var cv = new Cv

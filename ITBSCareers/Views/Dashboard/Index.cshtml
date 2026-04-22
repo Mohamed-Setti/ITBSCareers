@@ -168,7 +168,10 @@
                     <div class="fw-semibold">Basées sur vos compétences et intérêts</div>
                     <div class="dash-sub">Prochaine étape: brancher le moteur de recommandation personnalisé.</div>
                 </div>
-                <a asp-controller="Experience" asp-action="Create" class="btn btn-sm" style="background:var(--bleu);color:white;">Compléter profil</a>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-controller="JobOffer" asp-action="Feed" class="btn btn-sm" style="background:var(--teal);color:white;">Voir toutes les offres</a>
+                    <a asp-controller="Experience" asp-action="Create" class="btn btn-sm" style="background:var(--bleu);color:white;">Compléter profil</a>
+                </div>
             </div>
 
             <div class="dash-title">Vérification alumni</div>

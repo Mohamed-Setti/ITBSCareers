@@ -1,46 +1,145 @@
 ﻿@model SelectSkillsInterestsViewModel
+@{
+    ViewData["Title"] = "Skills & Interests";
+    var returnUrl = ViewBag.ReturnUrl as string;
+}
 
-<h2 class="mb-3">Your skills & strengths</h2>
-<p class="text-muted">Select all that apply — be honest, it helps match you better.</p>
+<style>
+    .si-wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 1rem 0 2rem;
+    }
 
-<form asp-action="SelectSkillsInterests" method="post">
-    <input type="hidden" asp-for="UserId" />
+    .si-card {
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 14px;
+        padding: 1.2rem;
+        box-shadow: 0 8px 20px rgba(24,95,165,.06);
+    }
 
-    <!-- TECHNICAL SKILLS -->
-    <h5 class="mt-4">TECHNICAL SKILLS</h5>
-    <div class="d-flex flex-wrap gap-2">
-        <input type="hidden" name="UserId" value="@Model.UserId" />
+    .si-title {
+        font-family: 'Bebas Neue', sans-serif;
+        letter-spacing: 1px;
+        font-size: 2rem;
+        margin-bottom: .2rem;
+    }
 
-        @for (int i = 0; i < Model.Skills.Count; i++)
-        {
-            <input type="checkbox"
-                   name="SkillIds"
-                   value="@Model.Skills[i].Id"
-                   id="skill_@i"
-                   @(Model.Skills[i].IsSelected ? "checked" : "")
-                   hidden />
-            <label for="skill_@i" class="skill-pill">@Model.Skills[i].Name</label>
-        }
+    .si-sub { color: #64646E; margin-bottom: 1rem; }
 
-        
+    .si-section-title {
+        font-size: .95rem;
+        font-weight: 700;
+        color: #1E1E28;
+        margin: 1rem 0 .7rem;
+    }
+
+    .si-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+    }
+
+    .si-check {
+        display: none;
+    }
+
+    .si-pill {
+        display: inline-block;
+        padding: .35rem .7rem;
+        border-radius: 999px;
+        border: 1px solid #C9DDF5;
+        background: #EEF6FE;
+        color: #185FA5;
+        font-size: .82rem;
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .si-check:checked + .si-pill {
+        background: linear-gradient(135deg, #185FA5, #0F6E56);
+        border-color: #185FA5;
+        color: #fff;
+    }
+
+    .si-actions {
+        display: flex;
+        gap: .6rem;
+        margin-top: 1.2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary-soft {
+        border: 0;
+        border-radius: 8px;
+        padding: .55rem .9rem;
+        background: linear-gradient(135deg, #185FA5, #0F6E56);
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .btn-neutral {
+        border: 1px solid #DCDCE1;
+        border-radius: 8px;
+        padding: .55rem .9rem;
+        color: #32323C;
+        background: #F6F7F9;
+        text-decoration: none;
+        font-weight: 600;
+    }
+</style>
+
+<div class="container si-wrap">
+    <div class="si-card">
+        <div class="si-title">Skills & Interests</div>
+        <div class="si-sub">Sélectionnez vos compétences et centres d'intérêt pour améliorer les recommandations.</div>
+
+        <form asp-action="SelectSkillsInterests" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="UserId" />
+            <input type="hidden" name="returnUrl" value="@returnUrl" />
+
+            <div class="si-section-title">Compétences</div>
+            <div class="si-grid">
+                @for (int i = 0; i < Model.Skills.Count; i++)
+                {
+                    <input type="checkbox"
+                           name="SkillIds"
+                           value="@Model.Skills[i].Id"
+                           id="skill_@i"
+                           class="si-check"
+                           @(Model.Skills[i].IsSelected ? "checked" : "") />
+                    <label for="skill_@i" class="si-pill">@Model.Skills[i].Name</label>
+                }
+            </div>
+
+            <div class="si-section-title">Centres d'intérêt</div>
+            <div class="si-grid">
+                @for (int i = 0; i < Model.Interests.Count; i++)
+                {
+                    <input type="checkbox"
+                           name="InterestIds"
+                           value="@Model.Interests[i].Id"
+                           id="interest_@i"
+                           class="si-check"
+                           @(Model.Interests[i].IsSelected ? "checked" : "") />
+                    <label for="interest_@i" class="si-pill">@Model.Interests[i].Name</label>
+                }
+            </div>
+
+            <div class="si-actions">
+                <button type="submit" class="btn-primary-soft">Enregistrer</button>
+                @if (!string.IsNullOrWhiteSpace(returnUrl))
+                {
+                    <a href="@returnUrl" class="btn-neutral">Retour</a>
+                }
+                else
+                {
+                    <a asp-controller="User" asp-action="Profile" class="btn-neutral">Retour profil</a>
+                }
+            </div>
+        </form>
     </div>
-
-    <!-- SOFT SKILLS -->
-    <h5 class="mt-4">SOFT SKILLS</h5>
-    <div class="d-flex flex-wrap gap-2">
-        @for (int i = 0; i < Model.Interests.Count; i++)
-        {
-            <input type="checkbox"
-                   name="InterestIds"
-                   value="@Model.Interests[i].Id"
-                   id="interest_@i"
-                   @(Model.Interests[i].IsSelected ? "checked" : "")
-                   hidden />
-            <label for="interest_@i" class="skill-pill">@Model.Interests[i].Name</label>
-        }
-    </div>
-    
-    <div class="mt-4">
-        <button type="submit" class="btn btn-primary">Next →</button>
-    </div>
-</form>
+</div>

@@ -1,0 +1,70 @@
+@model ITBSCareers.Models.Carriere.JobOffer
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Détails offre";
+    var isStudent = ViewBag.IsStudent is bool s && s;
+    var isOwner = ViewBag.IsOwner is bool o && o;
+    var alreadyApplied = ViewBag.AlreadyApplied is bool a && a;
+}
+
+<div class="container mt-4">
+    @if (TempData["JobOfferSuccess"] != null)
+    {
+        <div class="alert alert-success">@TempData["JobOfferSuccess"]</div>
+    }
+    @if (TempData["JobOfferError"] != null)
+    {
+        <div class="alert alert-danger">@TempData["JobOfferError"]</div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h3 class="mb-0">@Model.Title</h3>
+                <span class="badge bg-primary">@Model.Type</span>
+            </div>
+
+            <div class="text-muted mb-3">@Model.Location</div>
+
+            <h6>Description</h6>
+            <p>@(string.IsNullOrWhiteSpace(Model.Description) ? "Aucune description." : Model.Description)</p>
+
+            <hr />
+
+            <h6>Publié par</h6>
+            <p class="mb-1"><strong>@Model.Alumni.FullName</strong></p>
+            <p class="text-muted">@Model.Alumni.Email</p>
+
+            <div class="small text-muted mb-3">
+                Publié le @Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm") · @Model.Applications.Count candidatures
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+                @if (isStudent && !isOwner)
+                {
+                    if (alreadyApplied)
+                    {
+                        <span class="btn btn-success btn-sm disabled">Déjà postulé</span>
+                    }
+                    else
+                    {
+                        <form asp-action="Apply" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@Model.JobId" />
+                            <button type="submit" class="btn btn-primary btn-sm">Postuler</button>
+                        </form>
+                    }
+                }
+
+                @if (isOwner)
+                {
+                    <a asp-action="Applications" asp-route-id="@Model.JobId" class="btn btn-warning btn-sm">
+                        Voir les candidatures
+                    </a>
+                }
+
+                <a asp-action="Feed" class="btn btn-outline-secondary btn-sm">? Retour aux offres</a>
+            </div>
+        </div>
+    </div>
+</div>

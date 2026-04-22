@@ -74,6 +74,11 @@ namespace IBSTCareers.Controllers
         [AllowAnonymous]
         public IActionResult Login()
         {
+            if (User.Identity?.IsAuthenticated ?? false)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
             return View("LogIn");
         }
 
@@ -192,8 +197,20 @@ namespace IBSTCareers.Controllers
         }
 
         // GET: UserController/SelectSkillsInterests/5
-        public ActionResult SelectSkillsInterests(int id)
+        [Authorize]
+        public ActionResult SelectSkillsInterests(int id, string? returnUrl = null)
         {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            if (currentUserId != id)
+            {
+                return Forbid();
+            }
+
             var user = _context.Users
                 .Include(u => u.UserSkills)
                     .ThenInclude(us => us.Skill)
@@ -205,6 +222,8 @@ namespace IBSTCareers.Controllers
 
             var userSkillIds = user.UserSkills.Select(us => us.SkillId).ToList();
             var userInterestIds = user.UserInterests.Select(ui => ui.InterestId).ToList();
+
+            ViewBag.ReturnUrl = returnUrl;
 
             var vm = new SelectSkillsInterestsViewModel
             {
@@ -227,59 +246,156 @@ namespace IBSTCareers.Controllers
         }
 
         // POST: UserController/SelectSkillsInterests
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult SelectSkillsInterests(SelectSkillsInterestsViewModel vm)
+        public ActionResult SelectSkillsInterests(SelectSkillsInterestsViewModel vm, string? returnUrl)
         {
+            var currentUserId = GetCurrentUserId();
+            if (currentUserId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            if (currentUserId != vm.UserId)
+            {
+                return Forbid();
+            }
+
             var user = _context.Users.FirstOrDefault(u => u.UserId == vm.UserId);
             if (user == null) return NotFound();
 
-            // Read selected IDs directly from form (checked checkboxes only)
             var selectedSkillIds = Request.Form["SkillIds"]
+                .Where(x => int.TryParse(x, out _))
                 .Select(int.Parse)
+                .Distinct()
                 .ToList();
 
             var selectedInterestIds = Request.Form["InterestIds"]
+                .Where(x => int.TryParse(x, out _))
                 .Select(int.Parse)
+                .Distinct()
                 .ToList();
 
-            // --- Update skills ---
             var existingSkills = _context.UserSkills.Where(us => us.UserId == user.UserId).ToList();
             _context.UserSkills.RemoveRange(existingSkills);
             foreach (var skillId in selectedSkillIds)
                 _context.UserSkills.Add(new UserSkill { UserId = user.UserId, SkillId = skillId });
 
-            // --- Update interests ---
             var existingInterests = _context.UserInterests.Where(ui => ui.UserId == user.UserId).ToList();
             _context.UserInterests.RemoveRange(existingInterests);
             foreach (var interestId in selectedInterestIds)
                 _context.UserInterests.Add(new UserInterest { UserId = user.UserId, InterestId = interestId });
 
             _context.SaveChanges();
-            return RedirectToAction("Create", "Experience", new { userId = user.UserId });
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+
+            return RedirectToAction(nameof(Profile));
         }
 
         [Authorize]
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login", "User");
 
-            var user = _context.Users
+            var user = await _context.Users
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
                 .Include(u => u.UserSkills)
                     .ThenInclude(us => us.Skill)
-                .Include(u => u.UserRoles)        
-                    .ThenInclude(ur => ur.Role)
                 .Include(u => u.UserInterests)
                     .ThenInclude(ui => ui.Interest)
                 .Include(u => u.Experiences)
-                .FirstOrDefault(u => u.UserId == userId.Value);
+                .Include(u => u.Cvs)
+                .Include(u => u.Applications)
+                    .ThenInclude(a => a.Job)
+                        .ThenInclude(j => j.Alumni)
+                .Include(u => u.JobOffers)
+                    .ThenInclude(j => j.Applications)
+                .Include(u => u.Alumni)
+                .FirstOrDefaultAsync(u => u.UserId == userId.Value);
 
             if (user == null) return NotFound();
 
             return View(user);
+        }
+
+        [Authorize(Roles = "Student")]
+        public async Task<IActionResult> RequestInterview(int applicationId)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "User");
+
+            var application = await _context.Applications
+                .Include(a => a.Job)
+                    .ThenInclude(j => j.Alumni)
+                .Include(a => a.Student)
+                .FirstOrDefaultAsync(a => a.ApplicationId == applicationId && a.StudentId == userId.Value);
+
+            if (application == null) return NotFound();
+
+            if ((application.Status ?? "Pending") != "Accepted")
+            {
+                TempData["Message"] = "L'entretien est disponible uniquement après acceptation.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            ViewBag.Application = application;
+            return View();
+        }
+
+        [Authorize(Roles = "Student")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RequestInterview(int applicationId, string subject, string message)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Login", "User");
+
+            var application = await _context.Applications
+                .Include(a => a.Job)
+                    .ThenInclude(j => j.Alumni)
+                .FirstOrDefaultAsync(a => a.ApplicationId == applicationId && a.StudentId == userId.Value);
+
+            if (application == null) return NotFound();
+
+            if ((application.Status ?? "Pending") != "Accepted")
+            {
+                TempData["Message"] = "L'entretien est disponible uniquement après acceptation.";
+                return RedirectToAction(nameof(Profile));
+            }
+
+            var alumniId = application.Job.AlumniId;
+            var notif = new Notification
+            {
+                UserId = alumniId,
+                Type = "Interview",
+                Content = $"Entretien demandé par {application.Student.FullName} pour l'offre '{application.Job.Title}'. Sujet: {subject}. Message: {message}",
+                IsRead = false,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Notifications.Add(notif);
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = "Votre demande d'entretien a été envoyée à l'alumni.";
+            return RedirectToAction(nameof(Profile));
+        }
+
+        private int? GetCurrentUserId()
+        {
+            var claimValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(claimValue, out var id))
+            {
+                return id;
+            }
+
+            return HttpContext.Session.GetInt32("UserId");
         }
 
         private async Task AssignSingleRoleAsync(int userId, string roleName)

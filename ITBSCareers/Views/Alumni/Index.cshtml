@@ -1,18 +1,167 @@
+@model IBSTCareers.Models.AlumniCvThequeViewModel
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Verified Alumni Space";
+    ViewData["Title"] = "Alumni Feed & CVthèque";
 }
 
-<div class="container mt-4">
-    <div class="card shadow-sm p-4" style="border:1px solid rgba(232,93,4,0.25)">
-        <h3 class="mb-2">Verified Alumni Space</h3>
-        <p class="text-muted mb-3">
-            Access granted. Your account passed admin validation and alumni policy checks.
-        </p>
+<style>
+    .feed-wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1rem 0 2rem;
+    }
 
-        <div class="d-flex gap-2 flex-wrap">
-            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-primary">Back to dashboard</a>
-            <a asp-controller="User" asp-action="Profile" class="btn btn-primary">My profile</a>
+    .feed-head {
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 14px;
+        padding: 1rem;
+        margin-bottom: .9rem;
+    }
+
+    .feed-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 2rem;
+        letter-spacing: 1px;
+        margin-bottom: .2rem;
+    }
+
+    .feed-sub { color: #64646E; }
+
+    .search-card {
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 14px;
+        padding: .9rem;
+        margin-bottom: .9rem;
+    }
+
+    .cv-card {
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 12px;
+        padding: .9rem;
+        margin-bottom: .7rem;
+    }
+
+    .pill {
+        display: inline-block;
+        margin: 0 .35rem .35rem 0;
+        padding: .22rem .58rem;
+        border-radius: 999px;
+        font-size: .76rem;
+        font-weight: 700;
+    }
+
+    .pill-skill { background: #E6F1FB; color: #185FA5; }
+    .pill-int { background: #E1F5EE; color: #0F6E56; }
+
+    .small-muted { color: #64646E; font-size: .82rem; }
+</style>
+
+<div class="container feed-wrap">
+    <div class="feed-head">
+        <div class="feed-title">CVthèque Alumni</div>
+        <div class="feed-sub">Consultez les CV des étudiants et filtrez selon les profils recherchés.</div>
+        <div class="d-flex gap-2 flex-wrap mt-2">
+            <a asp-controller="JobOffer" asp-action="Create" class="btn btn-primary btn-sm">Publier une offre (stage/emploi)</a>
+            <a asp-controller="JobOffer" asp-action="Index" class="btn btn-outline-secondary btn-sm">Mes offres</a>
         </div>
     </div>
+
+    <div class="search-card">
+        <form method="get" asp-action="Index">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <input type="text" name="query" value="@Model.Query" class="form-control" placeholder="Nom, email, filière..." />
+                </div>
+                <div class="col-md-2">
+                    <select name="degree" class="form-select">
+                        <option value="">Degree</option>
+                        @foreach (var d in Model.Degrees)
+                        {
+                            <option value="@d" selected="@(Model.Degree == d)">@d</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="level" class="form-select">
+                        <option value="">Level</option>
+                        @foreach (var l in Model.Levels)
+                        {
+                            <option value="@l" selected="@(Model.Level == l)">@l</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="skill" class="form-select">
+                        <option value="">Skill</option>
+                        @foreach (var s in Model.Skills)
+                        {
+                            <option value="@s" selected="@(Model.Skill == s)">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="interest" class="form-select">
+                        <option value="">Interest</option>
+                        @foreach (var i in Model.Interests)
+                        {
+                            <option value="@i" selected="@(Model.Interest == i)">@i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="mb-2 small-muted">Résultats: <strong>@Model.Results.Count</strong></div>
+
+    @if (!Model.Results.Any())
+    {
+        <div class="alert alert-info">Aucun profil trouvé avec ces critères.</div>
+    }
+    else
+    {
+        @foreach (var cv in Model.Results)
+        {
+            <div class="cv-card">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <div>
+                        <h5 class="mb-1">@cv.FullName</h5>
+                        <div class="small-muted">@cv.Email</div>
+                        <div class="small-muted">@(cv.Degree ?? "-") · @(cv.Field ?? "-") · @(cv.Level ?? "-")</div>
+                        <div class="small-muted">CV uploadé: @cv.CvUploadedAt?.ToString("dd MMM yyyy HH:mm")</div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(cv.CvFilePath))
+                    {
+                        <a asp-controller="Cv" asp-action="Open" asp-route-id="@cv.Cvid" target="_blank" class="btn btn-outline-primary btn-sm">Voir CV</a>
+                    }
+                </div>
+
+                @if (cv.Skills.Any())
+                {
+                    <div class="mt-2">
+                        @foreach (var s in cv.Skills)
+                        {
+                            <span class="pill pill-skill">@s</span>
+                        }
+                    </div>
+                }
+
+                @if (cv.Interests.Any())
+                {
+                    <div class="mt-1">
+                        @foreach (var i in cv.Interests)
+                        {
+                            <span class="pill pill-int">@i</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
 </div>

@@ -1,0 +1,77 @@
+@model IBSTCareers.Models.JobOfferFeedViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Offres";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Offres de stage & emploi</h3>
+        @if (User.IsInRole("Alumni"))
+        {
+            <a asp-action="Create" class="btn btn-primary btn-sm">Publier une offre</a>
+        }
+    </div>
+
+    <div class="card p-3 shadow-sm mb-3">
+        <form method="get" asp-action="Feed">
+            <div class="row g-2">
+                <div class="col-md-2">
+                    <select name="type" class="form-select">
+                        <option value="">Type</option>
+                        @foreach (var t in Model.Types)
+                        {
+                            <option value="@t" selected="@(Model.Type == t)">@t</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input name="title" value="@Model.Title" class="form-control" placeholder="Poste (titre)" />
+                </div>
+                <div class="col-md-3">
+                    <input name="location" value="@Model.Location" class="form-control" placeholder="Lieu" />
+                </div>
+                <div class="col-md-3">
+                    <input name="publisher" value="@Model.Publisher" class="form-control" placeholder="Publié par" />
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button class="btn btn-outline-primary" type="submit">Filtrer</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="mb-2 text-muted">Résultats: <strong>@Model.Results.Count</strong></div>
+
+    @if (!Model.Results.Any())
+    {
+        <div class="alert alert-info">Aucune offre trouvée.</div>
+    }
+    else
+    {
+        <div class="row g-3">
+            @foreach (var offer in Model.Results)
+            {
+                <div class="col-md-6">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <h5 class="card-title mb-1">@offer.OfferTitle</h5>
+                                <span class="badge bg-light text-dark">@offer.Type</span>
+                            </div>
+                            <div class="text-muted mb-2">@offer.Location</div>
+                            <p class="card-text">@(string.IsNullOrWhiteSpace(offer.Description) ? "Sans description" : offer.Description)</p>
+                            <div class="small text-muted mb-2">
+                                Publié par <strong>@offer.PublisherName</strong> · @offer.PublisherEmail
+                            </div>
+                            <div class="small text-muted mb-3">
+                                @offer.CreatedAt?.ToString("dd/MM/yyyy HH:mm") · @offer.ApplicationsCount candidatures
+                            </div>
+                            <a asp-action="Details" asp-route-id="@offer.JobId" class="btn btn-sm btn-outline-primary">Voir détails</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

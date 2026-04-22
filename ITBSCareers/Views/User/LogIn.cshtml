@@ -1,37 +1,105 @@
 ﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Connexion";
 }
 
-<div class="container d-flex justify-content-center align-items-center" style="height: 80vh;">
-    <div class="card p-4 shadow" style="width: 350px;">
-        <h3 class="text-center mb-3">Sign In</h3>
+<style>
+    .auth-wrap {
+        min-height: 76vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 460px;
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 14px;
+        padding: 1.5rem;
+        box-shadow: 0 8px 20px rgba(24, 95, 165, 0.08);
+    }
+
+    .auth-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 2rem;
+        color: #1E1E28;
+        letter-spacing: 1px;
+    }
+
+    .auth-sub {
+        color: #64646E;
+        font-size: .9rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .auth-label {
+        font-size: .78rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #64646E;
+        margin-bottom: .35rem;
+    }
+
+    .auth-input {
+        border: 1px solid #DCDCE1;
+        border-radius: 10px;
+        padding: .65rem .75rem;
+        font-size: .95rem;
+    }
+
+    .auth-input:focus {
+        border-color: #185FA5;
+        box-shadow: 0 0 0 .15rem rgba(24, 95, 165, 0.12);
+    }
+
+    .btn-auth {
+        width: 100%;
+        border: 0;
+        border-radius: 10px;
+        padding: .7rem;
+        background: linear-gradient(135deg, #185FA5, #0F6E56);
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .auth-link {
+        color: #185FA5;
+        text-decoration: none;
+        font-weight: 600;
+    }
+</style>
+
+<div class="auth-wrap">
+    <div class="auth-card">
+        <div class="auth-title">Connexion</div>
+        <div class="auth-sub">Accédez à votre espace carrière ITBS.</div>
 
         @if (ViewBag.Error != null)
         {
-            <div class="alert alert-danger">@ViewBag.Error</div>
+            <div class="alert alert-danger py-2">@ViewBag.Error</div>
         }
 
         <form asp-action="Login" method="post">
             @Html.AntiForgeryToken()
+
             <div class="mb-3">
-                <label>Email</label>
-                <input type="email" name="email" class="form-control" required />
+                <label class="auth-label">Email</label>
+                <input type="email" name="email" class="form-control auth-input" required />
             </div>
 
             <div class="mb-3">
-                <label>Password</label>
-                <input type="password" name="password" class="form-control" required />
+                <label class="auth-label">Password</label>
+                <input type="password" name="password" class="form-control auth-input" required />
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">
-                Login
-            </button>
+            <button type="submit" class="btn-auth">Se connecter</button>
         </form>
 
         <div class="text-center mt-3">
-            <a asp-controller="User" asp-action="Create">
-                Create an account
-            </a>
+            <span class="text-muted">Pas encore de compte ? </span>
+            <a asp-controller="User" asp-action="Create" class="auth-link">Créer un compte</a>
         </div>
     </div>
 </div>

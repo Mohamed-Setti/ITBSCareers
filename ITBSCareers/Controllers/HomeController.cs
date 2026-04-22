@@ -15,6 +15,11 @@ namespace IBSTCareers.Controllers
 
         public IActionResult Index()
         {
+            if (User.Identity?.IsAuthenticated ?? false)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
             return RedirectToAction("Login", "User");
         }
 
