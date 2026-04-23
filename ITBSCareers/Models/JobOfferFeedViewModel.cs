@@ -8,6 +8,7 @@ public class JobOfferFeedViewModel
     public string? Publisher { get; set; }
 
     public List<string> Types { get; set; } = new() { "Stage", "Emploi" };
+    public List<JobOfferFeedItemViewModel> Suggestions { get; set; } = new();
     public List<JobOfferFeedItemViewModel> Results { get; set; } = new();
 }
 
@@ -23,4 +24,6 @@ public class JobOfferFeedItemViewModel
     public string PublisherName { get; set; } = string.Empty;
     public string PublisherEmail { get; set; } = string.Empty;
     public int ApplicationsCount { get; set; }
+    public int MatchScore { get; set; }
+    public string MatchSummary { get; set; } = string.Empty;
 }

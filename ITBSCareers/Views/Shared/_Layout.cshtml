@@ -96,7 +96,7 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm main-nav mb-3">
             <div class="container-fluid">
-                @{ var homeAction = (User.Identity?.IsAuthenticated ?? false) ? "Index" : "Login"; var homeController = (User.Identity?.IsAuthenticated ?? false) ? "Dashboard" : "User"; }
+                @{ var authenticated = User.Identity?.IsAuthenticated ?? false; var isAdmin = authenticated && User.IsInRole("Admin"); var homeAction = authenticated ? (isAdmin ? "Profile" : "Index") : "Login"; var homeController = authenticated ? (isAdmin ? "Admin" : "Dashboard") : "User"; }
                 <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
                     ITBS Careers <small>Institut Technologique</small>
                 </a>
@@ -105,35 +105,37 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                    <ul class="navbar-nav flex-grow-1 align-items-sm-center">
                         <li class="nav-item">
                             <a class="nav-link main-link" href="@Url.Action(homeAction, homeController)">Accueil</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link main-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link main-link active-accent" asp-controller="Dashboard" asp-action="Index">Tableau de bord</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link main-link active-accent" asp-controller="User" asp-action="Profile">Mon profil</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link main-link active-accent" asp-controller="JobOffer" asp-action="Feed">Offres</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link main-link active-accent" asp-controller="Notification" asp-action="Index">Notifications</a>
-                            </li>
-
-                            @if (User.IsInRole("Admin"))
+                            if (isAdmin)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link main-link active-accent" asp-controller="Admin" asp-action="Index">Dashboard Admin</a>
+                                    <a class="nav-link main-link active-accent" href="@Url.Action("Profile", "Admin")">Profil admin</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link main-link active-accent" asp-controller="AlumniRequest" asp-action="Pending">Demandes Alumni</a>
+                                    <a class="nav-link main-link active-accent" href="@Url.Action("Users", "Admin")">Utilisateurs</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link main-link active-accent" href="@Url.Action("Index", "Admin")">Demandes alumni</a>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link main-link active-accent" asp-controller="Dashboard" asp-action="Index">Tableau de bord</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link main-link active-accent" asp-controller="JobOffer" asp-action="Feed">Offres</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link main-link active-accent" asp-controller="Notification" asp-action="Index">Notifications</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link main-link active-accent" asp-controller="User" asp-action="Profile">Profil</a>
                                 </li>
                             }
                         }

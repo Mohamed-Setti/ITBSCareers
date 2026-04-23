@@ -99,13 +99,15 @@
                 <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
                 <div class="mb-2">
-                    <label class="exp-label">Title</label>
-                    <input asp-for="Title" class="form-control exp-input" />
+                    <label class="exp-label">Title *</label>
+                    <input asp-for="Title" class="form-control exp-input" required />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
                 </div>
 
                 <div class="mb-2">
-                    <label class="exp-label">Company</label>
-                    <input asp-for="Company" class="form-control exp-input" />
+                    <label class="exp-label">Company *</label>
+                    <input asp-for="Company" class="form-control exp-input" required />
+                    <span asp-validation-for="Company" class="text-danger small"></span>
                 </div>
 
                 <div class="row g-2">

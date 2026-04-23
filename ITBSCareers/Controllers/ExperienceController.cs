@@ -58,26 +58,39 @@ namespace IBSTCareers.Controllers
             }
 
             exp.UserId = userId.Value;
+            exp.Title = exp.Title?.Trim();
+            exp.Company = exp.Company?.Trim();
+            exp.Description = exp.Description?.Trim();
 
-            if (ModelState.IsValid)
+            if (string.IsNullOrWhiteSpace(exp.Title))
             {
-                _context.Experiences.Add(exp);
-                _context.SaveChanges();
-
-                if (action == "dashboard")
-                {
-                    return RedirectToAction("Index", "Dashboard");
-                }
-
-                return RedirectToAction(nameof(Create));
+                ModelState.AddModelError(nameof(Experience.Title), "Title is required.");
             }
 
-            ViewBag.Experiences = _context.Experiences
-                .Where(e => e.UserId == userId.Value)
-                .OrderByDescending(e => e.StartDate)
-                .ToList();
+            if (string.IsNullOrWhiteSpace(exp.Company))
+            {
+                ModelState.AddModelError(nameof(Experience.Company), "Company is required.");
+            }
 
-            return View(exp);
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Experiences = _context.Experiences
+                    .Where(e => e.UserId == userId.Value)
+                    .OrderByDescending(e => e.StartDate)
+                    .ToList();
+
+                return View(exp);
+            }
+
+            _context.Experiences.Add(exp);
+            _context.SaveChanges();
+
+            if (action == "dashboard")
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
+            return RedirectToAction(nameof(Create));
         }
 
         // GET: ExperienceController/Edit/5

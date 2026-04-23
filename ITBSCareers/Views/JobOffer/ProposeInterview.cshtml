@@ -1,0 +1,54 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Proposer un entretien";
+    var application = ViewBag.Application as ITBSCareers.Models.Carriere.Application;
+}
+
+<style>
+    .interview-wrap { max-width: 820px; margin: 0 auto; padding: 1rem 0 2rem; }
+    .interview-card {
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 14px;
+        padding: 1.1rem;
+        box-shadow: 0 8px 20px rgba(24,95,165,.06);
+    }
+    .field-label { font-size: .78rem; font-weight: 700; color: #64646E; text-transform: uppercase; }
+</style>
+
+<div class="container interview-wrap">
+    <div class="interview-card">
+        <h3 class="mb-2">Proposer un entretien</h3>
+        <div class="text-muted mb-3">
+            @if (application != null)
+            {
+                <span>Candidat: <strong>@application.Student.FullName</strong> · Offre: <strong>@application.Job.Title</strong></span>
+            }
+        </div>
+
+        <form asp-action="ProposeInterview" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="applicationId" value="@(application?.ApplicationId)" />
+
+            <div class="mb-3">
+                <label class="field-label">Sujet *</label>
+                <input type="text" name="subject" class="form-control" required placeholder="Entretien technique, échange RH..." />
+            </div>
+
+            <div class="mb-3">
+                <label class="field-label">Créneau proposé *</label>
+                <input type="text" name="timeSlot" class="form-control" required placeholder="Ex: Lundi 10h00 - 10h30" />
+            </div>
+
+            <div class="mb-3">
+                <label class="field-label">Message *</label>
+                <textarea name="message" class="form-control" rows="5" required placeholder="Précisez les modalités de l'entretien..."></textarea>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-primary">Envoyer la proposition</button>
+                <a asp-action="Applications" asp-route-id="@(application?.JobId)" class="btn btn-outline-secondary">Retour candidatures</a>
+            </div>
+        </form>
+    </div>
+</div>

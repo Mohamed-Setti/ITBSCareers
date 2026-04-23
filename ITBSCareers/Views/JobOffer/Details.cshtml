@@ -5,6 +5,8 @@
     var isStudent = ViewBag.IsStudent is bool s && s;
     var isOwner = ViewBag.IsOwner is bool o && o;
     var alreadyApplied = ViewBag.AlreadyApplied is bool a && a;
+    var requiredSkills = ViewBag.RequiredSkills as List<int> ?? new List<int>();
+    var requiredInterests = ViewBag.RequiredInterests as List<int> ?? new List<int>();
 }
 
 <div class="container mt-4">
@@ -28,6 +30,39 @@
 
             <h6>Description</h6>
             <p>@(string.IsNullOrWhiteSpace(Model.Description) ? "Aucune description." : Model.Description)</p>
+
+            <hr />
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <h6>Profil demandé</h6>
+                    <div class="small text-muted">Diplôme: @(Model.RequiredDegree ?? "Tous")</div>
+                    <div class="small text-muted">Filière: @(Model.RequiredField ?? "Tous")</div>
+                    <div class="small text-muted">Niveau: @(Model.RequiredLevel ?? "Tous")</div>
+                </div>
+                <div class="col-md-4">
+                    <h6>Compétences recherchées</h6>
+                    @if (requiredSkills.Any())
+                    {
+                        <div class="small text-muted">@string.Join(", ", requiredSkills)</div>
+                    }
+                    else
+                    {
+                        <div class="small text-muted">Aucune compétence imposée.</div>
+                    }
+                </div>
+                <div class="col-md-4">
+                    <h6>Intérêts recherchés</h6>
+                    @if (requiredInterests.Any())
+                    {
+                        <div class="small text-muted">@string.Join(", ", requiredInterests)</div>
+                    }
+                    else
+                    {
+                        <div class="small text-muted">Aucun intérêt imposé.</div>
+                    }
+                </div>
+            </div>
 
             <hr />
 
@@ -61,6 +96,11 @@
                     <a asp-action="Applications" asp-route-id="@Model.JobId" class="btn btn-warning btn-sm">
                         Voir les candidatures
                     </a>
+                    <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Supprimer cette offre ?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.JobId" />
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer</button>
+                    </form>
                 }
 
                 <a asp-action="Feed" class="btn btn-outline-secondary btn-sm">? Retour aux offres</a>
