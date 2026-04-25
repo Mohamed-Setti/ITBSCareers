@@ -44,6 +44,10 @@
     {
         <div class="alert alert-success">@TempData["JobOfferSuccess"]</div>
     }
+    @if (TempData["JobOfferError"] != null)
+    {
+        <div class="alert alert-danger">@TempData["JobOfferError"]</div>
+    }
 
     @if (!Model.Any())
     {
@@ -90,6 +94,7 @@
                         else if (app.Status == "Accepted")
                         {
                             <span class="btn btn-sm btn-success disabled">Acceptée</span>
+                            <a asp-action="ProposeInterview" asp-route-applicationId="@app.ApplicationId" class="btn btn-sm btn-primary">Proposer entretien</a>
                         }
                         else if (app.Status == "Rejected")
                         {

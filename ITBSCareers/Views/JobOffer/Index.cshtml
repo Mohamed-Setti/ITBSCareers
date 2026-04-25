@@ -30,11 +30,24 @@
                             <h5 class="card-title">@item.Title</h5>
                             <div class="mb-2 text-muted">@item.Location · @item.Type</div>
                             <p class="card-text">@item.Description</p>
+
+                            @if (!string.IsNullOrWhiteSpace(item.RequiredDegree) || !string.IsNullOrWhiteSpace(item.RequiredField) || !string.IsNullOrWhiteSpace(item.RequiredLevel))
+                            {
+                                <div class="small text-muted mb-2">
+                                    Profil: @item.RequiredDegree @item.RequiredField @item.RequiredLevel
+                                </div>
+                            }
+
                             <small class="text-muted d-block mb-3">Publié le @item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</small>
 
                             <div class="d-flex gap-2 flex-wrap">
                                 <a asp-controller="JobOffer" asp-action="Details" asp-route-id="@item.JobId" class="btn btn-sm btn-outline-primary">Voir</a>
                                 <a asp-controller="JobOffer" asp-action="Applications" asp-route-id="@item.JobId" class="btn btn-sm btn-warning">Candidatures</a>
+                                <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Supprimer cette offre ?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.JobId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                </form>
                             </div>
                         </div>
                     </div>

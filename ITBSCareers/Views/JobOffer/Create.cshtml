@@ -2,10 +2,16 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Publier une offre";
+    var degrees = ViewBag.Degrees as List<string> ?? new List<string>();
+    var levels = ViewBag.Levels as List<string> ?? new List<string>();
+    var skills = ViewBag.Skills as List<ITBSCareers.Models.Carriere.Skill> ?? new List<ITBSCareers.Models.Carriere.Skill>();
+    var interests = ViewBag.Interests as List<ITBSCareers.Models.Carriere.Interest> ?? new List<ITBSCareers.Models.Carriere.Interest>();
+    var selectedSkillIds = ViewBag.SelectedSkillIds as List<int> ?? new List<int>();
+    var selectedInterestIds = ViewBag.SelectedInterestIds as List<int> ?? new List<int>();
 }
 
 <style>
-    .offer-wrap { max-width: 900px; margin: 0 auto; padding: 1rem 0 2rem; }
+    .offer-wrap { max-width: 1040px; margin: 0 auto; padding: 1rem 0 2rem; }
     .offer-card {
         background: #fff;
         border: 1px solid #DCDCE1;
@@ -20,6 +26,28 @@
         margin-bottom: .2rem;
     }
     .offer-sub { color: #64646E; margin-bottom: .9rem; }
+    .req-box {
+        border: 1px solid #DCDCE1;
+        border-radius: 12px;
+        padding: .9rem;
+        background: #FAFBFD;
+    }
+    .req-title { font-weight: 800; margin-bottom: .65rem; color: #1E1E28; }
+    .pill-check {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        margin: 0 .5rem .5rem 0;
+        padding: .35rem .65rem;
+        border-radius: 999px;
+        border: 1px solid #C9DDF5;
+        background: #EEF6FE;
+        color: #185FA5;
+        font-size: .82rem;
+        cursor: pointer;
+        user-select: none;
+    }
+    .pill-check input { margin: 0; }
 </style>
 
 <div class="container offer-wrap">
@@ -31,29 +59,84 @@
             @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
-            <div class="mb-2">
-                <label asp-for="Title" class="form-label">Titre</label>
-                <input asp-for="Title" class="form-control" placeholder="Ex: Stage développeur web" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-
-            <div class="mb-2">
-                <label asp-for="Description" class="form-label">Description</label>
-                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Détails de l'offre..."></textarea>
-            </div>
-
-            <div class="row g-2 mb-3">
-                <div class="col-md-4">
-                    <label asp-for="Type" class="form-label">Type</label>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Title" class="form-label">Titre *</label>
+                    <input asp-for="Title" class="form-control" placeholder="Ex: Stage développeur web" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Type" class="form-label">Type *</label>
                     <select asp-for="Type" class="form-select">
                         <option value="Stage">Stage</option>
                         <option value="Emploi">Emploi</option>
                     </select>
                     <span asp-validation-for="Type" class="text-danger"></span>
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-3">
                     <label asp-for="Location" class="form-label">Lieu</label>
                     <input asp-for="Location" class="form-control" placeholder="Tunis, Sfax..." />
+                </div>
+            </div>
+
+            <div class="mt-3 mb-3">
+                <label asp-for="Description" class="form-label">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Détails de l'offre..."></textarea>
+            </div>
+
+            <div class="req-box mb-3">
+                <div class="req-title">Profil demandé</div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label asp-for="RequiredDegree" class="form-label">Diplôme</label>
+                        <select asp-for="RequiredDegree" class="form-select">
+                            <option value="">Tous</option>
+                            @foreach (var degree in degrees)
+                            {
+                                <option value="@degree">@degree</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="RequiredField" class="form-label">Filière</label>
+                        <input asp-for="RequiredField" class="form-control" placeholder="Ex: Génie logiciel" />
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="RequiredLevel" class="form-label">Niveau</label>
+                        <select asp-for="RequiredLevel" class="form-select">
+                            <option value="">Tous</option>
+                            @foreach (var level in levels)
+                            {
+                                <option value="@level">@level</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="req-box mb-3">
+                <div class="req-title">Compétences recherchées</div>
+                <div>
+                    @foreach (var skill in skills)
+                    {
+                        <label class="pill-check">
+                            <input type="checkbox" name="RequiredSkillIds" value="@skill.SkillId" @(selectedSkillIds.Contains(skill.SkillId) ? "checked" : "") />
+                            @skill.Name
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <div class="req-box mb-3">
+                <div class="req-title">Centres d'intérêt recherchés</div>
+                <div>
+                    @foreach (var interest in interests)
+                    {
+                        <label class="pill-check">
+                            <input type="checkbox" name="RequiredInterestIds" value="@interest.InterestId" @(selectedInterestIds.Contains(interest.InterestId) ? "checked" : "") />
+                            @interest.Name
+                        </label>
+                    }
                 </div>
             </div>
 

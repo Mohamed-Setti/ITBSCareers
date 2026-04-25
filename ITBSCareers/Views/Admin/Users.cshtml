@@ -1,0 +1,106 @@
+@model IBSTCareers.Models.AdminUserManagementViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Gestion utilisateurs";
+}
+
+<style>
+    .admin-wrap { max-width: 1200px; margin: 0 auto; padding: 1rem 0 2rem; }
+    .admin-card {
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 14px;
+        padding: 1rem;
+        box-shadow: 0 6px 18px rgba(24,95,165,.05);
+    }
+    .role-chip {
+        display: inline-block;
+        margin: 0 .25rem .25rem 0;
+        padding: .18rem .5rem;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 700;
+        background: #E6F1FB;
+        color: #185FA5;
+    }
+</style>
+
+<div class="container admin-wrap">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">Gestion des utilisateurs</h2>
+            <div class="text-muted">Modifier les rôles et consulter les comptes enregistrés.</div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Demandes alumni</a>
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-primary btn-sm">Dashboard</a>
+        </div>
+    </div>
+
+    @if (TempData["AdminSuccess"] != null)
+    {
+        <div class="alert alert-success">@TempData["AdminSuccess"]</div>
+    }
+    @if (TempData["AdminError"] != null)
+    {
+        <div class="alert alert-danger">@TempData["AdminError"]</div>
+    }
+
+    <div class="admin-card mb-3">
+        <form method="get" asp-action="Users">
+            <div class="row g-2">
+                <div class="col-md-5">
+                    <input name="query" value="@Model.Query" class="form-control" placeholder="Nom ou email" />
+                </div>
+                <div class="col-md-4">
+                    <select name="roleFilter" class="form-select">
+                        <option value="">Tous les rôles</option>
+                        @foreach (var role in Model.Roles)
+                        {
+                            <option value="@role" selected="@(Model.RoleFilter == role)">@role</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3 d-grid">
+                    <button type="submit" class="btn btn-primary">Filtrer</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="row g-3">
+        @foreach (var user in Model.Users)
+        {
+            <div class="col-md-6">
+                <div class="admin-card h-100">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <div>
+                            <h5 class="mb-1">@user.FullName</h5>
+                            <div class="text-muted">@user.Email</div>
+                            <div class="text-muted small">Créé le @user.CreatedAt?.ToString("dd/MM/yyyy")</div>
+                        </div>
+                        <div>
+                            @foreach (var role in user.Roles)
+                            {
+                                <span class="role-chip">@role</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <form asp-action="UpdateRole" method="post" class="d-flex gap-2 flex-wrap align-items-center">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="userId" value="@user.UserId" />
+                            <select name="roleName" class="form-select form-select-sm" style="max-width:180px;">
+                                <option value="Student" selected="@(user.IsStudent)">Student</option>
+                                <option value="Alumni" selected="@(user.IsAlumni)">Alumni</option>
+                                <option value="Admin" selected="@(user.IsAdmin)">Admin</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Mettre à jour</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

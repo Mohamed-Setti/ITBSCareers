@@ -1,0 +1,86 @@
+@model IBSTCareers.Models.AdminProfileViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Profil admin";
+}
+
+<style>
+    .admin-shell { max-width: 1200px; margin: 0 auto; padding: 1rem 0 2rem; }
+    .hero-card, .stat-card, .info-card {
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 14px;
+        box-shadow: 0 6px 18px rgba(24,95,165,.05);
+    }
+    .hero-card { padding: 1rem; margin-bottom: .9rem; }
+    .stat-card { padding: .9rem; min-height: 90px; }
+    .info-card { padding: .9rem; }
+    .title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; margin-bottom: .2rem; }
+    .sub { color: #64646E; }
+    .stat-value { font-size: 1.75rem; font-weight: 800; line-height: 1; }
+    .stat-label { color: #64646E; font-size: .8rem; }
+    .mini-chip {
+        display: inline-block;
+        margin: 0 .25rem .25rem 0;
+        padding: .18rem .5rem;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 700;
+        background: #E6F1FB;
+        color: #185FA5;
+    }
+</style>
+
+<div class="container admin-shell">
+    <div class="hero-card d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <div class="title">Profil admin</div>
+            <div class="sub">@Model.FullName · @Model.Email</div>
+            <div class="mt-2">
+                @foreach (var role in Model.Roles)
+                {
+                    <span class="mini-chip">@role</span>
+                }
+            </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-action="Users" class="btn btn-primary btn-sm">Utilisateurs</a>
+            <a asp-action="Index" class="btn btn-outline-primary btn-sm">Demandes alumni</a>
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary btn-sm">Dashboard</a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#185FA5">@Model.TotalUsers</div><div class="stat-label">Utilisateurs</div></div></div>
+        <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#0F6E56">@Model.StudentsCount</div><div class="stat-label">Étudiants</div></div></div>
+        <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#3C3489">@Model.AlumniCount</div><div class="stat-label">Alumnis</div></div></div>
+        <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#8A5A12">@Model.PendingAlumniRequests</div><div class="stat-label">Demandes en attente</div></div></div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4"><div class="info-card"><div class="fw-semibold">Offres publiées</div><div class="stat-value" style="color:#185FA5">@Model.TotalOffers</div><div class="sub">@Model.NewOffersLast14Days nouvelles sur 14 jours</div></div></div>
+        <div class="col-md-4"><div class="info-card"><div class="fw-semibold">Candidatures</div><div class="stat-value" style="color:#0F6E56">@Model.TotalApplications</div><div class="sub">@Model.AcceptedApplications acceptées · @Model.RejectedApplications refusées</div></div></div>
+        <div class="col-md-4"><div class="info-card"><div class="fw-semibold">Interactions</div><div class="stat-value" style="color:#3C3489">@Model.InterviewProposals</div><div class="sub">propositions d'entretien · @Model.NotificationsLast14Days notifications/14j</div></div></div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="info-card h-100">
+                <div class="fw-semibold mb-2">Activité récente</div>
+                <div class="sub">@Model.NewUsersLast14Days nouveaux comptes sur les 14 derniers jours.</div>
+                <div class="sub">@Model.NewOffersLast14Days nouvelles offres sur les 14 derniers jours.</div>
+                <div class="sub">@Model.PendingAlumniRequests demandes alumni à traiter.</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="info-card h-100">
+                <div class="fw-semibold mb-2">Raccourcis</div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-action="Users" class="btn btn-sm btn-primary">Gérer les utilisateurs</a>
+                    <a asp-action="Index" class="btn btn-sm btn-outline-primary">Valider les demandes</a>
+                    <a asp-controller="Notification" asp-action="Index" class="btn btn-sm btn-outline-secondary">Notifications</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

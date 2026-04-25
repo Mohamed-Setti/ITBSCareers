@@ -326,65 +326,19 @@ namespace IBSTCareers.Controllers
         }
 
         [Authorize(Roles = "Student")]
-        public async Task<IActionResult> RequestInterview(int applicationId)
+        public IActionResult RequestInterview(int applicationId)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login", "User");
-
-            var application = await _context.Applications
-                .Include(a => a.Job)
-                    .ThenInclude(j => j.Alumni)
-                .Include(a => a.Student)
-                .FirstOrDefaultAsync(a => a.ApplicationId == applicationId && a.StudentId == userId.Value);
-
-            if (application == null) return NotFound();
-
-            if ((application.Status ?? "Pending") != "Accepted")
-            {
-                TempData["Message"] = "L'entretien est disponible uniquement après acceptation.";
-                return RedirectToAction(nameof(Profile));
-            }
-
-            ViewBag.Application = application;
-            return View();
+            TempData["Message"] = "Les entretiens sont maintenant proposés par l'alumni. Consultez vos notifications.";
+            return RedirectToAction("Index", "Notification");
         }
 
         [Authorize(Roles = "Student")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RequestInterview(int applicationId, string subject, string message)
+        public IActionResult RequestInterview(int applicationId, string subject, string message)
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login", "User");
-
-            var application = await _context.Applications
-                .Include(a => a.Job)
-                    .ThenInclude(j => j.Alumni)
-                .FirstOrDefaultAsync(a => a.ApplicationId == applicationId && a.StudentId == userId.Value);
-
-            if (application == null) return NotFound();
-
-            if ((application.Status ?? "Pending") != "Accepted")
-            {
-                TempData["Message"] = "L'entretien est disponible uniquement après acceptation.";
-                return RedirectToAction(nameof(Profile));
-            }
-
-            var alumniId = application.Job.AlumniId;
-            var notif = new Notification
-            {
-                UserId = alumniId,
-                Type = "Interview",
-                Content = $"Entretien demandé par {application.Student.FullName} pour l'offre '{application.Job.Title}'. Sujet: {subject}. Message: {message}",
-                IsRead = false,
-                CreatedAt = DateTime.Now
-            };
-
-            _context.Notifications.Add(notif);
-            await _context.SaveChangesAsync();
-
-            TempData["Message"] = "Votre demande d'entretien a été envoyée à l'alumni.";
-            return RedirectToAction(nameof(Profile));
+            TempData["Message"] = "Les entretiens sont maintenant proposés par l'alumni. Consultez vos notifications.";
+            return RedirectToAction("Index", "Notification");
         }
 
         private int? GetCurrentUserId()

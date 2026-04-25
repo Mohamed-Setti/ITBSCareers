@@ -49,6 +49,11 @@ namespace ITBSCareers.Controllers
                 .Distinct()
                 .ToList();
 
+            if (roleNames.Contains("Admin"))
+            {
+                return RedirectToAction("Profile", "Admin");
+            }
+
             var alumniRequestsAvailable = await IsAlumniRequestsTableAvailableAsync();
             string? latestRequestStatus = null;
             var hasApprovedRequest = false;

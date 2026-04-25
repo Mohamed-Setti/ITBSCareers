@@ -13,7 +13,7 @@
         --border: #DCDCE1;
         --teal: #0F6E56;
         --teal-light: #E1F5EE;
-        --amber: #633806;
+        --amber: #8A5A12;
         --amber-light: #FAEEDA;
         --purple: #3C3489;
         --purple-light: #EEEDFE;
@@ -22,16 +22,20 @@
     }
 
     .dash-wrap {
-        background: var(--bg);
+        background: linear-gradient(180deg, #F7F9FC 0%, #F5F6F8 100%);
+        border-radius: 16px;
+        padding: 1.15rem;
+    }
+
+    .dash-topbar, .dash-card {
+        background: var(--white);
+        border: 1px solid var(--border);
         border-radius: 14px;
-        padding: 1.25rem;
+        box-shadow: 0 6px 18px rgba(24,95,165,.05);
     }
 
     .dash-topbar {
-        background: var(--white);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: .75rem 1rem;
+        padding: .85rem 1rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -39,19 +43,19 @@
     }
 
     .dash-avatar {
-        width: 40px;
-        height: 40px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
-        margin-right: .5rem;
+        margin-right: .65rem;
     }
 
     .dash-role-chip {
         font-size: .75rem;
-        font-weight: 600;
+        font-weight: 700;
         padding: .2rem .6rem;
         border-radius: 999px;
         background: var(--bleu-light);
@@ -60,44 +64,27 @@
     }
 
     .dash-card {
-        background: var(--white);
-        border: 1px solid var(--border);
-        border-radius: 12px;
         padding: .9rem;
         margin-bottom: .75rem;
     }
 
     .dash-stat {
-        font-size: 1.9rem;
-        font-weight: 700;
+        font-size: 1.75rem;
+        font-weight: 800;
         line-height: 1;
         margin-top: .2rem;
     }
 
     .dash-title {
         font-size: 1rem;
-        font-weight: 700;
+        font-weight: 800;
         color: var(--dark);
-        margin: .5rem 0 .8rem;
+        margin: .6rem 0 .8rem;
     }
 
-    .dash-sub {
-        color: var(--text-sec);
-        font-size: .85rem;
-    }
-
-    .row-stat .dash-card {
-        min-height: 92px;
-    }
-
-    .badge-status {
-        background: var(--teal-light);
-        color: var(--teal);
-        padding: .2rem .55rem;
-        border-radius: 999px;
-        font-size: .72rem;
-        font-weight: 700;
-    }
+    .dash-sub { color: var(--text-sec); font-size: .86rem; }
+    .row-stat .dash-card { min-height: 92px; }
+    .badge-status { background: var(--teal-light); color: var(--teal); padding: .2rem .55rem; border-radius: 999px; font-size: .72rem; font-weight: 700; }
 </style>
 
 <div class="container mt-3 mb-4">
@@ -122,7 +109,7 @@
                     </div>
                 </div>
             </div>
-            <a asp-controller="User" asp-action="Profile" class="btn btn-sm" style="background:var(--teal);color:white;">Mon profil</a>
+            <a asp-controller="User" asp-action="Profile" class="btn btn-sm" style="background:var(--teal);color:white;">Profil</a>
         </div>
 
         @if (Model.IsVerifiedAlumni)
@@ -133,44 +120,35 @@
                 <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Mentorés actifs</div><div class="dash-stat" style="color:var(--purple)">@Model.AlumniActiveMenteesCount</div></div></div>
             </div>
 
-            <div class="dash-title">Demandes de mentorat en attente</div>
-            <div class="dash-card d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-semibold">Étudiants intéressés par votre mentorat</div>
-                    <div class="dash-sub">Cette section sera alimentée par les vraies demandes.</div>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-sm" style="background:var(--teal);color:white;" disabled>Accepter</button>
-                    <button class="btn btn-sm btn-outline-secondary" disabled>Refuser</button>
-                </div>
-            </div>
-
-            <div class="dash-title">Mes offres publiées</div>
+            <div class="dash-title">Mes offres</div>
             <div class="dash-card d-flex justify-content-between align-items-center">
                 <div>
                     <div class="fw-semibold">Gérer vos offres et candidatures</div>
-                    <div class="dash-sub">Consultez et suivez les candidatures reçues.</div>
+                    <div class="dash-sub">Publiez une offre, consultez les candidatures et proposez un entretien accepté.</div>
                 </div>
-                <a asp-controller="Alumni" asp-action="Index" class="btn btn-sm" style="background:var(--bleu);color:white;">Espace alumni</a>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-controller="JobOffer" asp-action="Create" class="btn btn-sm" style="background:var(--teal);color:white;">Nouvelle offre</a>
+                    <a asp-controller="JobOffer" asp-action="Index" class="btn btn-sm btn-outline-primary">Mes offres</a>
+                </div>
             </div>
         }
         else
         {
             <div class="row row-stat g-2">
                 <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Candidatures</div><div class="dash-stat" style="color:var(--bleu)">@Model.StudentApplicationsCount</div></div></div>
-                <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Mentor actif</div><div class="dash-stat" style="color:var(--teal)">@(Model.AlumniRequestStatus == "Approved" ? 1 : 0)</div></div></div>
+                <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Statut alumni</div><div class="dash-stat" style="color:var(--teal)">@(Model.AlumniRequestStatus == "Approved" ? 1 : 0)</div></div></div>
                 <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Nouvelles offres</div><div class="dash-stat" style="color:var(--amber)">@Model.NewOffersCount</div></div></div>
             </div>
 
-            <div class="dash-title">Offres recommandées pour vous</div>
+            <div class="dash-title">Offres & profil</div>
             <div class="dash-card d-flex justify-content-between align-items-center">
                 <div>
-                    <div class="fw-semibold">Basées sur vos compétences et intérêts</div>
-                    <div class="dash-sub">Prochaine étape: brancher le moteur de recommandation personnalisé.</div>
+                    <div class="fw-semibold">Consulter les offres et améliorer votre profil</div>
+                    <div class="dash-sub">Complétez votre profil puis consultez les offres disponibles.</div>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a asp-controller="JobOffer" asp-action="Feed" class="btn btn-sm" style="background:var(--teal);color:white;">Voir toutes les offres</a>
-                    <a asp-controller="Experience" asp-action="Create" class="btn btn-sm" style="background:var(--bleu);color:white;">Compléter profil</a>
+                    <a asp-controller="JobOffer" asp-action="Feed" class="btn btn-sm" style="background:var(--teal);color:white;">Voir les offres</a>
+                    <a asp-controller="User" asp-action="Profile" class="btn btn-sm btn-outline-primary">Mon profil</a>
                 </div>
             </div>
 
@@ -178,25 +156,16 @@
             <div class="dash-card d-flex justify-content-between align-items-center">
                 <div>
                     <div class="fw-semibold">Statut de demande: <span class="badge-status">@(Model.AlumniRequestStatus ?? "Aucune demande")</span></div>
-                    <div class="dash-sub">Demandez l'accès alumni, validation par admin obligatoire.</div>
+                    <div class="dash-sub">Validation admin obligatoire pour accéder à l'espace alumni.</div>
                 </div>
                 @if (Model.AlumniRequestStatus == "Pending")
                 {
-                    <button class="btn btn-sm btn-secondary" disabled>En attente d'approbation</button>
+                    <button class="btn btn-sm btn-secondary" disabled>En attente</button>
                 }
                 else
                 {
                     <a asp-controller="AlumniRequest" asp-action="Create" class="btn btn-sm" style="background:var(--teal);color:white;">Demander statut alumni</a>
                 }
-            </div>
-
-            <div class="dash-title">Forum & réseau</div>
-            <div class="dash-card d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-semibold">Activité récente du forum</div>
-                    <div class="dash-sub">Participez aux discussions carrière et mentorat.</div>
-                </div>
-                <a asp-controller="User" asp-action="Profile" class="btn btn-sm btn-outline-secondary">Voir profil</a>
             </div>
         }
 
@@ -206,12 +175,24 @@
             <div class="dash-card d-flex justify-content-between align-items-center">
                 <div>
                     <div class="fw-semibold">Demandes alumni en attente: @Model.PendingAlumniRequestsCount</div>
-                    <div class="dash-sub">Validez les demandes pour sécuriser l'accès alumni.</div>
+                    <div class="dash-sub">Validez les demandes et gérez les rôles.</div>
                 </div>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 flex-wrap">
                     <a asp-controller="AlumniRequest" asp-action="Pending" class="btn btn-sm btn-warning">Valider demandes</a>
                     <a asp-controller="Roles" asp-action="Index" class="btn btn-sm btn-outline-dark">Rôles</a>
                 </div>
+            </div>
+        }
+
+        @if (Model.IsStudent)
+        {
+            <div class="dash-title">Offres recommandées pour vous</div>
+            <div class="dash-card d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-semibold">Consultez vos suggestions personnalisées</div>
+                    <div class="dash-sub">Votre feed contient une rubrique dédiée aux offres qui matchent votre profil.</div>
+                </div>
+                <a asp-controller="JobOffer" asp-action="Feed" class="btn btn-sm" style="background:var(--teal);color:white;">Voir les suggestions</a>
             </div>
         }
     </div>

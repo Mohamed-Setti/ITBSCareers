@@ -199,6 +199,11 @@ public partial class CarriereDbContext : DbContext
             entity.Property(e => e.Location).HasMaxLength(100);
             entity.Property(e => e.Title).HasMaxLength(100);
             entity.Property(e => e.Type).HasMaxLength(50);
+            entity.Property(e => e.RequiredDegree).HasMaxLength(100);
+            entity.Property(e => e.RequiredLevel).HasMaxLength(50);
+            entity.Property(e => e.RequiredField).HasMaxLength(100);
+            entity.Property(e => e.RequiredSkillsCsv).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.RequiredInterestsCsv).HasColumnType("nvarchar(max)");
 
             entity.HasOne(d => d.Alumni).WithMany(p => p.JobOffers)
                 .HasForeignKey(d => d.AlumniId)

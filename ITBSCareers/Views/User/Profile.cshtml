@@ -41,7 +41,7 @@
         --teal-light: #E1F5EE;
         --purple: #3C3489;
         --purple-light: #EEEDFE;
-        --amber: #633806;
+        --amber: #8A5A12;
         --amber-light: #FAEEDA;
         --green: #639922;
         --green-light: #EAF3DE;
@@ -49,124 +49,104 @@
         --dark: #1E1E28;
     }
 
-    .profile-page {
-        background: var(--bg);
-        border-radius: 14px;
-        overflow: hidden;
-        margin-bottom: 1.2rem;
+    .profile-shell {
+        display: grid;
+        grid-template-columns: 260px minmax(0, 1fr);
+        gap: 1rem;
+        align-items: start;
     }
 
-    .profile-cover {
-        height: 110px;
-        background: var(--bleu-light);
-    }
-
-    .profile-cover.alumni { background: var(--teal-light); }
-
-    .profile-main {
+    .profile-sidebar,
+    .profile-content-card {
         background: var(--white);
-        border-bottom: 1px solid var(--border);
-        padding: 0 1.2rem 1rem;
-        text-align: center;
-        position: relative;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        box-shadow: 0 6px 18px rgba(24,95,165,.05);
+    }
+
+    .profile-sidebar {
+        position: sticky;
+        top: 1rem;
+        padding: 1rem;
     }
 
     .avatar {
-        width: 84px;
-        height: 84px;
+        width: 76px;
+        height: 76px;
         border-radius: 50%;
-        margin: -42px auto 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 1.6rem;
-        border: 4px solid #fff;
+        font-weight: 800;
+        font-size: 1.45rem;
+        margin: 0 auto .75rem;
         background: var(--bleu-light);
         color: var(--bleu);
     }
 
-    .avatar.alumni {
-        background: var(--teal-light);
-        color: var(--teal);
+    .avatar.alumni { background: var(--teal-light); color: var(--teal); }
+
+    .side-name { text-align: center; font-weight: 800; color: var(--dark); }
+    .side-sub { text-align: center; color: var(--text-sec); font-size: .86rem; margin-bottom: .8rem; }
+
+    .side-nav {
+        display: flex;
+        flex-direction: column;
+        gap: .35rem;
+        margin-top: .75rem;
     }
 
-    .profile-name {
-        font-size: 1.45rem;
-        font-weight: 700;
+    .side-link {
+        display: block;
+        padding: .55rem .75rem;
+        border-radius: 10px;
         color: var(--dark);
-        margin-bottom: .2rem;
+        text-decoration: none;
+        font-weight: 600;
+        background: #F8FAFC;
+        border: 1px solid transparent;
     }
 
-    .profile-sub {
-        color: var(--text-sec);
-        font-size: .93rem;
-        margin-bottom: .18rem;
-    }
+    .side-link:hover { border-color: var(--bleu-light); background: var(--bleu-light); }
 
-    .verified-badge {
-        display: inline-block;
-        background: var(--teal-light);
-        color: var(--teal);
-        font-size: .76rem;
-        font-weight: 700;
-        border-radius: 999px;
-        padding: .22rem .62rem;
-        margin-left: .45rem;
-    }
+    .side-link.alt { background: #F4FBF8; }
+    .side-link.warn { background: #FFF7EA; }
 
-    .section-wrap { padding: 1rem 1.2rem 1.2rem; }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: .6rem;
-        margin-bottom: .8rem;
-    }
-
-    .stat-card {
+    .profile-content-card { padding: 1rem; }
+    .section-title { font-weight: 800; color: var(--dark); margin-bottom: .75rem; }
+    .content-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; margin-bottom: .8rem; }
+    .mini-card {
         background: #fff;
         border: 1px solid var(--border);
         border-radius: 12px;
-        min-height: 88px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        padding: .9rem;
+        text-align: center;
     }
-
-    .stat-value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
-    .stat-label { color: var(--text-sec); font-size: .76rem; margin-top: .2rem; }
+    .mini-value { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+    .mini-label { color: var(--text-sec); font-size: .78rem; }
 
     .box {
         background: #fff;
         border: 1px solid var(--border);
         border-radius: 12px;
         padding: .9rem;
-        margin-bottom: .7rem;
-    }
-
-    .box-title {
-        font-size: .95rem;
-        font-weight: 700;
-        color: var(--dark);
-        margin-bottom: .65rem;
+        margin-bottom: .75rem;
     }
 
     .pill {
         display: inline-block;
         margin: 0 .35rem .35rem 0;
-        padding: .25rem .6rem;
+        padding: .22rem .58rem;
         border-radius: 999px;
-        font-size: .78rem;
+        font-size: .76rem;
         font-weight: 700;
     }
-
     .pill-blue { background: var(--bleu-light); color: var(--bleu); }
     .pill-purple { background: var(--purple-light); color: var(--purple); }
     .pill-amber { background: var(--amber-light); color: var(--amber); }
     .pill-green { background: var(--green-light); color: var(--green); }
 
+    .small-muted { color: var(--text-sec); font-size: .84rem; }
     .cv-upload-zone {
         border: 1.5px dashed rgba(0,0,0,.16);
         border-radius: 10px;
@@ -175,9 +155,7 @@
         cursor: pointer;
         margin-bottom: .7rem;
     }
-
     .cv-upload-zone input[type="file"] { display: none; }
-
     .cv-submit {
         width: 100%;
         border: 0;
@@ -188,21 +166,9 @@
         font-size: .85rem;
         font-weight: 600;
     }
-
     .cv-submit:disabled { background: #b9bcc2; }
-
-    .cv-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-top: 1px solid #eee;
-        padding-top: .55rem;
-        margin-top: .55rem;
-        gap: .55rem;
-    }
-
+    .exp-item { border-top: 1px solid #eee; padding-top: .55rem; margin-top: .55rem; }
     .action-row { display: flex; gap: .5rem; flex-wrap: wrap; }
-
     .btn-main {
         border: 0;
         border-radius: 8px;
@@ -212,158 +178,81 @@
         text-decoration: none;
         display: inline-block;
     }
-
     .btn-main.blue { background: var(--bleu); color: #fff; }
     .btn-main.teal { background: var(--teal); color: #fff; }
     .btn-main.soft { background: #F0F0F2; color: #32323c; border: 1px solid var(--border); }
 
-    .exp-item { border-top: 1px solid #eee; padding-top: .55rem; margin-top: .55rem; }
-
-    .small-muted { color: var(--text-sec); font-size: .82rem; }
-
-    @@media (max-width: 900px) {
-        .stats-grid { grid-template-columns: 1fr; }
+    @@media (max-width: 992px) {
+        .profile-shell { grid-template-columns: 1fr; }
+        .profile-sidebar { position: static; }
     }
 </style>
 
-<div class="container mt-3">
+<div class="container mt-3 mb-4">
     @if (TempData["Message"] != null)
     {
         <div class="alert alert-info">@TempData["Message"]</div>
     }
 
-    <div class="profile-page">
-        <div class="profile-cover @(isAlumni ? "alumni" : "")"></div>
-
-        <div class="profile-main">
+    <div class="profile-shell">
+        <aside class="profile-sidebar">
             <div class="avatar @(isAlumni ? "alumni" : "")">@initials</div>
-            <div class="profile-name">
-                @Model.FullName
+            <div class="side-name">@Model.FullName</div>
+            <div class="side-sub">@(isAlumni ? (Model.Alumni?.Position ?? "Alumni") : "Étudiant ITBS")</div>
+
+            <div class="side-nav">
+                <a href="#overview" class="side-link">Vue générale</a>
+                <a href="#skills" class="side-link alt">Compétences</a>
+                <a href="#cv" class="side-link">CV</a>
+                <a href="#experience" class="side-link alt">Expériences</a>
+                <a href="#applications" class="side-link warn">Candidatures</a>
+                <a href="#alumni" class="side-link alt">Accès alumni</a>
+                <a asp-controller="Notification" asp-action="Index" class="side-link">Notifications</a>
+                @if (isStudent)
+                {
+                    <a asp-controller="JobOffer" asp-action="Feed" class="side-link alt">Offres</a>
+                }
                 @if (isAlumni)
                 {
-                    <span class="verified-badge">✓ Vérifiée</span>
+                    <a asp-controller="JobOffer" asp-action="Index" class="side-link alt">Mes offres</a>
                 }
             </div>
+        </aside>
 
-            @if (isStudent)
-            {
-                <div class="profile-sub">Étudiant · ITBS</div>
-                <div class="profile-sub">Membre depuis @Model.CreatedAt?.ToString("MMM yyyy")</div>
-            }
-            else if (isAlumni)
-            {
-                <div class="profile-sub">@(Model.Alumni?.Position ?? "Alumni") · @(Model.Alumni?.CompanyName ?? "ITBS Network")</div>
-                <div class="profile-sub">Promo ITBS</div>
-            }
-            else
-            {
-                <div class="profile-sub">Utilisateur ITBS Careers</div>
-            }
-        </div>
-
-        <div class="action-row">
-            <a asp-controller="Notification" asp-action="Index" class="btn-main soft">Notifications</a>
-            @if (isStudent)
-            {
-                <a asp-controller="JobOffer" asp-action="Feed" class="btn-main teal">Voir les offres</a>
-            }
-            @if (isAlumni)
-            {
-                <a asp-controller="JobOffer" asp-action="Index" class="btn-main blue">Mes offres</a>
-            }
-        </div>
-
-        <div class="section-wrap">
-            @if (isAlumni)
-            {
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" style="color:var(--teal)">@alumniOffers</div>
-                        <div class="stat-label">Offres actives</div>
+        <main class="profile-content-card">
+            <section id="overview" class="mb-3">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                    <div>
+                        <h4 class="mb-1" style="font-weight:800;">Profil</h4>
+                        <div class="small-muted">
+                            @if (isStudent)
+                            {
+                                <span>Étudiant · membre depuis @Model.CreatedAt?.ToString("MMM yyyy")</span>
+                            }
+                            else if (isAlumni)
+                            {
+                                <span>@(Model.Alumni?.CompanyName ?? "ITBS Network") · @(Model.Alumni?.Position ?? "Alumni")</span>
+                            }
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-value" style="color:var(--bleu)">@alumniReceivedApplications</div>
-                        <div class="stat-label">Mentorés / candidatures</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" style="color:var(--amber)">@alumniRating</div>
-                        <div class="stat-label">Note moyenne</div>
-                    </div>
-                </div>
-
-                <div class="box">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="box-title mb-0">Expertises</div>
-                        <a href="@editSkillsUrl" class="btn-main soft">Modifier</a>
-                    </div>
-                    @if (Model.UserSkills.Any())
-                    {
-                        @foreach (var s in Model.UserSkills)
-                        {
-                            <span class="pill pill-green">@s.Skill.Name</span>
-                        }
-                    }
-                    else
-                    {
-                        <span class="small-muted">Aucune expertise renseignée.</span>
-                    }
-                </div>
-
-                <div class="box">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="box-title mb-0">Thématiques de mentorat proposées</div>
-                        <a href="@editSkillsUrl" class="btn-main soft">Modifier</a>
-                    </div>
-                    @if (Model.UserInterests.Any())
-                    {
-                        @foreach (var i in Model.UserInterests)
-                        {
-                            <span class="pill pill-amber">@i.Interest.Name</span>
-                        }
-                    }
-                    else
-                    {
-                        <span class="small-muted">Aucune thématique renseignée.</span>
-                    }
-                </div>
-
-                <div class="box">
-                    <div class="box-title">Disponibilité</div>
-                    <span class="pill pill-green">Disponible au mentorat</span>
-                    <div class="small-muted mt-2">Répond généralement sous 48h.</div>
-                </div>
-
-                <div class="box">
-                    <div class="box-title">Actions</div>
                     <div class="action-row">
-                        <a class="btn-main soft" href="#">Envoyer un message</a>
-                        <a class="btn-main teal" href="#">Demander un mentorat</a>
-                        <a class="btn-main blue" asp-controller="Alumni" asp-action="Index">Espace alumni</a>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" style="color:var(--bleu)">@studentApplicationsCount</div>
-                        <div class="stat-label">Candidatures</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" style="color:var(--teal)">@mentorActif</div>
-                        <div class="stat-label">Mentor actif</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" style="color:var(--purple)">@profilVu</div>
-                        <div class="stat-label">Profil vu</div>
+                        <a asp-controller="User" asp-action="SelectSkillsInterests" asp-route-id="@Model.UserId" asp-route-returnUrl="@Url.Action("Profile", "User")" class="btn-main soft">Modifier profil</a>
                     </div>
                 </div>
 
-                <div class="box">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="box-title mb-0">Compétences techniques</div>
-                        <a href="@editSkillsUrl" class="btn-main soft">Modifier</a>
-                    </div>
+                <div class="content-grid">
+                    <div class="mini-card"><div class="mini-value" style="color:var(--bleu)">@((Model.Applications?.Count) ?? 0)</div><div class="mini-label">Candidatures</div></div>
+                    <div class="mini-card"><div class="mini-value" style="color:var(--teal)">@((Model.UserSkills?.Count) ?? 0)</div><div class="mini-label">Skills</div></div>
+                    <div class="mini-card"><div class="mini-value" style="color:var(--purple)">@((Model.UserInterests?.Count) ?? 0)</div><div class="mini-label">Intérêts</div></div>
+                </div>
+            </section>
+
+            <section id="skills" class="box">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="section-title mb-0">Compétences & intérêts</div>
+                    <a href="@Url.Action("SelectSkillsInterests", "User", new { id = Model.UserId, returnUrl = Url.Action("Profile", "User") })" class="btn-main soft">Modifier</a>
+                </div>
+                <div class="mt-2">
                     @if (Model.UserSkills.Any())
                     {
                         @foreach (var s in Model.UserSkills)
@@ -373,15 +262,10 @@
                     }
                     else
                     {
-                        <span class="small-muted">Aucune compétence renseignée.</span>
+                        <div class="small-muted">Aucune compétence renseignée.</div>
                     }
                 </div>
-
-                <div class="box">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="box-title mb-0">Centres d'intérêt</div>
-                        <a href="@editSkillsUrl" class="btn-main soft">Modifier</a>
-                    </div>
+                <div class="mt-2">
                     @if (Model.UserInterests.Any())
                     {
                         @foreach (var i in Model.UserInterests)
@@ -391,13 +275,15 @@
                     }
                     else
                     {
-                        <span class="small-muted">Aucun centre d'intérêt renseigné.</span>
+                        <div class="small-muted">Aucun centre d’intérêt renseigné.</div>
                     }
                 </div>
+            </section>
 
-                <div class="box">
-                    <div class="box-title">CV & visibilité</div>
-
+            <section id="cv" class="box">
+                <div class="section-title">CV</div>
+                @if (isStudent)
+                {
                     @if (TempData["CvSuccess"] != null)
                     {
                         <div class="alert alert-success py-2">@TempData["CvSuccess"]</div>
@@ -419,38 +305,37 @@
 
                     @if (latestCv != null)
                     {
-                        <div class="cv-row">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <div>
                                 <div><strong>CV courant</strong></div>
                                 <div class="small-muted">@latestCv.UploadedAt?.ToString("MMM dd, yyyy HH:mm")</div>
                             </div>
-                            <div class="action-row">
-                                <a asp-controller="Cv" asp-action="Open" asp-route-id="@latestCv.Cvid" target="_blank" class="btn-main soft">Voir</a>
-                            </div>
+                            <a asp-controller="Cv" asp-action="Open" asp-route-id="@latestCv.Cvid" target="_blank" class="btn-main soft">Voir</a>
                         </div>
                     }
                     else
                     {
-                        <div class="small-muted mt-2">Aucun CV uploadé pour le moment.</div>
+                        <div class="small-muted">Aucun CV uploadé pour le moment.</div>
                     }
-                </div>
-            }
+                }
+                else
+                {
+                    <div class="small-muted">Les CV sont consultés depuis l'espace alumni.</div>
+                }
+            </section>
 
-            <div class="box">
+            <section id="experience" class="box">
                 <div class="d-flex align-items-center justify-content-between">
-                    <div class="box-title mb-0">Expériences</div>
+                    <div class="section-title mb-0">Expériences</div>
                     <a asp-controller="Experience" asp-action="Create" asp-route-userId="@Model.UserId" class="btn-main soft">+ Ajouter</a>
                 </div>
-
                 @if (Model.Experiences.Any())
                 {
                     @foreach (var exp in Model.Experiences)
                     {
                         <div class="exp-item">
                             <div><strong>@exp.Title</strong> — @exp.Company</div>
-                            <div class="small-muted">
-                                @exp.StartDate?.ToString("MMM yyyy") - @(exp.EndDate.HasValue ? exp.EndDate.Value.ToString("MMM yyyy") : "Present")
-                            </div>
+                            <div class="small-muted">@exp.StartDate?.ToString("MMM yyyy") - @(exp.EndDate.HasValue ? exp.EndDate.Value.ToString("MMM yyyy") : "Present")</div>
                             @if (!string.IsNullOrWhiteSpace(exp.Description))
                             {
                                 <div class="small-muted">@exp.Description</div>
@@ -462,10 +347,37 @@
                 {
                     <div class="small-muted mt-2">Aucune expérience ajoutée.</div>
                 }
-            </div>
+            </section>
 
-            <div class="box">
-                <div class="box-title">Accès Alumni</div>
+            <section id="applications" class="box">
+                <div class="section-title">Mes candidatures</div>
+                @if (myApplications.Any())
+                {
+                    foreach (var app in myApplications)
+                    {
+                        <div class="exp-item">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <div><strong>@app.Job?.Title</strong> — @app.Job?.Location</div>
+                                    <div class="small-muted">Publié par @(app.Job?.Alumni?.FullName ?? "-") · @app.AppliedAt?.ToString("MMM dd, yyyy HH:mm")</div>
+                                </div>
+                                <span class="pill @(app.Status == "Accepted" ? "pill-green" : app.Status == "Rejected" ? "pill-amber" : "pill-blue")">@(app.Status ?? "Pending")</span>
+                            </div>
+                            @if ((app.Status ?? "Pending") == "Accepted")
+                            {
+                                <div class="small-muted mt-2">Une proposition d'entretien peut être envoyée par l'alumni. Consultez vos notifications.</div>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="small-muted">Aucune candidature pour le moment.</div>
+                }
+            </section>
+
+            <section id="alumni" class="box">
+                <div class="section-title">Accès alumni</div>
                 @if (isAlumni)
                 {
                     <span class="pill pill-green">Statut alumni actif</span>
@@ -476,37 +388,8 @@
                     <div class="small-muted mb-2">Demandez le statut alumni. Validation admin obligatoire.</div>
                     <a asp-controller="AlumniRequest" asp-action="Create" class="btn-main teal">Demander statut alumni</a>
                 }
-                else
-                {
-                    <div class="small-muted">Seuls les étudiants peuvent faire une demande alumni.</div>
-                }
-            </div>
-
-            <div class="box">
-                <div class="box-title">Mes candidatures</div>
-                @if (myApplications.Any())
-                {
-                    foreach (var app in myApplications)
-                    {
-                        <div class="exp-item">
-                            <div><strong>@app.Job?.Title</strong> — @app.Job?.Location</div>
-                            <div class="small-muted">Type: @(app.Job?.Type ?? "-") · Publié par @(app.Job?.Alumni?.FullName ?? "-")</div>
-                            <div class="small-muted">Postulé le @app.AppliedAt?.ToString("MMM dd, yyyy HH:mm") · Statut: <strong>@(app.Status ?? "Pending")</strong></div>
-                            <div class="action-row mt-2">
-                                @if ((app.Status ?? "Pending") == "Accepted")
-                                {
-                                    <a asp-controller="User" asp-action="RequestInterview" asp-route-applicationId="@app.ApplicationId" class="btn-main teal">Proposer entretien</a>
-                                }
-                            </div>
-                        </div>
-                    }
-                }
-                else
-                {
-                    <div class="small-muted">Aucune candidature pour le moment.</div>
-                }
-            </div>
-        </div>
+            </section>
+        </main>
     </div>
 </div>
 
@@ -525,23 +408,5 @@
                 btn.disabled = true;
             }
         });
-
-        const zone = document.querySelector('.cv-upload-zone');
-        if (zone) {
-            zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.background = '#f0f7ff'; });
-            zone.addEventListener('dragleave', () => { zone.style.background = ''; });
-            zone.addEventListener('drop', e => {
-                e.preventDefault();
-                zone.style.background = '';
-                const files = e.dataTransfer.files;
-                if (files.length) {
-                    const dt = new DataTransfer();
-                    dt.items.add(files[0]);
-                    input.files = dt.files;
-                    label.textContent = files[0].name;
-                    btn.disabled = false;
-                }
-            });
-        }
     }
 </script>

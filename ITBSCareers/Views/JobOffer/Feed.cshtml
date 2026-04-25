@@ -2,18 +2,58 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Offres";
+    var isStudent = User.IsInRole("Student");
 }
 
+<style>
+    .feed-head, .offer-card, .search-card, .suggestion-card {
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 14px;
+        box-shadow: 0 6px 18px rgba(24,95,165,.05);
+    }
+    .feed-head { padding: 1rem; margin-bottom: .9rem; }
+    .search-card { padding: .9rem; margin-bottom: .9rem; }
+    .offer-card, .suggestion-card { padding: .95rem; }
+    .feed-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; margin-bottom: .2rem; }
+    .feed-sub { color: #64646E; }
+    .match-badge, .match-pill {
+        display: inline-block;
+        padding: .2rem .55rem;
+        border-radius: 999px;
+        font-size: .74rem;
+        font-weight: 700;
+        background: #E1F5EE;
+        color: #0F6E56;
+    }
+    .match-low { background: #FAEEDA; color: #8A5A12; }
+    .match-none { background: #EEF1F4; color: #5C6470; }
+    .small-muted { color: #64646E; font-size: .82rem; }
+    .suggestion-grid .col-md-6 { margin-bottom: 0.75rem; }
+</style>
+
 <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">Offres de stage & emploi</h3>
+    <div class="feed-head">
+        <div class="feed-title">Offres de stage & emploi</div>
+        <div class="feed-sub">
+            @if (isStudent)
+            {
+                <span>Feed personnalisé selon vos compétences, intérêts et profil.</span>
+            }
+            else
+            {
+                <span>Consultez toutes les offres publiées.</span>
+            }
+        </div>
         @if (User.IsInRole("Alumni"))
         {
-            <a asp-action="Create" class="btn btn-primary btn-sm">Publier une offre</a>
+            <div class="mt-2">
+                <a asp-action="Create" class="btn btn-primary btn-sm">Publier une offre</a>
+            </div>
         }
     </div>
 
-    <div class="card p-3 shadow-sm mb-3">
+    <div class="search-card">
         <form method="get" asp-action="Feed">
             <div class="row g-2">
                 <div class="col-md-2">
@@ -41,7 +81,42 @@
         </form>
     </div>
 
-    <div class="mb-2 text-muted">Résultats: <strong>@Model.Results.Count</strong></div>
+    @if (isStudent && Model.Suggestions.Any())
+    {
+        <div class="mb-3">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="mb-0">Suggestions pour vous</h5>
+                <span class="small-muted">Basées sur vos skills et intérêts</span>
+            </div>
+            <div class="row suggestion-grid g-3">
+                @foreach (var offer in Model.Suggestions.Take(3))
+                {
+                    <div class="col-md-6">
+                        <div class="suggestion-card h-100">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div>
+                                    <h5 class="mb-1">@offer.OfferTitle</h5>
+                                    <div class="small-muted">@offer.Location · @offer.Type</div>
+                                </div>
+                                <span class="match-badge">Match @offer.MatchScore</span>
+                            </div>
+                            <div class="small text-muted my-2">Publié par <strong>@offer.PublisherName</strong></div>
+                            @if (!string.IsNullOrWhiteSpace(offer.MatchSummary))
+                            {
+                                <div class="small text-muted mb-2">@offer.MatchSummary</div>
+                            }
+                            <a asp-action="Details" asp-route-id="@offer.JobId" class="btn btn-sm btn-outline-primary">Voir détails</a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="mb-0">@(isStudent ? "Autres offres" : "Toutes les offres")</h5>
+        <span class="small-muted">@Model.Results.Count offres</span>
+    </div>
 
     @if (!Model.Results.Any())
     {
@@ -53,22 +128,36 @@
             @foreach (var offer in Model.Results)
             {
                 <div class="col-md-6">
-                    <div class="card h-100 border-0 shadow-sm">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <h5 class="card-title mb-1">@offer.OfferTitle</h5>
-                                <span class="badge bg-light text-dark">@offer.Type</span>
+                    <div class="offer-card h-100">
+                        <div class="d-flex justify-content-between	align-items-start gap-2">
+                            <div>
+                                <h5 class="mb-1">@offer.OfferTitle</h5>
+                                <div class="small-muted">@offer.Location · @offer.Type</div>
                             </div>
-                            <div class="text-muted mb-2">@offer.Location</div>
-                            <p class="card-text">@(string.IsNullOrWhiteSpace(offer.Description) ? "Sans description" : offer.Description)</p>
-                            <div class="small text-muted mb-2">
-                                Publié par <strong>@offer.PublisherName</strong> · @offer.PublisherEmail
-                            </div>
-                            <div class="small text-muted mb-3">
-                                @offer.CreatedAt?.ToString("dd/MM/yyyy HH:mm") · @offer.ApplicationsCount candidatures
-                            </div>
-                            <a asp-action="Details" asp-route-id="@offer.JobId" class="btn btn-sm btn-outline-primary">Voir détails</a>
+                            @if (isStudent)
+                            {
+                                <span class="match-badge @(offer.MatchScore == 0 ? "match-none" : offer.MatchScore < 4 ? "match-low" : "")">
+                                    Match @offer.MatchScore
+                                </span>
+                            }
                         </div>
+
+                        <p class="mt-2 mb-2">@(string.IsNullOrWhiteSpace(offer.Description) ? "Sans description" : offer.Description)</p>
+
+                        <div class="small text-muted mb-2">
+                            Publié par <strong>@offer.PublisherName</strong> · @offer.PublisherEmail
+                        </div>
+
+                        @if (isStudent && !string.IsNullOrWhiteSpace(offer.MatchSummary))
+                        {
+                            <div class="small text-muted mb-2">@offer.MatchSummary</div>
+                        }
+
+                        <div class="small text-muted mb-3">
+                            @offer.CreatedAt?.ToString("dd/MM/yyyy HH:mm") · @offer.ApplicationsCount candidatures
+                        </div>
+
+                        <a asp-action="Details" asp-route-id="@offer.JobId" class="btn btn-sm btn-outline-primary">Voir détails</a>
                     </div>
                 </div>
             }
