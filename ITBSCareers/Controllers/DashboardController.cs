@@ -32,7 +32,9 @@ namespace ITBSCareers.Controllers
                     .ThenInclude(ur => ur.Role)
                 .Include(u => u.Experiences)
                 .Include(u => u.UserSkills)
+                    .ThenInclude(us => us.Skill)
                 .Include(u => u.UserInterests)
+                    .ThenInclude(ui => ui.Interest)
                 .Include(u => u.Applications)
                 .Include(u => u.JobOffers)
                     .ThenInclude(j => j.Applications)
@@ -94,6 +96,9 @@ namespace ITBSCareers.Controllers
 
                 StudentApplicationsCount = user.Applications.Count,
                 NewOffersCount = newOffersCount,
+                HotOpportunities = roleNames.Contains("Student")
+                    ? await BuildHotOpportunitiesAsync(user)
+                    : new List<JobOfferFeedItemViewModel>(),
 
                 AlumniPublishedOffersCount = user.JobOffers.Count,
                 AlumniApplicationsReceivedCount = user.JobOffers.SelectMany(o => o.Applications).Count(),
@@ -114,6 +119,153 @@ namespace ITBSCareers.Controllers
             return View(vm);
         }
 
+        private async Task<List<JobOfferFeedItemViewModel>> BuildHotOpportunitiesAsync(User user)
+        {
+            var studentProfile = new StudentProfileSnapshot
+            {
+                DegreeName = user.Student?.Degree?.Name,
+                Level = user.Student?.Level,
+                Field = user.Student?.Field,
+                SkillIds = user.UserSkills.Select(us => us.SkillId).ToList(),
+                InterestIds = user.UserInterests.Select(ui => ui.InterestId).ToList(),
+                SkillNames = user.UserSkills.Where(us => us.Skill != null).Select(us => us.Skill.Name).ToList(),
+                InterestNames = user.UserInterests.Where(ui => ui.Interest != null).Select(ui => ui.Interest.Name).ToList()
+            };
+
+            var offers = await _context.JobOffers
+                .Include(o => o.Alumni)
+                .Include(o => o.Applications)
+                .OrderByDescending(o => o.CreatedAt)
+                .Take(20)
+                .ToListAsync();
+
+            return offers
+                .Select(o => BuildFeedItem(o, studentProfile))
+                .Where(x => x.MatchScore > 0)
+                .OrderByDescending(x => x.MatchScore)
+                .ThenByDescending(x => x.CreatedAt)
+                .Take(3)
+                .ToList();
+        }
+
+        private JobOfferFeedItemViewModel BuildFeedItem(JobOffer offer, StudentProfileSnapshot? profile)
+        {
+            var score = 0;
+            var reasons = new List<string>();
+            var matchedKeywords = new List<string>();
+
+            static string Normalize(string? value) => (value ?? string.Empty).Trim().ToLowerInvariant();
+
+            if (profile != null)
+            {
+                var requiredDegree = Normalize(offer.RequiredDegree);
+                var requiredLevel = Normalize(offer.RequiredLevel);
+                var requiredField = Normalize(offer.RequiredField);
+                var profileDegree = Normalize(profile.DegreeName);
+                var profileLevel = Normalize(profile.Level);
+                var profileField = Normalize(profile.Field);
+                var offerText = Normalize($"{offer.Title} {offer.Description} {offer.Type} {offer.Location}");
+
+                if (!string.IsNullOrWhiteSpace(requiredDegree) && requiredDegree == profileDegree)
+                {
+                    score += 3;
+                    reasons.Add($"Diplôme: {offer.RequiredDegree}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(requiredLevel) && requiredLevel == profileLevel)
+                {
+                    score += 2;
+                    reasons.Add($"Niveau: {offer.RequiredLevel}");
+                }
+
+                if (!string.IsNullOrWhiteSpace(requiredField) && profileField.Contains(requiredField))
+                {
+                    score += 2;
+                    reasons.Add($"Filière: {offer.RequiredField}");
+                }
+
+                var requiredSkillIds = ParseCsvIds(offer.RequiredSkillsCsv);
+                var requiredInterestIds = ParseCsvIds(offer.RequiredInterestsCsv);
+
+                var matchedSkills = requiredSkillIds.Intersect(profile.SkillIds).Count();
+                var matchedInterests = requiredInterestIds.Intersect(profile.InterestIds).Count();
+
+                if (matchedSkills == 0 && profile.SkillNames.Count > 0 && !string.IsNullOrWhiteSpace(offer.RequiredSkillsCsv))
+                {
+                    var requiredSkillNames = offer.RequiredSkillsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    matchedSkills = requiredSkillNames.Count(required =>
+                        profile.SkillNames.Any(name =>
+                            Normalize(name) == Normalize(required) ||
+                            Normalize(name).Contains(Normalize(required)) ||
+                            Normalize(required).Contains(Normalize(name)) ||
+                            offerText.Contains(Normalize(name))));
+                }
+
+                if (matchedInterests == 0 && profile.InterestNames.Count > 0 && !string.IsNullOrWhiteSpace(offer.RequiredInterestsCsv))
+                {
+                    var requiredInterestNames = offer.RequiredInterestsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    matchedInterests = requiredInterestNames.Count(required =>
+                        profile.InterestNames.Any(name =>
+                            Normalize(name) == Normalize(required) ||
+                            Normalize(name).Contains(Normalize(required)) ||
+                            Normalize(required).Contains(Normalize(name)) ||
+                            offerText.Contains(Normalize(name))));
+                }
+
+                // Fallback for older offers where criteria are written only in text.
+                if (matchedSkills == 0 && profile.SkillNames.Count > 0)
+                {
+                    matchedSkills = profile.SkillNames.Count(name => offerText.Contains(Normalize(name)));
+                }
+
+                if (matchedInterests == 0 && profile.InterestNames.Count > 0)
+                {
+                    matchedInterests = profile.InterestNames.Count(name => offerText.Contains(Normalize(name)));
+                }
+
+                if (matchedSkills > 0)
+                {
+                    score += matchedSkills * 2;
+                    reasons.Add($"{matchedSkills} compétence(s) correspondante(s)");
+                    matchedKeywords.AddRange(profile.SkillNames.Where(n => offerText.Contains(Normalize(n))));
+                }
+
+                if (matchedInterests > 0)
+                {
+                    score += matchedInterests;
+                    reasons.Add($"{matchedInterests} centre(s) d'intérêt correspondant(s)");
+                    matchedKeywords.AddRange(profile.InterestNames.Where(n => offerText.Contains(Normalize(n))));
+                }
+            }
+
+            return new JobOfferFeedItemViewModel
+            {
+                JobId = offer.JobId,
+                OfferTitle = offer.Title,
+                Description = offer.Description,
+                Type = offer.Type,
+                Location = offer.Location,
+                CreatedAt = offer.CreatedAt,
+                AlumniId = offer.AlumniId,
+                PublisherName = offer.Alumni.FullName,
+                PublisherEmail = offer.Alumni.Email,
+                ApplicationsCount = offer.Applications.Count,
+                MatchScore = score,
+                MatchSummary = reasons.Count > 0 ? string.Join(" · ", reasons.Distinct()) : string.Empty
+            };
+        }
+
+        private sealed class StudentProfileSnapshot
+        {
+            public string? DegreeName { get; set; }
+            public string? Level { get; set; }
+            public string? Field { get; set; }
+            public List<int> SkillIds { get; set; } = new();
+            public List<int> InterestIds { get; set; } = new();
+            public List<string> SkillNames { get; set; } = new();
+            public List<string> InterestNames { get; set; } = new();
+        }
+
         private async Task<bool> IsAlumniRequestsTableAvailableAsync()
         {
             try
@@ -125,6 +277,20 @@ namespace ITBSCareers.Controllers
             {
                 return false;
             }
+        }
+
+        private static List<int> ParseCsvIds(string? csv)
+        {
+            if (string.IsNullOrWhiteSpace(csv))
+            {
+                return new List<int>();
+            }
+
+            return csv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(s => int.TryParse(s, out var id) ? id : 0)
+                .Where(id => id > 0)
+                .Distinct()
+                .ToList();
         }
 
         private int? GetCurrentUserId()

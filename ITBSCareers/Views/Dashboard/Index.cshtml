@@ -27,7 +27,7 @@
         padding: 1.15rem;
     }
 
-    .dash-topbar, .dash-card {
+    .dash-topbar, .dash-card, .hot-card {
         background: var(--white);
         border: 1px solid var(--border);
         border-radius: 14px;
@@ -63,7 +63,7 @@
         margin-right: .25rem;
     }
 
-    .dash-card {
+    .dash-card, .hot-card {
         padding: .9rem;
         margin-bottom: .75rem;
     }
@@ -85,6 +85,24 @@
     .dash-sub { color: var(--text-sec); font-size: .86rem; }
     .row-stat .dash-card { min-height: 92px; }
     .badge-status { background: var(--teal-light); color: var(--teal); padding: .2rem .55rem; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+    .hot-pill {
+        display: inline-block;
+        padding: .18rem .55rem;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 700;
+        background: #FFF4E6;
+        color: #A15C12;
+    }
+    .hot-score {
+        display: inline-block;
+        padding: .2rem .55rem;
+        border-radius: 999px;
+        font-size: .74rem;
+        font-weight: 700;
+        background: #E1F5EE;
+        color: #0F6E56;
+    }
 </style>
 
 <div class="container mt-3 mb-4">
@@ -109,8 +127,47 @@
                     </div>
                 </div>
             </div>
-            <a asp-controller="User" asp-action="Profile" class="btn btn-sm" style="background:var(--teal);color:white;">Profil</a>
+            <a href="@Url.Action("Profile", "User")" class="btn btn-sm" style="background:var(--teal);color:white;">Profil</a>
         </div>
+
+        @if (Model.IsStudent)
+        {
+            <div class="dash-title">🔥 Hot opportunities</div>
+            @if (Model.HotOpportunities.Any())
+            {
+                <div class="row g-3 mb-2">
+                    @foreach (var offer in Model.HotOpportunities)
+                    {
+                        <div class="col-md-4">
+                            <div class="hot-card h-100">
+                                <div class="d-flex justify-content-between align-items-start gap-2">
+                                    <div>
+                                        <div class="hot-pill mb-2">Hot</div>
+                                        <h6 class="mb-1">@offer.OfferTitle</h6>
+                                        <div class="dash-sub">@offer.Location · @offer.Type</div>
+                                    </div>
+                                    <span class="hot-score">Match @offer.MatchScore</span>
+                                </div>
+                                <div class="small text-muted mt-2 mb-2">
+                                    @(string.IsNullOrWhiteSpace(offer.MatchSummary) ? "Correspond à votre profil." : offer.MatchSummary)
+                                </div>
+                                <a asp-controller="JobOffer" asp-action="Details" asp-route-id="@offer.JobId" class="btn btn-sm btn-outline-primary">Voir</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="dash-card mb-2">
+                    <div class="fw-semibold">Aucune suggestion pour le moment</div>
+                    <div class="dash-sub">Ajoutez des compétences et centres d'intérêt pour voir apparaître des offres ciblées.</div>
+                    <div class="mt-2">
+                        <a asp-controller="User" asp-action="Profile" class="btn btn-sm btn-outline-primary">Compléter mon profil</a>
+                    </div>
+                </div>
+            }
+        }
 
         @if (Model.IsVerifiedAlumni)
         {
@@ -132,24 +189,12 @@
                 </div>
             </div>
         }
-        else
+        else if (Model.IsStudent)
         {
             <div class="row row-stat g-2">
                 <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Candidatures</div><div class="dash-stat" style="color:var(--bleu)">@Model.StudentApplicationsCount</div></div></div>
                 <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Statut alumni</div><div class="dash-stat" style="color:var(--teal)">@(Model.AlumniRequestStatus == "Approved" ? 1 : 0)</div></div></div>
                 <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Nouvelles offres</div><div class="dash-stat" style="color:var(--amber)">@Model.NewOffersCount</div></div></div>
-            </div>
-
-            <div class="dash-title">Offres & profil</div>
-            <div class="dash-card d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-semibold">Consulter les offres et améliorer votre profil</div>
-                    <div class="dash-sub">Complétez votre profil puis consultez les offres disponibles.</div>
-                </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a asp-controller="JobOffer" asp-action="Feed" class="btn btn-sm" style="background:var(--teal);color:white;">Voir les offres</a>
-                    <a asp-controller="User" asp-action="Profile" class="btn btn-sm btn-outline-primary">Mon profil</a>
-                </div>
             </div>
 
             <div class="dash-title">Vérification alumni</div>
@@ -181,18 +226,6 @@
                     <a asp-controller="AlumniRequest" asp-action="Pending" class="btn btn-sm btn-warning">Valider demandes</a>
                     <a asp-controller="Roles" asp-action="Index" class="btn btn-sm btn-outline-dark">Rôles</a>
                 </div>
-            </div>
-        }
-
-        @if (Model.IsStudent)
-        {
-            <div class="dash-title">Offres recommandées pour vous</div>
-            <div class="dash-card d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-semibold">Consultez vos suggestions personnalisées</div>
-                    <div class="dash-sub">Votre feed contient une rubrique dédiée aux offres qui matchent votre profil.</div>
-                </div>
-                <a asp-controller="JobOffer" asp-action="Feed" class="btn btn-sm" style="background:var(--teal);color:white;">Voir les suggestions</a>
             </div>
         }
     </div>
