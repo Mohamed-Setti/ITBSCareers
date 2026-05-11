@@ -23,3 +23,17 @@ public class DashboardViewModel
     public string? AlumniRequestStatus { get; set; }
     public int PendingAlumniRequestsCount { get; set; }
 }
+
+public class AlumniRequestListItemViewModel
+{
+    public int AlumniRequestId { get; set; }
+    public int UserId { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public string? CompanyName { get; set; }
+    public string? Position { get; set; }
+    public string? ProofFilePath { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? ReviewedByName { get; set; }
+    public DateTime? ReviewedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
+}

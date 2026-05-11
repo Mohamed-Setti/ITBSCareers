@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ITBSCareers</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -13,10 +13,10 @@
 
     <style>
         :root {
-            --teal-900: #0D7377;
-            --teal-700: #14A085;
-            --amber: #F0A500;
-            --bg: #F8FAFC;
+            --teal-900: #085041;
+            --teal-700: #1D9E75;
+            --amber: #EF9F27;
+            --bg: #F0F5F3;
             --white: #fff;
             --border: rgba(13,115,119,.16);
             --border-strong: rgba(13,115,119,.28);
@@ -27,7 +27,7 @@
 
         body {
             background: var(--bg);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             color: var(--text);
         }
 
@@ -407,6 +407,9 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link main-link @IsActive("JobOffer", "Feed")" asp-controller="JobOffer" asp-action="Feed">Offres</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link main-link @IsActive("AlumniDirectory", "Index")" asp-controller="AlumniDirectory" asp-action="Index">Alumnis</a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link main-link @IsActive("Messaging", "Index")" asp-controller="Messaging" asp-action="Index">Messagerie</a>

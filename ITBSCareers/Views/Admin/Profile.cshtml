@@ -2,78 +2,602 @@
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Profil admin";
+
+    var roles = Model.Roles ?? new List<string>();
+    var initials = string.IsNullOrWhiteSpace(Model.Initials) ? "AD" : Model.Initials;
 }
 
 <style>
-    .admin-shell { max-width: 1200px; margin: 0 auto; padding: 1rem 0 2rem; }
-    .hero-card, .stat-card, .info-card {
-        background: #fff;
-        border: 1px solid #DCDCE1;
-        border-radius: 14px;
-        box-shadow: 0 6px 18px rgba(24,95,165,.05);
+    :root {
+        --admin-teal: #0F6E56;
+        --admin-teal-soft: #E3F4EF;
+        --admin-blue: #185FA5;
+        --admin-blue-soft: #E6F1FB;
+        --admin-amber: #B77900;
+        --admin-amber-soft: #FAEEDA;
+        --admin-red: #C43A31;
+        --admin-red-soft: #FDECEC;
+        --admin-gray: #667085;
+        --admin-gray-soft: #EEF2F7;
+        --admin-bg: #F5F7FA;
+        --admin-border: #DCE4EC;
+        --admin-text: #1E293B;
+        --admin-muted: #667085;
+        --admin-white: #fff;
+        --admin-shadow: 0 10px 24px rgba(24,95,165,.06);
     }
-    .hero-card { padding: 1rem; margin-bottom: .9rem; }
-    .stat-card { padding: .9rem; min-height: 90px; }
-    .info-card { padding: .9rem; }
-    .title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; margin-bottom: .2rem; }
-    .sub { color: #64646E; }
-    .stat-value { font-size: 1.75rem; font-weight: 800; line-height: 1; }
-    .stat-label { color: #64646E; font-size: .8rem; }
-    .mini-chip {
-        display: inline-block;
-        margin: 0 .25rem .25rem 0;
-        padding: .18rem .5rem;
+
+    .admin-shell {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding: 1rem 0 2rem;
+    }
+
+    .hero-card,
+    .stat-card,
+    .info-card,
+    .action-card {
+        background: var(--admin-white);
+        border: 1px solid var(--admin-border);
+        border-radius: 18px;
+        box-shadow: var(--admin-shadow);
+    }
+
+    .hero-card {
+        position: relative;
+        overflow: hidden;
+        padding: 1.1rem 1.2rem;
+        margin-bottom: .9rem;
+        background: linear-gradient(135deg, #fff 0%, #FBFDFC 100%);
+    }
+
+    .hero-card::after {
+        content: '';
+        position: absolute;
+        inset: auto -40px -60px auto;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(15,110,86,.09) 0%, rgba(15,110,86,0) 72%);
+        pointer-events: none;
+    }
+
+    .hero-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .profile-head {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .admin-avatar {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 1.6rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #0B4A3E 0%, #0F6E56 100%);
+        box-shadow: 0 16px 30px rgba(11,74,62,.25);
+        border: 4px solid rgba(255,255,255,.8);
+        flex: 0 0 84px;
+    }
+
+    .hero-name {
+        font-size: 2rem;
+        line-height: 1.1;
+        margin: 0;
+        font-weight: 800;
+        color: var(--admin-text);
+    }
+
+    .hero-meta {
+        color: var(--admin-muted);
+        font-size: .92rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .65rem;
+        align-items: center;
+    }
+
+    .meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+    }
+
+    .role-chip,
+    .status-chip,
+    .alert-badge,
+    .mini-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
         border-radius: 999px;
-        font-size: .72rem;
-        font-weight: 700;
-        background: #E6F1FB;
-        color: #185FA5;
+        font-size: .75rem;
+        font-weight: 800;
+        padding: .22rem .6rem;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    .role-chip {
+        background: rgba(15,110,86,.10);
+        color: var(--admin-teal);
+        border: 1px solid rgba(15,110,86,.16);
+    }
+
+    .status-chip.total { background: var(--admin-gray-soft); color: var(--admin-gray); }
+    .status-chip.active { background: var(--admin-teal-soft); color: var(--admin-teal); }
+    .status-chip.validated { background: var(--admin-blue-soft); color: var(--admin-blue); }
+    .status-chip.pending { background: var(--admin-amber-soft); color: var(--admin-amber); }
+    .status-chip.alert { background: var(--admin-red-soft); color: var(--admin-red); }
+
+    .alert-badge {
+        background: #F59E0B;
+        color: #fff;
+        box-shadow: 0 8px 16px rgba(245,158,11,.18);
+    }
+
+    .hero-actions {
+        display: flex;
+        align-items: stretch;
+        gap: .7rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .action-link {
+        min-width: 215px;
+        padding: .95rem 1rem;
+        border-radius: 16px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .85rem;
+        border: 1px solid rgba(15,110,86,.18);
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+    }
+
+    .action-link:hover { transform: translateY(-1px); box-shadow: 0 12px 22px rgba(24,95,165,.08); }
+
+    .action-link.primary {
+        background: linear-gradient(135deg, #0F6E56 0%, #115B47 100%);
+        color: #fff;
+        border-color: transparent;
+    }
+
+    .action-link.secondary {
+        background: #fff;
+        color: var(--admin-teal);
+    }
+
+    .action-link.alert {
+        background: #fff;
+        color: var(--admin-text);
+        border-color: rgba(245,158,11,.35);
+    }
+
+    .action-copy {
+        display: flex;
+        flex-direction: column;
+        gap: .08rem;
+        text-align: left;
+    }
+
+    .action-title {
+        font-weight: 800;
+        font-size: .98rem;
+        line-height: 1.2;
+    }
+
+    .action-sub {
+        font-size: .8rem;
+        color: rgba(255,255,255,.82);
+    }
+
+    .secondary .action-sub,
+    .alert .action-sub { color: var(--admin-muted); }
+
+    .action-icon,
+    .stat-icon,
+    .section-icon {
+        width: 2.7rem;
+        height: 2.7rem;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 2.7rem;
+    }
+
+    .action-icon { background: rgba(255,255,255,.14); color: inherit; }
+    .action-link.secondary .action-icon { background: var(--admin-teal-soft); color: var(--admin-teal); }
+    .action-link.alert .action-icon { background: rgba(245,158,11,.12); color: #C27B00; }
+
+    .action-arrow { font-size: 1.2rem; opacity: .8; }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-weight: 800;
+        font-size: 1.05rem;
+        color: var(--admin-text);
+        margin-bottom: .85rem;
+    }
+
+    .section-icon {
+        background: #F1F8F6;
+        color: var(--admin-teal);
+    }
+
+    .stat-grid {
+        display: grid;
+        gap: .8rem;
+        margin-bottom: .8rem;
+    }
+
+    .stat-grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .stat-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .stat-card { padding: .95rem; min-height: 132px; }
+
+    .stat-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: .7rem;
+    }
+
+    .stat-icon { box-shadow: 0 10px 18px rgba(24,95,165,.06); }
+    .tone-teal { background: var(--admin-teal-soft); color: var(--admin-teal); }
+    .tone-blue { background: var(--admin-blue-soft); color: var(--admin-blue); }
+    .tone-amber { background: var(--admin-amber-soft); color: var(--admin-amber); }
+    .tone-red { background: var(--admin-red-soft); color: var(--admin-red); }
+    .tone-gray { background: var(--admin-gray-soft); color: var(--admin-gray); }
+
+    .stat-value {
+        font-size: 1.95rem;
+        font-weight: 900;
+        line-height: 1;
+        margin-top: .65rem;
+        letter-spacing: -.03em;
+    }
+
+    .stat-label {
+        color: var(--admin-muted);
+        font-size: .84rem;
+        margin-top: .3rem;
+    }
+
+    .info-card {
+        padding: 1rem;
+        height: 100%;
+    }
+
+    .activity-list {
+        list-style: none;
+        padding: 0;
+        margin: .2rem 0 0;
+        display: flex;
+        flex-direction: column;
+        gap: .8rem;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: .8rem;
+        align-items: flex-start;
+    }
+
+    .activity-dot {
+        width: .72rem;
+        height: .72rem;
+        border-radius: 50%;
+        margin-top: .4rem;
+        flex: 0 0 .72rem;
+        background: var(--admin-gray);
+    }
+
+    .activity-dot.neutral { background: #B9C0C8; }
+    .activity-dot.alert { background: #F59E0B; }
+
+    .activity-body {
+        flex: 1;
+        color: var(--admin-text);
+        font-size: .95rem;
+        line-height: 1.45;
+    }
+
+    .activity-body strong { font-weight: 800; }
+    .activity-divider { height: 1px; background: #EEF2F7; margin-top: .8rem; }
+
+    .management-list {
+        display: flex;
+        flex-direction: column;
+        gap: .75rem;
+    }
+
+    .management-row {
+        display: flex;
+        align-items: center;
+        gap: .9rem;
+        padding: .9rem 1rem;
+        border-radius: 16px;
+        border: 1px solid rgba(15,110,86,.14);
+        text-decoration: none;
+        color: inherit;
+        transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+        background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(249,252,251,1) 100%);
+    }
+
+    .management-row:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(24,95,165,.07);
+        border-color: rgba(15,110,86,.28);
+    }
+
+    .management-copy { flex: 1; min-width: 0; }
+    .management-title { font-weight: 800; color: var(--admin-text); margin-bottom: .1rem; }
+    .management-sub { color: var(--admin-muted); font-size: .84rem; }
+    .management-arrow { color: var(--admin-teal); font-size: 1.15rem; }
+
+    @@media (max-width: 1100px) {
+        .hero-grid { grid-template-columns: 1fr; }
+        .hero-actions { justify-content: flex-start; }
+        .stat-grid.four,
+        .stat-grid.three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @@media (max-width: 700px) {
+        .stat-grid.four,
+        .stat-grid.three { grid-template-columns: 1fr; }
+        .action-link { width: 100%; min-width: 0; }
+        .hero-name { font-size: 1.55rem; }
+        .profile-head { align-items: flex-start; }
     }
 </style>
 
 <div class="container admin-shell">
-    <div class="hero-card d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div>
-            <div class="title">Profil admin</div>
-            <div class="sub">@Model.FullName · @Model.Email</div>
-            <div class="mt-2">
-                @foreach (var role in Model.Roles)
-                {
-                    <span class="mini-chip">@role</span>
-                }
+    <div class="hero-card">
+        <div class="hero-grid">
+            <div class="profile-head">
+                <div class="admin-avatar" aria-hidden="true">@initials</div>
+                <div>
+                    <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                        <h1 class="hero-name mb-0">Profil admin</h1>
+                        <span class="role-chip">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l7 4v6c0 5-3.5 8-7 10-3.5-2-7-5-7-10V6l7-4z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                            Admin
+                        </span>
+                    </div>
+                    <div class="hero-meta">
+                        <span class="meta-item">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16v12H4z" stroke="currentColor" stroke-width="1.6" /><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            @Model.Email
+                        </span>
+                        <span class="meta-item">·</span>
+                        <span class="meta-item">@string.Join(" · ", roles)</span>
+                    </div>
+                    <div class="mt-2 d-flex flex-wrap gap-2">
+                        @foreach (var role in roles)
+                        {
+                            <span class="role-chip">@role</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <a asp-action="Users" class="action-link primary">
+                    <span class="action-icon" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 20v-2a4 4 0 0 1 4-4h2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.7"/><path d="M19 8v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M16 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    </span>
+                    <span class="action-copy">
+                        <span class="action-title">Gérer les utilisateurs</span>
+                        <span class="action-sub">Voir, modifier et administrer les comptes</span>
+                    </span>
+                    <span class="action-arrow">?</span>
+                </a>
+
+                <a asp-controller="AlumniRequest" asp-action="Pending" class="action-link secondary">
+                    <span class="action-icon" aria-hidden="true">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5 11h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7 22h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    </span>
+                    <span class="action-copy">
+                        <span class="action-title">Valider les demandes</span>
+                        <span class="action-sub">Demandes alumni en attente</span>
+                    </span>
+                    <span class="d-inline-flex align-items-center gap-2">
+                        <span class="alert-badge">@Model.PendingAlumniRequests</span>
+                        <span class="action-arrow">?</span>
+                    </span>
+                </a>
             </div>
         </div>
     </div>
 
-    <div class="row g-3 mb-3">
-        <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#185FA5">@Model.TotalUsers</div><div class="stat-label">Utilisateurs</div></div></div>
-        <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#0F6E56">@Model.StudentsCount</div><div class="stat-label">Étudiants</div></div></div>
-        <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#3C3489">@Model.AlumniCount</div><div class="stat-label">Alumnis</div></div></div>
-        <div class="col-md-3"><div class="stat-card"><div class="stat-value" style="color:#8A5A12">@Model.PendingAlumniRequests</div><div class="stat-label">Demandes en attente</div></div></div>
+    <div class="section-title">
+        <span class="section-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.7"/><path d="M4 9h16" stroke="currentColor" stroke-width="1.7"/></svg>
+        </span>
+        Vue d’ensemble
     </div>
 
-    <div class="row g-3 mb-3">
-        <div class="col-md-4"><div class="info-card"><div class="fw-semibold">Offres publiées</div><div class="stat-value" style="color:#185FA5">@Model.TotalOffers</div><div class="sub">@Model.NewOffersLast14Days nouvelles sur 14 jours</div></div></div>
-        <div class="col-md-4"><div class="info-card"><div class="fw-semibold">Candidatures</div><div class="stat-value" style="color:#0F6E56">@Model.TotalApplications</div><div class="sub">@Model.AcceptedApplications acceptées · @Model.RejectedApplications refusées</div></div></div>
-        <div class="col-md-4"><div class="info-card"><div class="fw-semibold">Interactions</div><div class="stat-value" style="color:#3C3489">@Model.InterviewProposals</div><div class="sub">propositions d'entretien · @Model.NotificationsLast14Days notifications/14j</div></div></div>
+    <div class="stat-grid four">
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-teal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7h18v11H3z" stroke="currentColor" stroke-width="1.7"/><path d="M7 7V5h10v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </div>
+                <span class="status-chip total">Total</span>
+            </div>
+            <div class="stat-value" style="color:var(--admin-teal)">@Model.TotalUsers</div>
+            <div class="stat-label">Utilisateurs</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-blue">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 4v6c0 5-3.5 7.7-7 9-3.5-1.3-7-4-7-9V7z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <span class="status-chip active">Actifs</span>
+            </div>
+            <div class="stat-value" style="color:var(--admin-blue)">@Model.StudentsCount</div>
+            <div class="stat-label">Étudiants</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-teal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.7"/></svg>
+                </div>
+                <span class="status-chip validated">Validés</span>
+            </div>
+            <div class="stat-value" style="color:var(--admin-teal)">@Model.AlumniCount</div>
+            <div class="stat-label">Alumnis</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-amber">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5 11h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7 22h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </div>
+                <span class="status-chip pending">En attente</span>
+            </div>
+            <div class="stat-value" style="color:var(--admin-amber)">@Model.PendingAlumniRequests</div>
+            <div class="stat-label">Demandes alumni</div>
+        </div>
     </div>
 
-    <div class="row g-3">
-        <div class="col-md-6">
+    <div class="stat-grid three">
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-teal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16v14H4z" stroke="currentColor" stroke-width="1.7"/><path d="M7 9h10M7 13h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </div>
+                <span class="status-chip total">+14j</span>
+            </div>
+            <div class="stat-value" style="color:var(--admin-teal)">@Model.TotalOffers</div>
+            <div class="stat-label">Offres publiées · @Model.NewOffersLast14Days nouvelles sur 14 jours</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-blue">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16v14H4z" stroke="currentColor" stroke-width="1.7"/><path d="M7 9h10M7 13h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </div>
+                <span class="status-chip validated">@Model.AcceptedApplications acceptées</span>
+            </div>
+            <div class="stat-value" style="color:var(--admin-blue)">@Model.TotalApplications</div>
+            <div class="stat-label">Candidatures · @Model.RejectedApplications refusées · @Model.PendingCandidaturesCount en attente</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-red">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l9 5v6c0 5-4 9-9 9s-9-4-9-9V7z" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 16h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+                </div>
+                <span class="status-chip alert">@Model.NotificationsLast14Days sur 14j</span>
+            </div>
+            <div class="stat-value" style="color:var(--admin-red)">@Model.InterviewProposals</div>
+            <div class="stat-label">Propositions d'entretien · @Model.NewUsersLast14Days nouveaux comptes</div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-lg-6">
             <div class="info-card h-100">
-                <div class="fw-semibold mb-2">Activité récente</div>
-                <div class="sub">@Model.NewUsersLast14Days nouveaux comptes sur les 14 derniers jours.</div>
-                <div class="sub">@Model.NewOffersLast14Days nouvelles offres sur les 14 derniers jours.</div>
-                <div class="sub">@Model.PendingAlumniRequests demandes alumni à traiter.</div>
+                <div class="section-title mb-2">
+                    <span class="section-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v4l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="1.7"/></svg>
+                    </span>
+                    Activité récente
+                </div>
+
+                <ul class="activity-list mb-0">
+                    <li class="activity-item">
+                        <span class="activity-dot neutral"></span>
+                        <div class="activity-body">
+                            <strong>@Model.NewUsersLast14Days</strong> nouveaux comptes créés sur les <strong>14 derniers jours</strong>.
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <span class="activity-dot neutral"></span>
+                        <div class="activity-body">
+                            <strong>@Model.NewOffersLast14Days</strong> nouvelles offres publiées sur les <strong>14 derniers jours</strong>.
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <span class="activity-dot alert"></span>
+                        <div class="activity-body">
+                            <strong>@Model.PendingAlumniRequests</strong> demande(s) alumni en <strong>attente</strong> nécessitent une action.
+                        </div>
+                    </li>
+                </ul>
+                <div class="activity-divider"></div>
+                <div class="small text-muted mt-2">Les éléments en ambre signalent une action requise.</div>
             </div>
         </div>
-        <div class="col-md-6">
+
+        <div class="col-lg-6">
             <div class="info-card h-100">
-                <div class="fw-semibold mb-2">Gestion</div>
-                <div class="sub mb-2">Accès direct aux sections administratives centrales.</div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a asp-action="Users" class="btn btn-sm btn-primary">Gérer les utilisateurs</a>
-                    <a asp-action="Index" class="btn btn-sm btn-outline-primary">Valider les demandes</a>
+                <div class="section-title mb-2">
+                    <span class="section-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                    </span>
+                    Gestion
+                </div>
+
+                <div class="management-list">
+                    <a asp-action="Users" class="management-row">
+                        <span class="action-icon" style="background:var(--admin-teal-soft); color:var(--admin-teal)" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 20v-2a4 4 0 0 1 4-4h2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.7"/><path d="M19 8v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M16 11h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="management-copy">
+                            <span class="management-title">Gérer les utilisateurs</span>
+                            <span class="management-sub">Voir, modifier et désactiver les comptes</span>
+                        </span>
+                        <span class="management-arrow">?</span>
+                    </a>
+
+                    <a asp-controller="AlumniRequest" asp-action="Pending" class="management-row">
+                        <span class="action-icon" style="background:rgba(245,158,11,.12); color:#C27B00" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5 11h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7 22h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="management-copy">
+                            <span class="management-title">Valider les demandes</span>
+                            <span class="management-sub">Demandes alumni en attente</span>
+                        </span>
+                        <span class="d-inline-flex align-items-center gap-2">
+                            <span class="alert-badge">@Model.PendingAlumniRequests</span>
+                            <span class="management-arrow">?</span>
+                        </span>
+                    </a>
+
+                    <a asp-controller="AlumniRequest" asp-action="Manage" asp-route-filter="All" class="management-row">
+                        <span class="action-icon" style="background:var(--admin-blue-soft); color:var(--admin-blue)" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.7"/><path d="M4 9h16" stroke="currentColor" stroke-width="1.7"/></svg>
+                        </span>
+                        <span class="management-copy">
+                            <span class="management-title">Historique complet</span>
+                            <span class="management-sub">Consulter toutes les demandes et leurs décisions</span>
+                        </span>
+                        <span class="management-arrow">?</span>
+                    </a>
                 </div>
             </div>
         </div>

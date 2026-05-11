@@ -5,29 +5,62 @@
 }
 
 <style>
-    .forum-hero, .forum-card, .forum-filter { background:#fff; border:1px solid #DCDCE1; border-radius:14px; box-shadow:0 6px 18px rgba(24,95,165,.05); }
-    .forum-hero { padding:1rem; margin-bottom:.9rem; }
-    .forum-filter { padding:.9rem; margin-bottom:.9rem; }
-    .forum-card { padding:.9rem; margin-bottom:.75rem; }
-    .forum-title { font-family:'Bebas Neue', sans-serif; font-size:2rem; letter-spacing:1px; margin-bottom:.2rem; }
-    .topic-badge { display:inline-block; padding:.16rem .5rem; border-radius:999px; font-size:.72rem; font-weight:700; background:#E6F1FB; color:#185FA5; }
-    .topic-score { display:inline-block; padding:.16rem .5rem; border-radius:999px; font-size:.72rem; font-weight:700; background:#E1F5EE; color:#0F6E56; }
+    :root{
+        --teal-dark: #085041;
+        --teal: #1D9E75;
+        --teal-light: #E1F5EE;
+        --amber: #EF9F27;
+        --bg: #F0F5F3;
+        --card-border: rgba(8,80,65,0.12);
+        --card-border-thin: 0.5px;
+        --white: #fff;
+        --muted: #64756f;
+    }
+
+    .forum-wrap { background:var(--bg); padding:1rem 0 3rem; }
+    .forum-hero{ background:var(--white); border:var(--card-border-thin) solid var(--card-border); border-radius:14px; padding:1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; box-shadow:0 6px 18px rgba(8,80,65,0.04); }
+    .forum-title{ font-weight:800; font-size:1.35rem; color:var(--teal-dark); margin:0; }
+    .forum-sub{ color:var(--muted); }
+    .btn-solid-teal{ background:var(--teal); color:#fff; border-radius:12px; padding:.55rem .9rem; display:inline-flex; align-items:center; gap:.5rem; font-weight:700; border:0; }
+
+    .forum-filter{ background:var(--white); border:var(--card-border-thin) solid var(--card-border); border-radius:14px; padding:.9rem; margin-top:.9rem; box-shadow:0 6px 18px rgba(8,80,65,0.03); }
+    .form-control{ border-radius:10px; }
+    .form-control:focus, .form-select:focus{ outline:none; box-shadow:0 6px 18px rgba(29,158,117,0.12); border-color:var(--teal); }
+    .btn-filter{ background:var(--teal); color:#fff; border:0; border-radius:10px; padding:.45rem .7rem; font-weight:700; }
+
+    .forum-card{ background:var(--white); border:var(--card-border-thin) solid var(--card-border); border-radius:14px; padding:1rem; margin-top:.75rem; transition:transform .12s ease, box-shadow .12s ease; }
+    .forum-card:hover{ transform:translateY(-3px); box-shadow:0 12px 30px rgba(8,80,65,0.04); }
+
+    .topic-badge{ display:inline-flex; padding:.18rem .5rem; border-radius:999px; font-weight:700; background:var(--teal-light); color:var(--teal-dark); border:var(--card-border-thin) solid rgba(29,158,117,0.12); }
+    .topic-locked{ background: rgba(239,159,39,0.08); color:var(--amber); border:var(--card-border-thin) solid rgba(239,159,39,0.12); }
+    .topic-score{ display:inline-flex; padding:.18rem .5rem; border-radius:999px; font-weight:700; background:var(--teal-light); color:var(--teal-dark); }
+
+    .empty-state{ background:var(--white); border:var(--card-border-thin) solid var(--card-border); border-radius:14px; padding:2.2rem; text-align:center; margin-top:.9rem; }
+    .empty-illustration{ width:96px; height:96px; margin:0 auto 1rem; display:flex; align-items:center; justify-content:center; border-radius:18px; background:linear-gradient(135deg, rgba(29,158,117,0.06), rgba(239,159,39,0.04)); }
+
 </style>
 
-<div class="container mt-4">
-    <div class="forum-hero d-flex justify-content-between align-items-center flex-wrap gap-2">
+<div class="container forum-wrap mt-4">
+    <div class="forum-hero">
         <div>
-            <div class="forum-title">Forum</div>
-            <div class="text-muted">Échanges, questions carrière et discussions entre étudiants et alumni.</div>
+            <h3 class="forum-title">Forum</h3>
+            <div class="forum-sub">Échanges, questions carrière et discussions entre étudiants et alumni.</div>
         </div>
-        <a asp-action="Create" class="btn btn-primary">Nouveau sujet</a>
+        <div>
+            <a asp-action="Create" class="btn-solid-teal"><span>+</span> Nouveau sujet</a>
+        </div>
     </div>
 
     <div class="forum-filter">
         <form method="get">
-            <div class="row g-2">
+            <div class="row g-2 align-items-center">
                 <div class="col-md-4">
-                    <input name="search" value="@Model.Search" class="form-control" placeholder="Rechercher un mot-clé" />
+                    <div class="input-group">
+                        <span class="input-group-text" style="border-radius:10px 0 0 10px; border:1px solid rgba(10,10,10,0.06); background:#fff;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="#64756f" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <input name="search" value="@Model.Search" class="form-control" placeholder="Rechercher un mot-clé" />
+                    </div>
                 </div>
                 <div class="col-md-3">
                     <select name="categoryId" class="form-select">
@@ -46,7 +79,7 @@
                     </select>
                 </div>
                 <div class="col-md-2 d-grid">
-                    <button class="btn btn-outline-primary" type="submit">Filtrer</button>
+                    <button class="btn-filter" type="submit">Filtrer</button>
                 </div>
             </div>
         </form>
@@ -54,7 +87,16 @@
 
     @if (!Model.Topics.Items.Any())
     {
-        <div class="alert alert-info">Aucun sujet trouvé.</div>
+        <div class="empty-state">
+            <div class="empty-illustration">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#1D9E75" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h5>Aucun sujet trouvé</h5>
+            <p class="text-muted">Le forum est encore vide. Soyez le premier à lancer une discussion et à animer la communauté ITBS !</p>
+            <div>
+                <a asp-action="Create" class="btn-solid-teal">Créer le premier sujet</a>
+            </div>
+        </div>
     }
     else
     {
@@ -67,7 +109,7 @@
                             <span class="topic-badge">@topic.CategoryName</span>
                             @if (topic.IsLocked)
                             {
-                                <span class="topic-badge" style="background:#FAEEDA;color:#8A5A12;">Verrouillé</span>
+                                <span class="topic-badge topic-locked">Verrouillé</span>
                             }
                         </div>
                         <h5 class="mb-1"><a asp-action="Details" asp-route-id="@topic.ForumTopicId" class="text-decoration-none text-dark">@topic.Title</a></h5>

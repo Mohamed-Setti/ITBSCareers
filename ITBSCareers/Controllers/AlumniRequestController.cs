@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using IBSTCareers.Models;
 using ITBSCareers.Models.Carriere;
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Authorization;
@@ -37,8 +38,8 @@ namespace IBSTCareers.Controllers
 
             if (hasPendingRequest)
             {
-                TempData["Message"] = "You already have a pending alumni request.";
-                return RedirectToAction("Profile", "User");
+                TempData["Message"] = "Vous avez déjà une demande alumni en attente.";
+                return RedirectToAction(nameof(MyRequests));
             }
 
             return View(new AlumniRequest());
@@ -71,8 +72,8 @@ namespace IBSTCareers.Controllers
 
             if (hasPendingRequest)
             {
-                TempData["Message"] = "You already have a pending alumni request.";
-                return RedirectToAction("Profile", "User");
+                TempData["Message"] = "Vous avez déjà une demande alumni en attente.";
+                return RedirectToAction(nameof(MyRequests));
             }
 
             request.UserId = userId.Value;
@@ -84,25 +85,62 @@ namespace IBSTCareers.Controllers
             _context.AlumniRequests.Add(request);
             await _context.SaveChangesAsync();
 
-            TempData["Message"] = "Your alumni request has been submitted.";
-            return RedirectToAction("Profile", "User");
+            TempData["Message"] = "Votre demande alumni a bien été envoyée.";
+            return RedirectToAction(nameof(MyRequests));
+        }
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Manage(string? filter = "All")
+        {
+            if (!await IsAlumniRequestsTableAvailableAsync())
+            {
+                TempData["Message"] = "La fonctionnalité des demandes alumni n'est pas disponible. Créez la table 'AlumniRequests'.";
+                return RedirectToAction("Index", "Dashboard");
+            }
+
+            var requests = await GetAlumniRequestItemsAsync();
+            var currentFilter = string.IsNullOrWhiteSpace(filter) ? "All" : filter.Trim();
+
+            ViewBag.Filter = currentFilter;
+            ViewBag.TotalCount = requests.Count;
+            ViewBag.PendingCount = requests.Count(r => r.Status == "Pending");
+            ViewBag.ApprovedCount = requests.Count(r => r.Status == "Approved");
+            ViewBag.RejectedCount = requests.Count(r => r.Status == "Rejected");
+
+            requests = currentFilter.ToLowerInvariant() switch
+            {
+                "pending" => requests.Where(r => r.Status == "Pending").ToList(),
+                "approved" => requests.Where(r => r.Status == "Approved").ToList(),
+                "rejected" => requests.Where(r => r.Status == "Rejected").ToList(),
+                _ => requests
+            };
+
+            return View(requests);
         }
 
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Pending()
         {
+            return RedirectToAction(nameof(Manage), new { filter = "Pending" });
+        }
+
+        [Authorize]
+        public async Task<IActionResult> MyRequests()
+        {
             if (!await IsAlumniRequestsTableAvailableAsync())
             {
-                TempData["Message"] = "Alumni request feature is not available yet. Please create table 'AlumniRequests'.";
-                return RedirectToAction("Index", "Dashboard");
+                TempData["Message"] = "La fonctionnalité des demandes alumni n'est pas disponible. Créez la table 'AlumniRequests'.";
+                return RedirectToAction("Profile", "User");
             }
 
-            var pendingRequests = await _context.AlumniRequests
-                .Where(r => r.Status == "Pending")
-                .OrderBy(r => r.CreatedAt)
-                .ToListAsync();
+            var userId = GetCurrentUserId();
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
 
-            return View(pendingRequests);
+            var requests = await GetAlumniRequestItemsAsync(userId.Value);
+            return View(requests);
         }
 
         [HttpPost]
@@ -130,7 +168,7 @@ namespace IBSTCareers.Controllers
 
             if (request.Status != "Pending")
             {
-                return RedirectToAction(nameof(Pending));
+            return RedirectToAction(nameof(Manage));
             }
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -192,7 +230,38 @@ namespace IBSTCareers.Controllers
                 throw;
             }
 
-            return RedirectToAction(nameof(Pending));
+            return RedirectToAction(nameof(Manage));
+        }
+
+        private async Task<List<AlumniRequestListItemViewModel>> GetAlumniRequestItemsAsync(int? userId = null)
+        {
+            var requestsQuery = _context.AlumniRequests.AsNoTracking();
+
+            if (userId.HasValue)
+            {
+                requestsQuery = requestsQuery.Where(r => r.UserId == userId.Value);
+            }
+
+            var query = from request in requestsQuery
+                        join user in _context.Users.AsNoTracking() on request.UserId equals user.UserId
+                        join reviewer in _context.Users.AsNoTracking() on request.ReviewedBy equals reviewer.UserId into reviewerGroup
+                        from reviewer in reviewerGroup.DefaultIfEmpty()
+                        orderby request.CreatedAt descending
+                        select new AlumniRequestListItemViewModel
+                        {
+                            AlumniRequestId = request.AlumniRequestId,
+                            UserId = request.UserId,
+                            UserName = user.FullName,
+                            CompanyName = request.CompanyName,
+                            Position = request.Position,
+                            ProofFilePath = request.ProofFilePath,
+                            Status = request.Status,
+                            ReviewedByName = reviewer != null ? reviewer.FullName : null,
+                            ReviewedAt = request.ReviewedAt,
+                            CreatedAt = request.CreatedAt
+                        };
+
+            return await query.ToListAsync();
         }
 
         [HttpPost]
