@@ -30,6 +30,29 @@ namespace IBSTCareers.Controllers
             return View(notifications);
         }
 
+    [HttpGet]
+    public async Task<IActionResult> Recent(int count = 5)
+    {
+        var userId = GetCurrentUserId();
+        if (userId == null) return Unauthorized();
+
+        var notifications = await _context.Notifications
+            .Where(n => n.UserId == userId.Value)
+            .OrderByDescending(n => n.CreatedAt)
+            .Take(Math.Clamp(count, 1, 10))
+            .Select(n => new
+            {
+                n.NotificationId,
+                n.Type,
+                n.Content,
+                n.IsRead,
+                n.CreatedAt
+            })
+            .ToListAsync();
+
+        return Json(notifications);
+    }
+
         [Authorize(Roles = "Student")]
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -1,0 +1,1132 @@
+@model MessagingIndexViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Messagerie";
+    var selected = Model.SelectedConversation;
+    var currentSearch = Model.Search ?? string.Empty;
+    var currentContactsSearch = Model.ContactsSearch ?? string.Empty;
+}
+
+<style>
+    :root {
+        --panel-bg: #F5F3EA;
+        --panel-border: #DED7C7;
+        --soft: #F7F5EE;
+        --line: #E7E1D2;
+        --blue: #1865C9;
+        --blue-soft: #E7F1FF;
+        --green: #1AA64B;
+        --muted: #717171;
+        --text: #1F1F1F;
+    }
+
+    .msg-shell {
+        display: grid;
+        grid-template-columns: 372px minmax(0, 1fr);
+        min-height: calc(100vh - 170px);
+        background: #fff;
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .msg-panel {
+        background: linear-gradient(180deg, #F7F3E7 0%, #F4F1E9 100%);
+        border-right: 1px solid var(--panel-border);
+        padding: 1rem .9rem;
+        display: flex;
+        flex-direction: column;
+        gap: .95rem;
+    }
+
+    .chat-panel {
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+    }
+
+    .sidebar-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text);
+        margin-bottom: .7rem;
+    }
+
+    .msg-search,
+    .msg-input,
+    .msg-textarea {
+        width: 100%;
+        border: 1px solid #D7D0BF;
+        border-radius: 14px;
+        padding: .85rem 1rem;
+        background: #fff;
+        outline: none;
+    }
+
+    .msg-search {
+        padding-left: 3rem;
+        background-image: radial-gradient(circle at 18px 50%, transparent 7px, #6B7280 8px, #6B7280 10px, transparent 11px);
+        background-repeat: no-repeat;
+    }
+
+    .msg-search:focus,
+    .msg-input:focus,
+    .msg-textarea:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 .2rem rgba(24,101,201,.12);
+    }
+
+    .section-label {
+        color: #7E7769;
+        font-size: .82rem;
+        font-weight: 800;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        margin: .1rem 0 .15rem;
+    }
+
+    .contact-list,
+    .conversation-list {
+        display: flex;
+        flex-direction: column;
+        gap: .55rem;
+    }
+
+    .contact-item,
+    .conversation-item {
+        border: 1px solid transparent;
+        border-radius: 14px;
+        background: transparent;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding: .65rem .6rem;
+    }
+
+    .contact-item:hover,
+    .conversation-item:hover { background: rgba(255,255,255,.5); }
+
+    .contact-item.active,
+    .conversation-item.active {
+        background: #fff;
+        border-color: #D7D0BF;
+        box-shadow: 0 6px 16px rgba(24,95,165,.06);
+    }
+
+    .avatar-wrap { position: relative; flex: 0 0 42px; }
+
+    .avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #1F3A60;
+        background: #DCEBFD;
+        flex: 0 0 42px;
+    }
+
+    .avatar.blue { background: #DCEBFD; color: #1D5FC1; }
+    .avatar.green { background: #DDF6E5; color: #197A3D; }
+
+    .presence-dot,
+    .contact-presence {
+        position: absolute;
+        right: -1px;
+        bottom: -1px;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #BFC7D2;
+        border: 2px solid #fff;
+    }
+
+    .presence-dot.online,
+    .contact-presence.online { background: var(--green); }
+
+    .contact-name,
+    .conv-title,
+    .chat-name { font-weight: 800; color: var(--text); }
+
+    .contact-meta,
+    .contact-last,
+    .conv-sub,
+    .conv-last,
+    .chat-status { color: var(--muted); font-size: .84rem; }
+
+    .contact-pill,
+    .badge-unread {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        font-weight: 800;
+    }
+
+    .contact-pill {
+        padding: .22rem .6rem;
+        background: var(--blue-soft);
+        color: var(--blue);
+        font-size: .72rem;
+        white-space: nowrap;
+    }
+
+    .badge-unread {
+        min-width: 1.5rem;
+        height: 1.5rem;
+        padding: 0 .45rem;
+        background: var(--blue);
+        color: #fff;
+        font-size: .75rem;
+    }
+
+    .conversation-item {
+        display: block;
+        padding: .72rem .7rem;
+    }
+
+    .chat-header {
+        padding: .95rem 1.1rem;
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+    }
+
+    .chat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .chat-avatars {
+        display: flex;
+        align-items: center;
+        gap: .8rem;
+    }
+
+    .chat-name-wrap { line-height: 1.15; }
+
+    .chat-actions {
+        display: flex;
+        gap: .5rem;
+    }
+
+    .chat-action-link,
+    .chat-action-btn {
+        border: 1px solid #D9D9D9;
+        background: #fff;
+        border-radius: 14px;
+        padding: .65rem .9rem;
+        color: #2F2F2F;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .icon-btn {
+        width: 44px;
+        height: 44px;
+        border: 1px solid #D9D9D9;
+        background: #fff;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #4D4D4D;
+    }
+
+    .icon-action {
+        width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 0;
+        background: transparent;
+        color: #4D4D4D;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .icon-action:hover { background: rgba(0,0,0,.04); }
+
+    .typing-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        min-height: 1.2rem;
+        opacity: 0;
+        transition: opacity .15s ease;
+        color: var(--muted);
+        font-size: .84rem;
+        margin-top: .45rem;
+    }
+
+    .typing-indicator.show { opacity: 1; }
+
+    .typing-dots {
+        display: inline-flex;
+        gap: .15rem;
+        align-items: center;
+    }
+
+    .typing-dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #A0A0A0;
+        animation: typingBlink 1.1s infinite ease-in-out;
+    }
+
+    .typing-dots span:nth-child(2) { animation-delay: .15s; }
+    .typing-dots span:nth-child(3) { animation-delay: .3s; }
+
+    @@keyframes typingBlink {
+        0%, 80%, 100% { transform: translateY(0); opacity: .35; }
+        40% { transform: translateY(-3px); opacity: 1; }
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow: auto;
+        padding: 1rem 1.25rem;
+        background: #fff;
+    }
+
+    .date-separator {
+        display: flex;
+        align-items: center;
+        gap: .8rem;
+        margin: .5rem 0 1rem;
+        color: var(--muted);
+        font-size: .82rem;
+        justify-content: center;
+    }
+
+    .date-separator::before,
+    .date-separator::after {
+        content: '';
+        height: 1px;
+        background: var(--line);
+        flex: 1;
+        max-width: 120px;
+    }
+
+    .chat-empty {
+        border: 1px dashed var(--line);
+        border-radius: 16px;
+        background: #FAFAF7;
+        padding: 1.5rem;
+    }
+
+    .bubble-row {
+        display: flex;
+        align-items: flex-end;
+        gap: .5rem;
+        margin-bottom: .65rem;
+    }
+
+    .bubble-row.mine { justify-content: flex-end; }
+    .bubble-row.other { justify-content: flex-start; }
+
+    .bubble {
+        max-width: min(620px, 84%);
+        padding: .85rem 1rem;
+        border-radius: 18px;
+        line-height: 1.35;
+        box-shadow: 0 3px 10px rgba(0,0,0,.04);
+    }
+
+    .bubble.other {
+        background: #F6F3EC;
+        color: var(--text);
+        border-top-left-radius: 6px;
+    }
+
+    .bubble.mine {
+        background: var(--blue);
+        color: #fff;
+        border-top-right-radius: 6px;
+    }
+
+    .bubble-meta {
+        margin-top: .3rem;
+        font-size: .72rem;
+        opacity: .75;
+    }
+
+    .bubble-attachment { margin-top:.5rem; display:flex; gap:.5rem; align-items:center; }
+    .bubble-attachment a { color: inherit; text-decoration: underline; font-weight:600; }
+    .attachment-icon { font-size:16px; }
+
+    .message-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #DCEBFD;
+        color: #1D5FC1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .78rem;
+        font-weight: 800;
+        flex: 0 0 30px;
+    }
+
+    .chat-footer {
+        border-top: 1px solid var(--line);
+        background: #fff;
+        padding: .9rem 1rem 1rem;
+    }
+
+    .composer {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: .75rem;
+        align-items: end;
+    }
+
+    .composer-actions {
+        display: flex;
+        gap: .5rem;
+        flex-wrap: wrap;
+    }
+
+    .composer-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: .75rem;
+        align-items: end;
+    }
+
+    .msg-textarea { min-height: 66px; resize: none; }
+
+    .btn-compose {
+        border: 0;
+        border-radius: 14px;
+        padding: .9rem 1rem;
+        background: var(--blue);
+        color: #fff;
+        font-weight: 800;
+    }
+
+    .btn-compose.secondary {
+        background: #2D7FF9;
+    }
+
+    .btn-compose.ghost {
+        background: #F3F5F8;
+        color: #2F2F2F;
+        border: 1px solid #D9D9D9;
+    }
+
+    .composer-hint {
+        margin-top: .45rem;
+        color: var(--muted);
+        font-size: .8rem;
+    }
+
+    .pill {
+        display: inline-block;
+        padding: .22rem .58rem;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 800;
+    }
+
+    .pill-blue { background: var(--blue-soft); color: var(--blue); }
+    .pill-green { background: #E3F6EA; color: var(--green); }
+    .pill-amber { background: #FBEDD7; color: #94611A; }
+
+    .section-gap { margin-bottom: .85rem; }
+
+    .search-block {
+        background: rgba(255,255,255,.35);
+        border: 1px solid rgba(215,208,191,.85);
+        border-radius: 14px;
+        padding: .75rem;
+    }
+
+    .search-block .section-label {
+        margin-top: 0;
+    }
+
+    @@media (max-width: 992px) {
+        .msg-shell { grid-template-columns: 1fr; min-height: auto; }
+        .msg-panel { border-right: 0; border-bottom: 1px solid var(--panel-border); }
+        .composer { grid-template-columns: 1fr; }
+        .bubble { max-width: 92%; }
+    }
+</style>
+
+<div class="container mt-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <div>
+            <h3 class="mb-0">Messagerie</h3>
+            <div class="text-muted" id="unreadCountLabel">@Model.UnreadCount message(s) non lu(s)</div>
+        </div>
+        <a asp-controller="Dashboard" asp-action="Index" class="btn-soft text-decoration-none">Retour dashboard</a>
+    </div>
+
+    <div class="msg-shell">
+        <aside class="msg-panel">
+            <form id="messagingAntiForgery" method="post" class="d-none">@Html.AntiForgeryToken()</form>
+
+            <form id="messagingSearchForm" method="get" action="@Url.Action("Index", "Messaging")" class="search-block">
+                <input type="hidden" name="conversationId" value="@(selected?.ConversationId ?? 0)" />
+                <div class="mb-2">
+                    <div class="section-label">Recherche conversations</div>
+                    <input type="search" name="search" value="@currentSearch" class="msg-search" placeholder="Rechercher une conversation..." />
+                </div>
+                <div>
+                    <div class="section-label">Recherche contacts</div>
+                    <input type="search" name="contactsSearch" value="@currentContactsSearch" class="msg-search" placeholder="Rechercher un contact..." />
+                </div>
+            </form>
+
+            <div>
+                <div class="sidebar-title">Messagerie</div>
+            </div>
+
+            <div>
+                <div class="section-label">Suggestions d'alumni</div>
+                <div class="contact-list section-gap">
+                    @if (!Model.EligibleContacts.Any())
+                    {
+                        <div class="small text-muted">Aucune suggestion.</div>
+                    }
+                    else
+                    {
+                        foreach (var contact in Model.EligibleContacts.Take(3))
+                        {
+                            var initials = string.Concat(contact.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+                            if (string.IsNullOrWhiteSpace(initials)) { initials = "U"; }
+                            var contactNameJson = System.Text.Json.JsonSerializer.Serialize(contact.FullName);
+                            <button type="button" class="contact-item" onclick='openContact(@contact.UserId, @(contact.ConversationId.HasValue ? contact.ConversationId.Value.ToString() : "null"), @Html.Raw(contactNameJson), @(contact.CanMessage.ToString().ToLowerInvariant()), @(contact.CanRequestContact.ToString().ToLowerInvariant()), @(contact.HasPendingContactRequest.ToString().ToLowerInvariant()))'>
+                                <div class="avatar-wrap">
+                                    <div class="avatar @(contact.IsOnline ? "green" : "blue")">@initials</div>
+                                    <span class="contact-presence @(contact.IsOnline ? "online" : "")" data-presence-user-id="@contact.UserId"></span>
+                                </div>
+                                <div style="min-width:0;flex:1;">
+                                    <div class="d-flex justify-content-between gap-2 align-items-start">
+                                        <div style="min-width:0;">
+                                            <div class="contact-name">@contact.FullName</div>
+                                            <div class="contact-meta">@((contact.Position ?? contact.RoleName) ?? "Alumni")</div>
+                                            <div class="contact-meta">@(string.IsNullOrWhiteSpace(contact.CompanyName) ? "" : contact.CompanyName)</div>
+                                        </div>
+                                        <span class="contact-pill">@contact.ActionLabel</span>
+                                    </div>
+                                </div>
+                            </button>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div>
+                <div class="section-label">Conversations</div>
+                <div class="conversation-list" id="conversationList">
+                    @if (!Model.Conversations.Any())
+                    {
+                        <div class="small text-muted">Aucune conversation.</div>
+                    }
+                    else
+                    {
+                        foreach (var conversation in Model.Conversations)
+                        {
+                            var activeClass = selected != null && conversation.ConversationId == selected.ConversationId ? "active" : "";
+                            var initials = string.Concat(conversation.OtherUserName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+                            if (string.IsNullOrWhiteSpace(initials)) { initials = "U"; }
+                            <a class="conversation-item @activeClass" href="@Url.Action("Index", new { conversationId = conversation.ConversationId, search = Model.Search, contactsSearch = Model.ContactsSearch })" data-conversation-id="@conversation.ConversationId">
+                                <div class="d-flex gap-2 align-items-start">
+                                    <div class="avatar-wrap">
+                                        <div class="avatar @(conversation.IsOnline ? "green" : "blue")">@initials</div>
+                                        <span class="contact-presence @(conversation.IsOnline ? "online" : "")" data-presence-user-id="@conversation.OtherUserId"></span>
+                                    </div>
+                                    <div style="min-width:0;flex:1;">
+                                        <div class="d-flex justify-content-between align-items-start gap-2">
+                                            <div style="min-width:0;">
+                                                <div class="conv-title">@conversation.OtherUserName</div>
+                                                <div class="conv-sub">@(string.IsNullOrWhiteSpace(conversation.Subject) ? "" : conversation.Subject)</div>
+                                            </div>
+                                            <div class="text-end">
+                                                <div class="conv-sub">@(conversation.LastMessageAt?.ToString("HH:mm") ?? "")</div>
+                                                @if (conversation.UnreadCount > 0)
+                                                {
+                                                    <span class="badge-unread mt-1">@conversation.UnreadCount</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="conv-last text-truncate">@(string.IsNullOrWhiteSpace(conversation.LastMessage) ? "Nouvelle conversation" : conversation.LastMessage)</div>
+                                    </div>
+                                </div>
+                            </a>
+                        }
+                    }
+                </div>
+            </div>
+        </aside>
+
+        <section class="chat-panel">
+            @if (selected == null)
+            {
+                <div class="chat-header">
+                    <div class="chat-top">
+                        <div class="chat-avatars">
+                            <div class="avatar blue">M</div>
+                            <div class="chat-name-wrap">
+                                <div class="chat-name">Sélectionnez une conversation</div>
+                                <div class="chat-status">Les messages apparaîtront ici.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-messages d-flex align-items-center justify-content-center text-muted">Aucune conversation ouverte.</div>
+            }
+            else
+            {
+                <div class="chat-header">
+                    <div class="chat-top">
+                        <div class="chat-avatars">
+                            <div class="avatar blue">@((string.Concat(selected.OtherUserName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])))))</div>
+                            <div class="chat-name-wrap">
+                                <div class="chat-name">@selected.OtherUserName</div>
+                                <div class="chat-status d-flex align-items-center gap-2">
+                                    <span class="presence-dot @(selected.OtherUserIsOnline ? "online" : "")" id="currentPresenceDot"></span>
+                                    <span id="presenceLabel">@(selected.OtherUserIsOnline ? "En ligne" : "Hors ligne")</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-actions">
+                            <a class="icon-action" title="Visiter le profil" href="@Url.Action("Details", "User", new { id = selected.OtherUserId })" target="_blank" rel="noopener">&#128279;</a>
+                            @if (selected.CanUnblockUser)
+                            {
+                                <button type="button" class="icon-action" title="Débloquer" onclick="unblockUser(@selected.OtherUserId)">&#8617;</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="icon-action" title="Bloquer" onclick="blockUser(@selected.OtherUserId)">&#128683;</button>
+                            }
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(selected.Subject))
+                    {
+                        <div class="pill pill-blue mt-2">@selected.Subject</div>
+                    }
+                    <div class="typing-indicator" id="typingIndicator"><span class="typing-dots"><span></span><span></span><span></span></span><span id="typingLabel"></span></div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages" data-conversation-id="@selected.ConversationId">
+                    <div class="date-separator">Aujourd'hui</div>
+                    @if (!selected.Messages.Any())
+                    {
+                        <div class="chat-empty text-center text-muted py-5">
+                            <div class="fw-semibold mb-1">Commencez la discussion</div>
+                            <div>Écrivez un message à droite.</div>
+                        </div>
+                    }
+                    else
+                    {
+                        foreach (var message in selected.Messages)
+                        {
+                            <div class="bubble-row @(message.IsMine ? "mine" : "other")" data-message-id="@message.MessageId">
+                                @if (!message.IsMine)
+                                {
+                                    <div class="message-avatar">@((string.Concat(message.SenderName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])))))</div>
+                                }
+                                <div class="bubble @(message.IsMine ? "mine" : "other")">
+                                    @if (!string.IsNullOrWhiteSpace(message.Content))
+                                    {
+                                        <div>@message.Content</div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(message.AttachmentPath))
+                                    {
+                                        <div class="bubble-attachment">
+                                            <span class="attachment-icon">??</span>
+                                            <a href="@message.AttachmentPath" target="_blank" rel="noopener">@message.AttachmentName</a>
+                                        </div>
+                                    }
+                                    <div class="bubble-meta">
+                                        @message.SenderName · @(message.SentAt?.ToString("HH:mm") ?? string.Empty)
+                                        @if (message.IsRead && message.IsMine)
+                                        {
+                                            <span> · lu</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+
+                <div class="chat-footer">
+                    @if (selected.IsBlocked)
+                    {
+                        <div class="alert alert-warning mb-0">
+                            @if (selected.CanUnblockUser)
+                            {
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <span>Cette conversation est bloquée par vous.</span>
+                                    <button type="button" class="btn btn-sm btn-outline-dark" onclick="unblockUser(@selected.OtherUserId)">Débloquer</button>
+                                </div>
+                            }
+                            else
+                            {
+                                <span>Cette conversation est bloquée par l’autre utilisateur.</span>
+                            }
+                        </div>
+                    }
+                    else if (!selected.CanSend)
+                    {
+                        <div class="alert alert-info mb-0">Une demande de contact acceptée est requise pour envoyer un message.</div>
+                    }
+                    else
+                    {
+                        <form id="sendMessageForm" enctype="multipart/form-data">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="conversationId" value="@selected.ConversationId" />
+                            <input type="hidden" id="typingConversationId" value="@selected.ConversationId" />
+                            <div class="composer">
+                                <div>
+                                    <textarea name="content" class="msg-textarea" placeholder="Écrire un message..."></textarea>
+                                    <div class="composer-hint">Entrée = envoyer · Maj+Entrée = nouvelle ligne</div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:.5rem;">
+                                    <input type="file" name="attachment" id="attachmentPicker" class="d-none" />
+                                    <button type="button" class="icon-action" id="pickImageBtn" title="Ajouter image">&#127748;</button>
+                                    <button type="button" class="icon-action" id="pickFileBtn" title="Ajouter fichier">&#128206;</button>
+                                    <button type="submit" class="btn-compose" style="padding:.55rem .8rem;">Envoyer</button>
+                                </div>
+                            </div>
+                        </form>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.6/signalr.min.js"></script>
+    <script>
+        const selectedConversationId = @(selected?.ConversationId ?? 0);
+        const selectedOtherUserId = @(selected?.OtherUserId ?? 0);
+        const currentUserId = @(Model.CurrentUserId);
+        const currentSearch = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(currentSearch));
+        const currentContactsSearch = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(currentContactsSearch));
+        const typingState = { timer: null, active: false };
+        const hasSignalR = typeof window.signalR !== 'undefined';
+        let connection = null;
+        const attachmentPicker = document.getElementById('attachmentPicker');
+        const attachmentLabel = document.getElementById('attachmentLabel');
+        const pickImageBtn = document.getElementById('pickImageBtn');
+        const pickFileBtn = document.getElementById('pickFileBtn');
+        const searchForm = document.getElementById('messagingSearchForm');
+        const searchInputs = searchForm ? searchForm.querySelectorAll('input[type="search"]') : [];
+        let searchTimer = null;
+
+        function initConnection() {
+            if (!hasSignalR) {
+                console.warn('SignalR indisponible.');
+                return;
+            }
+
+            connection = new signalR.HubConnectionBuilder()
+                .withUrl('/hubs/messaging')
+                .withAutomaticReconnect()
+                .build();
+
+            connection.on('ReceiveMessage', payload => {
+                if (!payload || payload.conversationId !== selectedConversationId) return;
+                appendMessage(payload);
+                updateConversationPreview(payload);
+            });
+
+            connection.on('UnreadCountUpdated', payload => {
+                if (!payload) return;
+                const label = document.getElementById('unreadCountLabel');
+                if (label && typeof payload.unreadCount === 'number') {
+                    label.textContent = `${payload.unreadCount} message(s) non lu(s)`;
+                }
+                refreshUnreadBadge(payload.userId, payload.unreadCount);
+            });
+
+            connection.on('PresenceChanged', payload => {
+                if (!payload || typeof payload.userId !== 'number') return;
+                setPresence(payload.userId, !!payload.isOnline);
+            });
+
+            connection.on('TypingStateChanged', payload => {
+                if (!payload || payload.conversationId !== selectedConversationId || payload.userId === currentUserId) return;
+                const indicator = document.getElementById('typingIndicator');
+                const label = document.getElementById('typingLabel');
+                if (!indicator || !label) return;
+                if (payload.isTyping) {
+                    label.textContent = `${payload.userName || 'Quelqu\'un'} est en train d'écrire...`;
+                    indicator.classList.add('show');
+                } else {
+                    indicator.classList.remove('show');
+                    label.textContent = '';
+                }
+            });
+
+            connection.onreconnected(async () => {
+                if (selectedConversationId > 0) {
+                    await joinConversation(selectedConversationId);
+                    await markRead(selectedConversationId);
+                }
+            });
+
+            connection.start().then(async () => {
+                if (selectedConversationId > 0) {
+                    await joinConversation(selectedConversationId);
+                    await markRead(selectedConversationId);
+                }
+            }).catch(console.error);
+        }
+
+        const sendForm = document.getElementById('sendMessageForm');
+        if (sendForm) {
+            if (pickImageBtn && attachmentPicker) {
+                pickImageBtn.addEventListener('click', function () {
+                    attachmentPicker.accept = 'image/*';
+                    attachmentPicker.click();
+                });
+            }
+
+            if (pickFileBtn && attachmentPicker) {
+                pickFileBtn.addEventListener('click', function () {
+                    attachmentPicker.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.rar,.png,.jpg,.jpeg,.gif,.webp';
+                    attachmentPicker.click();
+                });
+            }
+
+            if (attachmentPicker && attachmentLabel) {
+                attachmentPicker.addEventListener('change', function () {
+                    attachmentLabel.textContent = this.files && this.files[0] ? this.files[0].name : 'Aucun fichier sélectionné.';
+                });
+            }
+
+            sendForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const formData = new FormData(sendForm);
+                const response = await fetch('@Url.Action("Send", "Messaging")', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'RequestVerificationToken': sendForm.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                if (!response.ok) {
+                    alert('Impossible d\'envoyer le message.');
+                    return;
+                }
+
+                const data = await response.json().catch(() => ({}));
+                if (data && data.message) {
+                    appendMessage({ ...data.message, conversationId: selectedConversationId });
+                    updateConversationPreview({ ...data.message, conversationId: selectedConversationId });
+                    stopTyping();
+                    if (hasSignalR) {
+                        await refreshConversation(selectedConversationId);
+                    }
+                }
+
+                sendForm.querySelector('textarea[name="content"]').value = '';
+                if (attachmentPicker) {
+                    attachmentPicker.value = '';
+                }
+                if (attachmentLabel) {
+                    attachmentLabel.textContent = 'Aucun fichier sélectionné.';
+                }
+            });
+
+            const textArea = sendForm.querySelector('textarea[name="content"]');
+            if (textArea) {
+                textArea.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendForm.requestSubmit();
+                    }
+                });
+                textArea.addEventListener('input', throttleTyping);
+                textArea.addEventListener('blur', stopTyping);
+            }
+        }
+
+        initConnection();
+
+        async function markRead(conversationId) {
+            await postJson('@Url.Action("Read", "Messaging")', { conversationId });
+        }
+
+        async function joinConversation(conversationId) {
+            if (!connection || connection.state !== signalR.HubConnectionState.Connected) return;
+            try {
+                await connection.invoke('JoinConversation', conversationId);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function openContact(userId, conversationId, fullName, canMessage, canRequestContact, hasPendingContactRequest) {
+            if (!canMessage) {
+                if (canRequestContact) {
+                    await requestContact(userId, fullName);
+                    return;
+                }
+                if (hasPendingContactRequest) {
+                    alert('Votre demande de contact est déjà en attente.');
+                    return;
+                }
+                alert('Ce contact n\'est pas encore autorisé.');
+                return;
+            }
+
+            if (conversationId && conversationId > 0) {
+                window.location = '@Url.Action("Index", "Messaging")' + '?conversationId=' + conversationId + '&search=' + encodeURIComponent(currentSearch) + '&contactsSearch=' + encodeURIComponent(currentContactsSearch);
+                return;
+            }
+
+            const token = document.querySelector('#messagingAntiForgery input[name="__RequestVerificationToken"]')?.value;
+            const subject = prompt(`Sujet pour ${fullName} (optionnel)`) || '';
+
+            const formData = new URLSearchParams();
+            formData.append('OtherUserId', userId);
+            formData.append('Subject', subject);
+
+            const response = await fetch('@Url.Action("Start", "Messaging")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'RequestVerificationToken': token || ''
+                },
+                body: formData.toString()
+            });
+
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                alert(data.error || 'Impossible d\'ouvrir la conversation.');
+                return;
+            }
+
+            window.location = data.redirectUrl;
+        }
+
+        async function requestContact(userId, fullName) {
+            const response = await postJson('@Url.Action("RequestContact", "Messaging")', { alumniUserId: userId });
+            if (!response || !response.success) {
+                alert(response.error || 'Impossible d\'envoyer la demande de contact.');
+                return;
+            }
+            alert(`Demande envoyée à ${fullName}.`);
+            window.location.reload();
+        }
+
+        async function blockUser(userId) {
+            const reason = prompt('Motif du blocage (facultatif)') || '';
+            await postJson('@Url.Action("Block", "Messaging")', { blockedUserId: userId, reason });
+            window.location.reload();
+        }
+
+        async function unblockUser(userId) {
+            await postJson('@Url.Action("Unblock", "Messaging")', { blockedUserId: userId });
+            window.location.reload();
+        }
+
+        async function reportUser(userId) {
+            const reason = prompt('Motif du signalement');
+            if (!reason) return;
+            await postJson('@Url.Action("Report", "Messaging")', { reportedUserId: userId, reason });
+            alert('Utilisateur signalé.');
+        }
+
+        async function deleteConversation(conversationId) {
+            if (!confirm('Supprimer cette conversation ?')) return;
+            const response = await postJson('@Url.Action("Delete", "Messaging")', { conversationId });
+            if (response && response.success) {
+                window.location = '@Url.Action("Index", "Messaging")';
+            }
+        }
+
+        async function postJson(url, data) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'RequestVerificationToken': token || ''
+                },
+                body: new URLSearchParams(data).toString()
+            });
+            return await response.json().catch(() => ({}));
+        }
+
+        async function refreshConversation(conversationId) {
+            if (!conversationId) return;
+            const response = await fetch(`@Url.Action("ConversationData", "Messaging")?id=${conversationId}`);
+            if (!response.ok) return;
+            const data = await response.json().catch(() => null);
+            if (!data) return;
+            renderConversation(data);
+        }
+
+        function renderConversation(data) {
+            const chat = document.getElementById('chatMessages');
+            if (!chat || !data) return;
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) typingIndicator.classList.remove('show');
+            const headerPresence = document.getElementById('currentPresenceDot');
+            const headerPresenceLabel = document.getElementById('presenceLabel');
+            if (headerPresence) headerPresence.classList.toggle('online', !!data.otherUserIsOnline);
+            if (headerPresenceLabel) headerPresenceLabel.textContent = data.otherUserIsOnline ? 'En ligne' : 'Hors ligne';
+            chat.innerHTML = '<div class="date-separator">Aujourd\'hui</div>';
+            if (!data.messages || data.messages.length === 0) {
+                chat.innerHTML += '<div class="chat-empty text-center text-muted py-5"><div class="fw-semibold mb-1">Commencez la discussion</div><div>Écrivez un message à droite.</div></div>';
+                return;
+            }
+            for (const message of data.messages) {
+                const row = document.createElement('div');
+                row.className = `bubble-row ${message.isMine ? 'mine' : 'other'}`;
+                row.dataset.messageId = message.messageId || '';
+                const avatar = message.isMine ? '' : `<div class="message-avatar">${getInitials(message.senderName)}</div>`;
+                row.innerHTML = `
+                    ${avatar}
+                    <div class="bubble ${message.isMine ? 'mine' : 'other'}">
+                        ${message.content ? `<div>${escapeHtml(message.content)}</div>` : ''}
+                    ${message.attachmentPath ? `<div class="bubble-attachment"><span class="attachment-icon">&#128206;</span><a href="${message.attachmentPath}" target="_blank" rel="noopener">${escapeHtml(message.attachmentName || 'Pièce jointe')}</a></div>` : ''}
+                        <div class="bubble-meta">${escapeHtml(message.senderName || '')} · ${formatDate(message.sentAt)}${message.isMine ? ' · lu' : ''}</div>
+                    </div>`;
+                chat.appendChild(row);
+            }
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function appendMessage(payload) {
+            const chat = document.getElementById('chatMessages');
+            if (!chat || !payload) return;
+            const existing = payload.messageId ? chat.querySelector(`[data-message-id="${payload.messageId}"]`) : null;
+            if (existing) return;
+            const emptyState = chat.querySelector('.chat-empty');
+            if (emptyState) emptyState.remove();
+            const row = document.createElement('div');
+            row.className = `bubble-row ${payload.isMine ? 'mine' : 'other'}`;
+            row.dataset.messageId = payload.messageId || '';
+            const avatar = payload.isMine ? '' : `<div class="message-avatar">${getInitials(payload.senderName)}</div>`;
+            row.innerHTML = `
+                ${avatar}
+                <div class="bubble ${payload.isMine ? 'mine' : 'other'}">
+                    ${payload.content ? `<div>${escapeHtml(payload.content)}</div>` : ''}
+                    ${payload.attachmentPath ? `<div class="bubble-attachment"><span class="attachment-icon">&#128206;</span><a href="${payload.attachmentPath}" target="_blank" rel="noopener">${escapeHtml(payload.attachmentName || 'Pièce jointe')}</a></div>` : ''}
+                    <div class="bubble-meta">${escapeHtml(payload.senderName || '')} · ${formatDate(payload.sentAt)}${payload.isMine ? ' · lu' : ''}</div>
+                </div>`;
+            chat.appendChild(row);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function updateConversationPreview(payload) {
+            if (!payload || !selectedConversationId) return;
+            const card = document.querySelector(`.conversation-item[data-conversation-id="${selectedConversationId}"]`);
+            if (!card) return;
+            const lastLine = card.querySelector('.conv-last');
+            if (lastLine) lastLine.textContent = payload.content || payload.attachmentName || 'Nouvelle conversation';
+            const timeLine = card.querySelector('.conv-sub');
+            if (timeLine) timeLine.textContent = formatDate(payload.sentAt);
+        }
+
+        function refreshUnreadBadge(userId, unreadCount) {
+            if (!userId) return;
+            const card = document.querySelector(`.conversation-item[data-conversation-id="${selectedConversationId}"]`);
+            if (card) {
+                const badge = card.querySelector('.badge-unread');
+                if (unreadCount > 0) {
+                    if (badge) badge.textContent = unreadCount;
+                } else if (badge) {
+                    badge.remove();
+                }
+            }
+        }
+
+        function setPresence(userId, isOnline) {
+            document.querySelectorAll(`[data-presence-user-id="${userId}"]`).forEach(el => {
+                el.classList.toggle('online', isOnline);
+            });
+            if (selectedOtherUserId === userId) {
+                const dot = document.getElementById('currentPresenceDot');
+                const label = document.getElementById('presenceLabel');
+                if (dot) dot.classList.toggle('online', isOnline);
+                if (label) label.textContent = isOnline ? 'En ligne' : 'Hors ligne';
+            }
+        }
+
+        function throttleTyping() {
+            if (!selectedConversationId || !connection || connection.state !== signalR.HubConnectionState.Connected) return;
+            if (!typingState.active) {
+                typingState.active = true;
+                sendTyping(true);
+            }
+            clearTimeout(typingState.timer);
+            typingState.timer = setTimeout(() => stopTyping(), 1800);
+        }
+
+        async function sendTyping(isTyping) {
+            if (!selectedConversationId || !connection || connection.state !== signalR.HubConnectionState.Connected) return;
+            try {
+                await connection.invoke('SetTyping', selectedConversationId, isTyping);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function stopTyping() {
+            if (!typingState.active) return;
+            typingState.active = false;
+            clearTimeout(typingState.timer);
+            sendTyping(false);
+            const indicator = document.getElementById('typingIndicator');
+            const label = document.getElementById('typingLabel');
+            if (indicator) indicator.classList.remove('show');
+            if (label) label.textContent = '';
+        }
+
+        function escapeHtml(value) {
+            return (value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function getInitials(name) {
+            const parts = (name || '').split(' ').filter(Boolean);
+            const initials = parts.slice(0, 2).map(part => part.charAt(0).toUpperCase()).join('');
+            return initials || 'U';
+        }
+
+        function formatDate(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            return isNaN(date.getTime()) ? '' : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        if (searchForm && searchInputs.length > 0) {
+            searchInputs.forEach(input => {
+                input.addEventListener('input', () => {
+                    clearTimeout(searchTimer);
+                    searchTimer = setTimeout(() => searchForm.requestSubmit(), 350);
+                });
+            });
+        }
+    </script>
+}

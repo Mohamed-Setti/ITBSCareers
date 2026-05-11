@@ -1,0 +1,85 @@
+@model ITBSCareers.Models.Forum.ForumIndexViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Forum";
+}
+
+<style>
+    .forum-hero, .forum-card, .forum-filter { background:#fff; border:1px solid #DCDCE1; border-radius:14px; box-shadow:0 6px 18px rgba(24,95,165,.05); }
+    .forum-hero { padding:1rem; margin-bottom:.9rem; }
+    .forum-filter { padding:.9rem; margin-bottom:.9rem; }
+    .forum-card { padding:.9rem; margin-bottom:.75rem; }
+    .forum-title { font-family:'Bebas Neue', sans-serif; font-size:2rem; letter-spacing:1px; margin-bottom:.2rem; }
+    .topic-badge { display:inline-block; padding:.16rem .5rem; border-radius:999px; font-size:.72rem; font-weight:700; background:#E6F1FB; color:#185FA5; }
+    .topic-score { display:inline-block; padding:.16rem .5rem; border-radius:999px; font-size:.72rem; font-weight:700; background:#E1F5EE; color:#0F6E56; }
+</style>
+
+<div class="container mt-4">
+    <div class="forum-hero d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <div class="forum-title">Forum</div>
+            <div class="text-muted">Échanges, questions carrière et discussions entre étudiants et alumni.</div>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">Nouveau sujet</a>
+    </div>
+
+    <div class="forum-filter">
+        <form method="get">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input name="search" value="@Model.Search" class="form-control" placeholder="Rechercher un mot-clé" />
+                </div>
+                <div class="col-md-3">
+                    <select name="categoryId" class="form-select">
+                        <option value="">Toutes les thématiques</option>
+                        @foreach (var category in Model.Categories)
+                        {
+                            <option value="@category.ForumCategoryId" selected="@(Model.CategoryId == category.ForumCategoryId)">@category.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="sort" class="form-select">
+                        <option value="recent" selected="@(Model.Sort == "recent")">Plus récents</option>
+                        <option value="popular" selected="@(Model.Sort == "popular")">Plus populaires</option>
+                        <option value="commented" selected="@(Model.Sort == "commented")">Plus commentés</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button class="btn btn-outline-primary" type="submit">Filtrer</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    @if (!Model.Topics.Items.Any())
+    {
+        <div class="alert alert-info">Aucun sujet trouvé.</div>
+    }
+    else
+    {
+        foreach (var topic in Model.Topics.Items)
+        {
+            <div class="forum-card">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <div>
+                        <div class="mb-1">
+                            <span class="topic-badge">@topic.CategoryName</span>
+                            @if (topic.IsLocked)
+                            {
+                                <span class="topic-badge" style="background:#FAEEDA;color:#8A5A12;">Verrouillé</span>
+                            }
+                        </div>
+                        <h5 class="mb-1"><a asp-action="Details" asp-route-id="@topic.ForumTopicId" class="text-decoration-none text-dark">@topic.Title</a></h5>
+                        <div class="text-muted small">Par @topic.AuthorName · @topic.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                    <div class="text-end">
+                        <span class="topic-score">Score @topic.Score</span>
+                        <div class="small text-muted mt-1">@topic.CommentsCount commentaires</div>
+                    </div>
+                </div>
+                <p class="mt-2 mb-2">@topic.Excerpt</p>
+            </div>
+        }
+    }
+</div>

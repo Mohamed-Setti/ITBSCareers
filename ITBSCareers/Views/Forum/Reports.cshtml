@@ -1,0 +1,67 @@
+@model ITBSCareers.Models.Forum.PagedResult<ITBSCareers.Models.Carriere.ForumReport>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Modération forum";
+    var resolved = ViewBag.Resolved as bool? ?? false;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h3 class="mb-0">Modération forum</h3>
+            <div class="text-muted">Signalements à traiter et bannissement utilisateur.</div>
+        </div>
+        <div class="btn-group">
+            <a asp-action="Reports" asp-route-resolved="false" class="btn btn-outline-primary @(resolved ? string.Empty : "active")">En attente</a>
+            <a asp-action="Reports" asp-route-resolved="true" class="btn btn-outline-primary @(!resolved ? string.Empty : "active")">Résolus</a>
+        </div>
+    </div>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="alert alert-info">Aucun signalement.</div>
+    }
+    else
+    {
+        foreach (var report in Model.Items)
+        {
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+                        <div>
+                            <div class="fw-semibold">@report.Reason</div>
+                            <div class="text-muted small">Par @report.ReportedBy.FullName · @report.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                            <div class="text-muted small">Sujet: @report.Topic.Title</div>
+                            @if (report.Comment != null)
+                            {
+                                <div class="text-muted small">Commentaire signalé: @Html.Raw(report.Comment.Content)</div>
+                            }
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            @if (!report.IsResolved)
+                            {
+                                <form asp-action="ResolveReport" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="reportId" value="@report.ForumReportId" />
+                                    <input type="hidden" name="resolved" value="true" />
+                                    <button type="submit" class="btn btn-sm btn-success">Résoudre</button>
+                                </form>
+                                <form asp-action="BanUser" method="post" class="d-flex gap-2 align-items-center flex-wrap">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userIdToBan" value="@report.ReportedByUserId" />
+                                    <input type="text" name="reason" class="form-control form-control-sm" placeholder="Motif du bannissement" />
+                                    <input type="number" name="days" class="form-control form-control-sm" style="max-width:110px;" placeholder="Jours" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Bannir</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success align-self-center">Résolu</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

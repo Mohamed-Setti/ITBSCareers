@@ -6,85 +6,314 @@
 
 <style>
     :root {
-        --bleu: #185FA5;
-        --bleu-light: #E6F1FB;
-        --bg: #F5F6F8;
+        --teal-900: #0D7377;
+        --teal-700: #14A085;
+        --teal-soft: #E6FAF6;
+        --amber: #F0A500;
+        --amber-soft: #FFF4D7;
+        --blue: #2F80ED;
+        --blue-soft: #EAF3FF;
+        --gray: #64748B;
+        --gray-soft: #EEF2F7;
+        --bg: #F8FAFC;
         --white: #fff;
-        --border: #DCDCE1;
-        --teal: #0F6E56;
-        --teal-light: #E1F5EE;
-        --amber: #8A5A12;
-        --amber-light: #FAEEDA;
-        --purple: #3C3489;
-        --purple-light: #EEEDFE;
-        --text-sec: #64646E;
-        --dark: #1E1E28;
+        --border: rgba(13,115,119,.16);
+        --border-strong: rgba(13,115,119,.25);
+        --text-sec: #64748B;
+        --text: #0F172A;
+        --shadow: 0 16px 40px rgba(15,23,42,.07);
     }
+
+    body { background: var(--bg); }
 
     .dash-wrap {
-        background: linear-gradient(180deg, #F7F9FC 0%, #F5F6F8 100%);
-        border-radius: 16px;
+        position: relative;
+        background: linear-gradient(180deg, rgba(255,255,255,.95) 0%, rgba(248,250,252,.96) 100%);
+        border: 1px solid var(--border);
+        border-radius: 28px;
         padding: 1.15rem;
+        box-shadow: var(--shadow);
+        overflow: hidden;
     }
 
-    .dash-topbar, .dash-card {
+    .dash-wrap::before,
+    .dash-wrap::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .dash-wrap::before {
+        width: 340px;
+        height: 340px;
+        background: radial-gradient(circle, rgba(20,160,133,.12) 0%, rgba(20,160,133,0) 70%);
+        top: -140px;
+        right: -110px;
+    }
+
+    .dash-wrap::after {
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(circle, rgba(240,165,0,.11) 0%, rgba(240,165,0,0) 72%);
+        bottom: -100px;
+        left: -80px;
+    }
+
+    .dash-topbar, .dash-card, .hot-card {
         background: var(--white);
         border: 1px solid var(--border);
-        border-radius: 14px;
-        box-shadow: 0 6px 18px rgba(24,95,165,.05);
+        border-radius: 22px;
+        box-shadow: 0 10px 28px rgba(15,23,42,.05);
+        backdrop-filter: blur(10px);
     }
 
     .dash-topbar {
-        padding: .85rem 1rem;
+        position: relative;
+        padding: 1rem 1.1rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 1rem;
         margin-bottom: 1rem;
+        background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(230,250,246,.78));
+        overflow: hidden;
+    }
+
+    .dash-topbar::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(20,160,133,.08), rgba(240,165,0,.05));
+        pointer-events: none;
     }
 
     .dash-avatar {
-        width: 42px;
-        height: 42px;
+        width: 64px;
+        height: 64px;
         border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        margin-right: .65rem;
+        font-weight: 800;
+        margin-right: .9rem;
+        color: #fff;
+        background: linear-gradient(135deg, var(--teal-900), var(--teal-700));
+        box-shadow: 0 14px 26px rgba(13,115,119,.24);
+        position: relative;
+        font-size: 1rem;
+    }
+
+    .dash-avatar::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 1px solid rgba(20,160,133,.18);
     }
 
     .dash-role-chip {
-        font-size: .75rem;
+        font-size: .76rem;
         font-weight: 700;
-        padding: .2rem .6rem;
+        padding: .28rem .72rem;
         border-radius: 999px;
-        background: var(--bleu-light);
-        color: var(--bleu);
-        margin-right: .25rem;
+        background: rgba(20,160,133,.1);
+        color: var(--teal-900);
+        border: 1px solid rgba(20,160,133,.18);
+        margin-right: .35rem;
     }
 
-    .dash-card {
-        padding: .9rem;
+    .dash-card, .hot-card {
+        padding: 1rem;
         margin-bottom: .75rem;
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .dash-card:hover, .hot-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 34px rgba(15,23,42,.08);
+        border-color: var(--border-strong);
     }
 
     .dash-stat {
-        font-size: 1.75rem;
+        font-size: 2.1rem;
         font-weight: 800;
         line-height: 1;
-        margin-top: .2rem;
+        margin-top: .35rem;
+        letter-spacing: -.03em;
     }
 
     .dash-title {
-        font-size: 1rem;
+        font-size: 1.05rem;
         font-weight: 800;
-        color: var(--dark);
-        margin: .6rem 0 .8rem;
+        color: var(--text);
+        margin: .9rem 0 .8rem;
     }
 
-    .dash-sub { color: var(--text-sec); font-size: .86rem; }
-    .row-stat .dash-card { min-height: 92px; }
-    .badge-status { background: var(--teal-light); color: var(--teal); padding: .2rem .55rem; border-radius: 999px; font-size: .72rem; font-weight: 700; }
+    .dash-sub { color: var(--text-sec); font-size: .9rem; }
+    .row-stat .dash-card { min-height: 118px; position: relative; overflow: hidden; }
+    .badge-status { background: var(--teal-soft); color: var(--teal-900); padding: .22rem .62rem; border-radius: 999px; font-size: .72rem; font-weight: 700; border: 1px solid rgba(20,160,133,.14); }
+    .hot-pill {
+        display: inline-block;
+        padding: .22rem .65rem;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 700;
+        background: var(--amber-soft);
+        color: #9A6400;
+    }
+    .hot-score {
+        display: inline-block;
+        padding: .26rem .6rem;
+        border-radius: 999px;
+        font-size: .74rem;
+        font-weight: 700;
+        background: rgba(20,160,133,.12);
+        color: var(--teal-900);
+    }
+
+    .hero-title { font-size: 1.85rem; font-weight: 800; color: var(--text); line-height: 1.1; }
+    .hero-meta { color: var(--text-sec); font-size: .92rem; }
+    .hero-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .35rem .7rem;
+        border-radius: 999px;
+        background: rgba(20,160,133,.1);
+        color: var(--teal-900);
+        font-weight: 700;
+        border: 1px solid rgba(20,160,133,.18);
+        font-size: .78rem;
+    }
+
+    .hero-actions { display:flex; gap:.6rem; flex-wrap: wrap; }
+
+    .dash-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        border-radius: 16px;
+        padding: .78rem 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .dash-btn:hover { transform: translateY(-1px); }
+
+    .dash-btn.primary {
+        color: #fff;
+        background: linear-gradient(135deg, var(--teal-900), var(--teal-700));
+        box-shadow: 0 14px 24px rgba(20,160,133,.24);
+    }
+
+    .dash-btn.soft {
+        color: var(--teal-900);
+        background: #fff;
+        border: 1px solid rgba(20,160,133,.22);
+        box-shadow: 0 10px 20px rgba(15,23,42,.04);
+    }
+
+    .stat-top {
+        display:flex;
+        justify-content: space-between;
+        align-items:flex-start;
+        gap: .8rem;
+    }
+
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 20px rgba(15,23,42,.04);
+        flex: 0 0 3rem;
+    }
+
+    .stat-icon svg { width: 1.35rem; height: 1.35rem; }
+
+    .stat-icon.teal { background: var(--teal-soft); color: var(--teal-900); }
+    .stat-icon.blue { background: var(--blue-soft); color: var(--blue); }
+    .stat-icon.amber { background: var(--amber-soft); color: #B77900; }
+    .stat-icon.gray { background: var(--gray-soft); color: var(--gray); }
+
+    .trend-chip {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: .22rem .58rem;
+        font-size: .72rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .trend-chip.green { background: var(--teal-soft); color: var(--teal-900); }
+    .trend-chip.blue { background: var(--blue-soft); color: var(--blue); }
+    .trend-chip.amber { background: var(--amber-soft); color: #B77900; }
+    .trend-chip.gray { background: var(--gray-soft); color: var(--gray); }
+
+    .offer-card {
+        display: grid;
+        grid-template-columns: 84px minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .offer-illustration {
+        width: 84px;
+        height: 84px;
+        border-radius: 24px;
+        background: linear-gradient(135deg, rgba(13,115,119,.1), rgba(240,165,0,.08));
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--teal-900);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+    }
+
+    .offer-actions { display:flex; gap:.6rem; flex-wrap:wrap; }
+
+    .offer-cta {
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        border-radius: 16px;
+        padding: .8rem 1.1rem;
+        font-weight: 800;
+        text-decoration:none;
+        border: 1px solid transparent;
+    }
+
+    .offer-cta.primary {
+        color:#fff;
+        background: linear-gradient(135deg, var(--teal-900), var(--teal-700));
+        box-shadow: 0 14px 24px rgba(20,160,133,.24);
+    }
+
+    .offer-cta.soft {
+        color: var(--teal-900);
+        background:#fff;
+        border-color: rgba(20,160,133,.22);
+        box-shadow: 0 10px 20px rgba(15,23,42,.04);
+    }
+
+    .section-rule {
+        height: 1px;
+        background: linear-gradient(90deg, rgba(13,115,119,.22), rgba(13,115,119,0));
+        margin: .6rem 0 1rem;
+    }
+
+    .subtle-note { color: var(--text-sec); font-size: .85rem; }
+
+    @@media (max-width: 992px) {
+        .dash-topbar { flex-direction: column; align-items: flex-start; }
+        .hero-title { font-size: 1.5rem; }
+        .offer-card { grid-template-columns: 1fr; }
+        .offer-actions { width: 100%; }
+    }
 </style>
 
 <div class="container mt-3 mb-4">
@@ -95,65 +324,199 @@
 
     <div class="dash-wrap">
         <div class="dash-topbar">
-            <div class="d-flex align-items-center">
-                <span class="dash-avatar" style="background:var(--bleu-light);color:var(--bleu);">
+            <div class="d-flex align-items-center flex-wrap">
+                <span class="dash-avatar">
                     @Model.FullName.Substring(0, Math.Min(2, Model.FullName.Length)).ToUpper()
                 </span>
                 <div>
-                    <div class="fw-bold" style="color:var(--dark);">Bonjour, @Model.FullName</div>
-                    <div>
+                    <div class="hero-title">Bonjour, @Model.FullName</div>
+                    <div class="hero-meta mt-1">Votre espace de suivi, de messagerie et d’opportunités.</div>
+                    <div class="mt-2 d-flex flex-wrap gap-2">
                         @foreach (var role in Model.Roles)
                         {
-                            <span class="dash-role-chip">@role</span>
+                            <span class="hero-chip">@role</span>
                         }
                     </div>
                 </div>
             </div>
-            <a asp-controller="User" asp-action="Profile" class="btn btn-sm" style="background:var(--teal);color:white;">Profil</a>
+            <div class="hero-actions">
+                <a href="@Url.Action("Index", "Messaging")" class="dash-btn soft">
+                    <span>✉</span>
+                    <span>Messagerie</span>
+                    @if (Model.UnreadMessagesCount > 0)
+                    {
+                        <span class="badge rounded-pill nav-notif-badge">@Model.UnreadMessagesCount</span>
+                    }
+                </a>
+                <a href="@Url.Action("Profile", "User")" class="dash-btn primary">
+                    <span>◌</span>
+                    <span>Profil</span>
+                </a>
+            </div>
         </div>
+
+        @if (Model.IsStudent)
+        {
+            <div class="dash-title">Opportunités recommandées</div>
+            @if (Model.HotOpportunities.Any())
+            {
+                <div class="row g-3 mb-2">
+                    @foreach (var offer in Model.HotOpportunities)
+                    {
+                        <div class="col-md-4">
+                            <div class="hot-card h-100">
+                                <div class="d-flex justify-content-between align-items-start gap-2">
+                                    <div>
+                                        <div class="hot-pill mb-2">Recommandée</div>
+                                        <h6 class="mb-1">@offer.OfferTitle</h6>
+                                        <div class="dash-sub">@offer.Location · @offer.Type</div>
+                                    </div>
+                                    <span class="hot-score">Match @offer.MatchScore</span>
+                                </div>
+                                <div class="small text-muted mt-2 mb-2">
+                                    @(string.IsNullOrWhiteSpace(offer.MatchSummary) ? "Correspond à votre profil." : offer.MatchSummary)
+                                </div>
+                                <a asp-controller="JobOffer" asp-action="Details" asp-route-id="@offer.JobId" class="btn btn-sm btn-outline-primary">Voir</a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="dash-card mb-2">
+                    <div class="fw-semibold">Aucune suggestion pour le moment</div>
+                    <div class="dash-sub">Ajoutez des compétences et centres d'intérêt pour voir apparaître des offres ciblées.</div>
+                    <div class="mt-2">
+                        <a asp-controller="User" asp-action="Profile" class="btn btn-sm btn-outline-primary">Compléter mon profil</a>
+                    </div>
+                </div>
+            }
+        }
 
         @if (Model.IsVerifiedAlumni)
         {
             <div class="row row-stat g-2">
-                <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Offres publiées</div><div class="dash-stat" style="color:var(--teal)">@Model.AlumniPublishedOffersCount</div></div></div>
-                <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Candidatures reçues</div><div class="dash-stat" style="color:var(--bleu)">@Model.AlumniApplicationsReceivedCount</div></div></div>
-                <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Mentorés actifs</div><div class="dash-stat" style="color:var(--purple)">@Model.AlumniActiveMenteesCount</div></div></div>
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="stat-top">
+                            <div class="stat-icon teal">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v11H3z" /><path d="M8 7V5h8v2" /><path d="M8 13h8" /></svg>
+                            </div>
+                            <span class="trend-chip green">+ offres</span>
+                        </div>
+                        <div class="dash-sub mt-3">Offres publiées</div>
+                        <div class="dash-stat" style="color:var(--teal-900)">@Model.AlumniPublishedOffersCount</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="stat-top">
+                            <div class="stat-icon blue">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z" /><path d="M8 9h8" /><path d="M8 13h5" /></svg>
+                            </div>
+                            <span class="trend-chip blue">+ reçues</span>
+                        </div>
+                        <div class="dash-sub mt-3">Candidatures reçues</div>
+                        <div class="dash-stat" style="color:var(--blue)">@Model.AlumniApplicationsReceivedCount</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="stat-top">
+                            <div class="stat-icon amber">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /><path d="M8 10h8" /><path d="M8 14h5" /></svg>
+                            </div>
+                            <span class="trend-chip amber">@((Model.UnreadMessagesCount > 0) ? "non lus" : "aucun")</span>
+                        </div>
+                        <div class="dash-sub mt-3">Messages non lus</div>
+                        <div class="dash-stat" style="color:var(--amber)">@Model.UnreadMessagesCount</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="stat-top">
+                            <div class="stat-icon gray">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 11a4 4 0 1 0-8 0" /><path d="M5 20a7 7 0 0 1 14 0" /><path d="M19 8h3" /><path d="M20.5 5.5l1 1" /><path d="M4 8H1" /></svg>
+                            </div>
+                            <span class="trend-chip gray">actifs</span>
+                        </div>
+                        <div class="dash-sub mt-3">Contacts actifs</div>
+                        <div class="dash-stat" style="color:var(--gray)">@Model.AlumniActiveMenteesCount</div>
+                    </div>
+                </div>
             </div>
 
             <div class="dash-title">Mes offres</div>
-            <div class="dash-card d-flex justify-content-between align-items-center">
+            <div class="dash-card offer-card">
+                <div class="offer-illustration">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1" /><path d="M4 7h16v12H4z" /><path d="M4 11h16" /><path d="M10 11v3h4v-3" /></svg>
+                </div>
                 <div>
-                    <div class="fw-semibold">Gérer vos offres et candidatures</div>
+                    <div class="fw-bold" style="font-size:1.05rem;">Gérer vos offres et candidatures</div>
                     <div class="dash-sub">Publiez une offre, consultez les candidatures et proposez un entretien accepté.</div>
                 </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a asp-controller="JobOffer" asp-action="Create" class="btn btn-sm" style="background:var(--teal);color:white;">Nouvelle offre</a>
-                    <a asp-controller="JobOffer" asp-action="Index" class="btn btn-sm btn-outline-primary">Mes offres</a>
+                <div class="offer-actions">
+                    <a asp-controller="JobOffer" asp-action="Create" class="offer-cta primary">Nouvelle offre</a>
+                    <a asp-controller="JobOffer" asp-action="Index" class="offer-cta soft">Mes offres</a>
                 </div>
             </div>
         }
-        else
+        else if (Model.IsStudent)
         {
             <div class="row row-stat g-2">
-                <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Candidatures</div><div class="dash-stat" style="color:var(--bleu)">@Model.StudentApplicationsCount</div></div></div>
-                <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Statut alumni</div><div class="dash-stat" style="color:var(--teal)">@(Model.AlumniRequestStatus == "Approved" ? 1 : 0)</div></div></div>
-                <div class="col-md-4"><div class="dash-card"><div class="dash-sub">Nouvelles offres</div><div class="dash-stat" style="color:var(--amber)">@Model.NewOffersCount</div></div></div>
-            </div>
-
-            <div class="dash-title">Offres & profil</div>
-            <div class="dash-card d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-semibold">Consulter les offres et améliorer votre profil</div>
-                    <div class="dash-sub">Complétez votre profil puis consultez les offres disponibles.</div>
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="stat-top">
+                            <div class="stat-icon blue">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z" /><path d="M8 9h8" /><path d="M8 13h5" /></svg>
+                            </div>
+                            <span class="trend-chip blue">candidatures</span>
+                        </div>
+                        <div class="dash-sub mt-3">Candidatures</div>
+                        <div class="dash-stat" style="color:var(--blue)">@Model.StudentApplicationsCount</div>
+                    </div>
                 </div>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a asp-controller="JobOffer" asp-action="Feed" class="btn btn-sm" style="background:var(--teal);color:white;">Voir les offres</a>
-                    <a asp-controller="User" asp-action="Profile" class="btn btn-sm btn-outline-primary">Mon profil</a>
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="stat-top">
+                            <div class="stat-icon teal">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 4v6c0 5-3.5 7.8-7 9-3.5-1.2-7-4-7-9V7z" /><path d="M9 12l2 2 4-4" /></svg>
+                            </div>
+                            <span class="trend-chip green">statut</span>
+                        </div>
+                        <div class="dash-sub mt-3">Statut alumni</div>
+                        <div class="dash-stat" style="color:var(--teal-900)">@(Model.AlumniRequestStatus == "Approved" ? 1 : 0)</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="stat-top">
+                            <div class="stat-icon amber">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /><path d="M8 10h8" /><path d="M8 14h5" /></svg>
+                            </div>
+                            <span class="trend-chip amber">@((Model.UnreadMessagesCount > 0) ? "non lus" : "aucun")</span>
+                        </div>
+                        <div class="dash-sub mt-3">Messages non lus</div>
+                        <div class="dash-stat" style="color:var(--amber)">@Model.UnreadMessagesCount</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dash-card">
+                        <div class="stat-top">
+                            <div class="stat-icon gray">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16" /><path d="M6 7v12h12V7" /><path d="M9 11h6" /></svg>
+                            </div>
+                            <span class="trend-chip gray">nouvelles</span>
+                        </div>
+                        <div class="dash-sub mt-3">Nouvelles offres</div>
+                        <div class="dash-stat" style="color:var(--gray)">@Model.NewOffersCount</div>
+                    </div>
                 </div>
             </div>
 
             <div class="dash-title">Vérification alumni</div>
-            <div class="dash-card d-flex justify-content-between align-items-center">
+            <div class="dash-card d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <div class="fw-semibold">Statut de demande: <span class="badge-status">@(Model.AlumniRequestStatus ?? "Aucune demande")</span></div>
                     <div class="dash-sub">Validation admin obligatoire pour accéder à l'espace alumni.</div>
@@ -164,7 +527,7 @@
                 }
                 else
                 {
-                    <a asp-controller="AlumniRequest" asp-action="Create" class="btn btn-sm" style="background:var(--teal);color:white;">Demander statut alumni</a>
+                    <a asp-controller="AlumniRequest" asp-action="Create" class="dash-btn primary">Demander statut alumni</a>
                 }
             </div>
         }
@@ -172,7 +535,7 @@
         @if (Model.IsAdmin)
         {
             <div class="dash-title">Admin</div>
-            <div class="dash-card d-flex justify-content-between align-items-center">
+            <div class="dash-card d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                     <div class="fw-semibold">Demandes alumni en attente: @Model.PendingAlumniRequestsCount</div>
                     <div class="dash-sub">Validez les demandes et gérez les rôles.</div>
@@ -184,16 +547,10 @@
             </div>
         }
 
-        @if (Model.IsStudent)
-        {
-            <div class="dash-title">Offres recommandées pour vous</div>
-            <div class="dash-card d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-semibold">Consultez vos suggestions personnalisées</div>
-                    <div class="dash-sub">Votre feed contient une rubrique dédiée aux offres qui matchent votre profil.</div>
-                </div>
-                <a asp-controller="JobOffer" asp-action="Feed" class="btn btn-sm" style="background:var(--teal);color:white;">Voir les suggestions</a>
-            </div>
-        }
+        <div class="section-rule"></div>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 px-1 pb-1">
+            <span class="subtle-note">Interface allégée et responsive</span>
+            <span class="subtle-note">Palette teal · ambre · blanc cassé</span>
+        </div>
     </div>
 </div>

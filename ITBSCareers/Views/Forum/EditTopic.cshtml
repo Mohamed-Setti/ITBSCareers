@@ -1,0 +1,113 @@
+@model ITBSCareers.Models.Forum.ForumTopicUpsertDto
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Modifier le sujet";
+    var categories = ViewBag.Categories as List<ITBSCareers.Models.Carriere.ForumCategory> ?? new();
+}
+
+<style>
+    .forum-form-card { max-width: 980px; margin: 0 auto; padding:1rem; background:#fff; border:1px solid #DCDCE1; border-radius:14px; box-shadow:0 6px 18px rgba(24,95,165,.05); }
+    .editor-toolbar button { border:1px solid #DCDCE1; background:#fff; border-radius:8px; margin-right:.35rem; margin-bottom:.35rem; padding:.35rem .55rem; }
+    .editor-box { min-height:260px; border:1px solid #DCDCE1; border-radius:10px; padding:.75rem; color:#000; }
+    .editor-box:focus { outline:none; border-color:#185FA5; box-shadow:0 0 0 .15rem rgba(24,95,165,.12); }
+</style>
+
+<div class="container mt-4">
+    <div class="forum-form-card">
+        <h3 class="mb-1">Modifier le sujet</h3>
+        <div class="text-muted mb-3">Vous pouvez corriger le texte, les liens et les images.</div>
+
+        <form id="forumTopicForm" asp-action="EditTopic" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@ViewBag.TopicId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+            <div class="mb-3">
+                <label class="form-label">Thématique</label>
+                <select asp-for="ForumCategoryId" class="form-select">
+                    <option value="">Sélectionner</option>
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.ForumCategoryId">@category.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="ForumCategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label">Titre</label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="mb-2">
+                <label class="form-label">Contenu</label>
+                <div class="editor-toolbar mb-2">
+                    <button type="button" onclick="formatDoc('bold')"><b>B</b></button>
+                    <button type="button" onclick="formatDoc('italic')"><i>I</i></button>
+                    <button type="button" onclick="formatDoc('underline')"><u>U</u></button>
+                    <input type="color" id="textColor" class="form-control form-control-color d-inline-block align-middle" value="#000000" title="Couleur du texte" style="width:3rem; padding:.15rem; height:2.15rem;" />
+                    <button type="button" onclick="insertLink()">Lien</button>
+                    <button type="button" onclick="insertImageFromUrl()">Image URL</button>
+                    <label class="btn btn-light mb-0" style="border:1px solid #DCDCE1;">
+                        Image PC
+                        <input type="file" id="imageFileInput" accept="image/*" class="d-none" />
+                    </label>
+                </div>
+                <div id="editor" class="editor-box" contenteditable="true">@Html.Raw(Model.Content)</div>
+                <textarea asp-for="Content" id="Content" class="d-none"></textarea>
+                <span asp-validation-for="Content" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Retour forum</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        const editor = document.getElementById('editor');
+        const contentField = document.getElementById('Content');
+        const form = document.getElementById('forumTopicForm');
+        const textColor = document.getElementById('textColor');
+        const imageFileInput = document.getElementById('imageFileInput');
+
+        function sync() { contentField.value = editor.innerHTML; }
+        function formatDoc(cmd) { document.execCommand(cmd, false, null); sync(); }
+        function insertLink() {
+            const url = prompt('URL du lien :');
+            if (url) document.execCommand('createLink', false, url);
+            sync();
+        }
+        function insertImageFromUrl() {
+            const url = prompt('URL de l\'image :');
+            if (url) document.execCommand('insertImage', false, url);
+            sync();
+        }
+        function applyColor(color) {
+            document.execCommand('styleWithCSS', false, true);
+            document.execCommand('foreColor', false, color);
+            sync();
+        }
+
+        editor.addEventListener('input', sync);
+        textColor.addEventListener('input', () => applyColor(textColor.value));
+        imageFileInput.addEventListener('change', async () => {
+            const file = imageFileInput.files && imageFileInput.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                document.execCommand('insertImage', false, reader.result);
+                sync();
+            };
+            reader.readAsDataURL(file);
+        });
+        form.addEventListener('submit', sync);
+        sync();
+    </script>
+}

@@ -68,11 +68,39 @@ public partial class CarriereDbContext : DbContext
                 .HasColumnName("AlumniID");
             entity.Property(e => e.CompanyName).HasMaxLength(100);
             entity.Property(e => e.Position).HasMaxLength(100);
+            entity.Property(e => e.IsContactPublic)
+                .HasDefaultValue(false);
 
             entity.HasOne(d => d.AlumniNavigation).WithOne(p => p.Alumni)
                 .HasForeignKey<Alumni>(d => d.AlumniId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__Alumnis__AlumniI__3D5E1FD2");
+        });
+
+        modelBuilder.Entity<MentorshipRequest>(entity =>
+        {
+            entity.HasKey(e => e.MentorshipRequestId);
+
+            entity.Property(e => e.MentorshipRequestId).HasColumnName("MentorshipRequestID");
+            entity.Property(e => e.StudentId).HasColumnName("StudentID");
+            entity.Property(e => e.AlumniId).HasColumnName("AlumniID");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("Pending");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ReviewedAt).HasColumnType("datetime");
+
+            entity.HasOne(d => d.Student).WithMany()
+                .HasForeignKey(d => d.StudentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MentorshipRequests_Student");
+
+            entity.HasOne(d => d.Alumni).WithMany()
+                .HasForeignKey(d => d.AlumniId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_MentorshipRequests_Alumni");
         });
 
         modelBuilder.Entity<AlumniRequest>(entity =>

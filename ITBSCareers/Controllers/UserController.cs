@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using IBSTCareers.Models;
 using ITBSCareers.Models.Carriere;
+using ITBSCareers.Models.Messaging;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +31,23 @@ namespace IBSTCareers.Controllers
         // GET: UserController/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            var user = _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.UserSkills)
+                    .ThenInclude(us => us.Skill)
+                .Include(u => u.UserInterests)
+                    .ThenInclude(ui => ui.Interest)
+                .Include(u => u.Alumni)
+                .Include(u => u.JobOffers)
+                .FirstOrDefault(u => u.UserId == id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return View(user);
         }
 
         [AllowAnonymous]
@@ -300,8 +317,11 @@ namespace IBSTCareers.Controllers
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            var userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login", "User");
+            var userId = GetCurrentUserId();
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
 
             var user = await _context.Users
                 .Include(u => u.UserRoles)
@@ -322,7 +342,49 @@ namespace IBSTCareers.Controllers
 
             if (user == null) return NotFound();
 
+            if (user.Alumni != null)
+            {
+                ViewBag.PendingContactRequests = await _context.Set<MentorshipRequest>()
+                    .Where(r => r.AlumniId == user.UserId && r.Status == "Pending")
+                    .OrderByDescending(r => r.CreatedAt)
+                    .Select(r => new ContactRequestViewModel
+                    {
+                        RequestId = r.MentorshipRequestId,
+                        StudentId = r.StudentId,
+                        StudentName = r.Student.FullName,
+                        CreatedAt = r.CreatedAt
+                    })
+                    .ToListAsync();
+            }
+
             return View(user);
+        }
+
+        [Authorize(Roles = "Alumni")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateContactVisibility(bool isContactPublic)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "User");
+            }
+
+            var alumni = await _context.Alumnis.FirstOrDefaultAsync(a => a.AlumniId == userId.Value);
+            if (alumni == null)
+            {
+                return NotFound();
+            }
+
+            alumni.IsContactPublic = isContactPublic;
+            await _context.SaveChangesAsync();
+
+            TempData["Message"] = isContactPublic
+                ? "Votre profil de contact est désormais public."
+                : "Votre profil de contact est désormais privé.";
+
+            return RedirectToAction(nameof(Profile));
         }
 
         [Authorize(Roles = "Student")]
