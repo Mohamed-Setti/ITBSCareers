@@ -10,6 +10,7 @@ public class DashboardViewModel
 
     public int StudentApplicationsCount { get; set; }
     public int NewOffersCount { get; set; }
+    public int UnreadMessagesCount { get; set; }
     public List<JobOfferFeedItemViewModel> HotOpportunities { get; set; } = new();
 
     public int AlumniPublishedOffersCount { get; set; }

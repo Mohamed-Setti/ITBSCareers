@@ -31,6 +31,8 @@ namespace ITBSCareers.Controllers
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
                 .Include(u => u.Experiences)
+                .Include(u => u.Student)
+                    .ThenInclude(s => s.Degree)
                 .Include(u => u.UserSkills)
                     .ThenInclude(us => us.Skill)
                 .Include(u => u.UserInterests)
@@ -86,6 +88,9 @@ namespace ITBSCareers.Controllers
             var newOffersCount = await _context.JobOffers
                 .CountAsync(j => j.CreatedAt != null && j.CreatedAt >= DateTime.Now.AddDays(-14));
 
+            var unreadMessagesCount = await _context.Messages
+                .CountAsync(m => m.ReceiverId == userId.Value && !m.IsRead && !m.Conversation.IsDeleted);
+
             var vm = new DashboardViewModel
             {
                 FullName = user.FullName,
@@ -96,6 +101,7 @@ namespace ITBSCareers.Controllers
 
                 StudentApplicationsCount = user.Applications.Count,
                 NewOffersCount = newOffersCount,
+                UnreadMessagesCount = unreadMessagesCount,
                 HotOpportunities = roleNames.Contains("Student")
                     ? await BuildHotOpportunitiesAsync(user)
                     : new List<JobOfferFeedItemViewModel>(),

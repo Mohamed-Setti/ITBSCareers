@@ -1,4 +1,5 @@
 ﻿@using ITBSCareers.Models.Carriere
+@using ITBSCareers.Models.Messaging
 @model ITBSCareers.Models.Carriere.User
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -382,6 +383,57 @@
                 {
                     <span class="pill pill-green">Statut alumni actif</span>
                     <div class="mt-2"><a asp-controller="Alumni" asp-action="Index" class="btn-main blue">Ouvrir l'espace alumni</a></div>
+
+                    <hr class="my-3" />
+
+                    <div class="section-title mb-2">Visibilité du contact</div>
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <div class="small-muted">Public = les étudiants peuvent vous contacter directement. Privé = ils doivent envoyer une demande.</div>
+                            <span class="pill @(Model.Alumni?.IsContactPublic == true ? "pill-green" : "pill-amber") mt-2">@(Model.Alumni?.IsContactPublic == true ? "Public" : "Privé")</span>
+                        </div>
+                        <form asp-controller="User" asp-action="UpdateContactVisibility" method="post" class="d-flex align-items-center gap-2 flex-wrap">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="isContactPublic" value="@(!(Model.Alumni?.IsContactPublic ?? false))" />
+                            <button type="submit" class="btn-main soft">@(Model.Alumni?.IsContactPublic == true ? "Passer en privé" : "Passer en public")</button>
+                        </form>
+                    </div>
+
+                    @if (Model.Alumni?.IsContactPublic != true)
+                    {
+                        var requests = ViewBag.PendingContactRequests as List<ContactRequestViewModel> ?? new List<ContactRequestViewModel>();
+                        <div class="mt-3">
+                            <div class="section-title mb-2">Demandes de contact en attente</div>
+                            @if (!requests.Any())
+                            {
+                                <div class="small-muted">Aucune demande en attente.</div>
+                            }
+                            else
+                            {
+                                foreach (var request in requests)
+                                {
+                                    <div class="exp-item d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                        <div>
+                                            <div><strong>@request.StudentName</strong></div>
+                                            <div class="small-muted">Demande reçue le @request.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                        </div>
+                                        <div class="action-row mt-0">
+                                            <form asp-controller="Messaging" asp-action="AcceptContactRequest" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="requestId" value="@request.RequestId" />
+                                                <button type="submit" class="btn-main blue">Accepter</button>
+                                            </form>
+                                            <form asp-controller="Messaging" asp-action="RejectContactRequest" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="requestId" value="@request.RequestId" />
+                                                <button type="submit" class="btn-main soft">Refuser</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    }
                 }
                 else if (isStudent)
                 {

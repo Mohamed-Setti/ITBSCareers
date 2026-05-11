@@ -1,0 +1,204 @@
+@using System.Security.Claims
+@model ITBSCareers.Models.Forum.ForumTopicDetailsViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = Model.Topic.Title;
+    var currentUserId = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var parsedId) ? parsedId : 0;
+}
+
+<style>
+    .topic-shell, .comment-card, .panel-card { background:#fff; border:1px solid #DCDCE1; border-radius:14px; box-shadow:0 6px 18px rgba(24,95,165,.05); }
+    .topic-shell { padding:1rem; margin-bottom:.9rem; }
+    .comment-card, .panel-card { padding:.9rem; margin-bottom:.75rem; }
+    .rich-content { line-height:1.6; }
+    .vote-btn { border:1px solid #DCDCE1; background:#fff; border-radius:999px; padding:.25rem .6rem; font-size:.8rem; }
+    .vote-btn.active-up { background:#E1F5EE; color:#0F6E56; }
+    .vote-btn.active-down { background:#FAEEDA; color:#8A5A12; }
+    .comment-meta { color:#64646E; font-size:.82rem; }
+</style>
+
+<div class="container mt-4">
+    @Html.AntiForgeryToken()
+    @if (TempData["ForumMessage"] != null)
+    {
+        <div class="alert alert-info">@TempData["ForumMessage"]</div>
+    }
+    @if (TempData["ForumError"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ForumError"]</div>
+    }
+
+    <div class="topic-shell">
+        <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+            <div>
+                <span class="badge bg-primary mb-2">@Model.CategoryName</span>
+                @if (Model.Topic.IsLocked)
+                {
+                    <span class="badge bg-warning text-dark mb-2">Verrouillé</span>
+                }
+                <h2 class="mb-1">@Model.Topic.Title</h2>
+                <div class="text-muted">Par @Model.AuthorName · @Model.Topic.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="button" class="vote-btn" onclick="voteTopic(@Model.Topic.ForumTopicId, true)">? @Model.Topic.UpvotesCount</button>
+                <button type="button" class="vote-btn" onclick="voteTopic(@Model.Topic.ForumTopicId, false)">? @Model.Topic.DownvotesCount</button>
+                <span class="badge bg-success align-self-center">Score @((Model.Topic.UpvotesCount - Model.Topic.DownvotesCount))</span>
+            </div>
+        </div>
+
+        <div class="rich-content mt-3">
+            @Html.Raw(Model.Topic.Content)
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap mt-3">
+            @if (Model.IsOwner || Model.IsAdmin)
+            {
+                <a asp-action="EditTopic" asp-route-id="@Model.Topic.ForumTopicId" class="btn btn-outline-primary btn-sm">Modifier</a>
+                <form asp-action="DeleteTopic" method="post" class="d-inline" onsubmit="return confirm('Supprimer ce sujet ?');">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Topic.ForumTopicId" />
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer</button>
+                </form>
+            }
+            @if (Model.IsAdmin)
+            {
+                <form asp-action="LockTopic" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Topic.ForumTopicId" />
+                    <input type="hidden" name="locked" value="@(!Model.Topic.IsLocked)" />
+                    <button type="submit" class="btn btn-outline-warning btn-sm">@(Model.Topic.IsLocked ? "Déverrouiller" : "Verrouiller")</button>
+                </form>
+            }
+            <form asp-action="ReportTopic" method="post" class="d-flex gap-2 align-items-center flex-wrap">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="topicId" value="@Model.Topic.ForumTopicId" />
+                <input type="text" name="Reason" class="form-control form-control-sm" style="min-width:240px;" placeholder="Signaler ce sujet..." required />
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Signaler</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="panel-card mb-3">
+                <h5 class="mb-3">Commentaires (@Model.Comments.TotalCount)</h5>
+                @if (!Model.Comments.Items.Any())
+                {
+                    <div class="alert alert-info mb-0">Aucun commentaire pour le moment.</div>
+                }
+                else
+                {
+                    foreach (var comment in Model.Comments.Items)
+                    {
+                        var canEdit = Model.IsAdmin || comment.CreatedByUserId == currentUserId;
+                        <div class="comment-card">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div>
+                                    <div class="comment-meta">@comment.CreatedBy.FullName · @comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                </div>
+                                <div class="d-flex gap-2 flex-wrap align-items-center">
+                                    <button type="button" class="vote-btn" onclick="voteComment(@comment.ForumCommentId, true)">? @comment.UpvotesCount</button>
+                                    <button type="button" class="vote-btn" onclick="voteComment(@comment.ForumCommentId, false)">? @comment.DownvotesCount</button>
+                                    <span class="badge bg-success">Score @((comment.UpvotesCount - comment.DownvotesCount))</span>
+                                </div>
+                            </div>
+                            <div class="mt-2 rich-content">@Html.Raw(comment.Content)</div>
+                            <div class="d-flex gap-2 flex-wrap mt-2">
+                                @if (canEdit)
+                                {
+                                    <a asp-action="EditComment" asp-route-id="@comment.ForumCommentId" asp-route-topicId="@Model.Topic.ForumTopicId" class="btn btn-outline-primary btn-sm">Modifier</a>
+                                    <form asp-action="DeleteComment" method="post" class="d-inline" onsubmit="return confirm('Supprimer ce commentaire ?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@comment.ForumCommentId" />
+                                        <input type="hidden" name="topicId" value="@Model.Topic.ForumTopicId" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">Supprimer</button>
+                                    </form>
+                                }
+                                <form asp-action="ReportComment" method="post" class="d-flex gap-2 align-items-center flex-wrap">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="commentId" value="@comment.ForumCommentId" />
+                                    <input type="hidden" name="topicId" value="@Model.Topic.ForumTopicId" />
+                                    <input type="text" name="Reason" class="form-control form-control-sm" style="min-width:220px;" placeholder="Signaler..." required />
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Signaler</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <nav>
+                <ul class="pagination">
+                    @for (var i = 1; i <= Model.Comments.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.PageIndex ? "active" : string.Empty)">
+                            <a class="page-link" asp-action="Details" asp-route-id="@Model.Topic.ForumTopicId" asp-route-page="@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+
+            @if (Model.CanComment)
+            {
+                <div class="panel-card">
+                    <h5 class="mb-3">Ajouter un commentaire</h5>
+                    <form asp-action="CreateComment" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="topicId" value="@Model.Topic.ForumTopicId" />
+                        <textarea name="Content" class="form-control mb-3" rows="5" placeholder="Rédigez votre réponse..." required></textarea>
+                        <button type="submit" class="btn btn-primary">Publier</button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">Ce sujet est verrouillé.</div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <div class="panel-card mb-3">
+                <h5>Historique</h5>
+                @if (Model.TopicHistory.Any())
+                {
+                    foreach (var h in Model.TopicHistory.Take(5))
+                    {
+                        <div class="small text-muted mb-2">
+                            <strong>@h.ChangedBy.FullName</strong> · @h.ChangedAt.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted">Aucun historique.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function voteTopic(topicId, isUpvote) {
+        const data = new URLSearchParams();
+        data.append('topicId', topicId);
+        data.append('isUpvote', isUpvote);
+        const response = await fetch('@Url.Action("VoteTopic", "Forum")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '' },
+            body: data.toString()
+        });
+        if (response.ok) location.reload();
+    }
+
+    async function voteComment(commentId, isUpvote) {
+        const data = new URLSearchParams();
+        data.append('commentId', commentId);
+        data.append('isUpvote', isUpvote);
+        const response = await fetch('@Url.Action("VoteComment", "Forum")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || '' },
+            body: data.toString()
+        });
+        if (response.ok) location.reload();
+    }
+</script>

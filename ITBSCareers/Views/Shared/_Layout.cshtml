@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ITBSCareers</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -13,82 +13,340 @@
 
     <style>
         :root {
-            --bleu: #185FA5;
-            --bleu-light: #E6F1FB;
-            --teal: #0F6E56;
-            --bg: #F5F6F8;
+            --teal-900: #0D7377;
+            --teal-700: #14A085;
+            --amber: #F0A500;
+            --bg: #F8FAFC;
             --white: #fff;
-            --border: #DCDCE1;
-            --text-sec: #64646E;
-            --dark: #1E1E28;
+            --border: rgba(13,115,119,.16);
+            --border-strong: rgba(13,115,119,.28);
+            --text-sec: #64748B;
+            --text: #0F172A;
+            --shadow: 0 14px 40px rgba(15, 23, 42, .06);
         }
 
         body {
             background: var(--bg);
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
         }
 
         .main-nav {
-            background: var(--white);
+            background: rgba(255,255,255,.9);
             border-bottom: 1px solid var(--border) !important;
+            box-shadow: 0 10px 30px rgba(15,23,42,.03);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+        }
+
+        .main-nav::after {
+            content: '';
+            display: block;
+            height: 3px;
+            background: linear-gradient(90deg, var(--teal-900), var(--teal-700), #2DD4BF);
         }
 
         .brand {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.8rem;
-            letter-spacing: 2px;
-            color: var(--bleu) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: .75rem;
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: .2px;
+            color: var(--teal-900) !important;
             text-decoration: none;
         }
 
-        .brand small {
-            font-family: 'DM Sans', sans-serif;
-            letter-spacing: .3px;
-            font-size: .8rem;
-            color: var(--text-sec);
-            margin-left: .35rem;
+        .brand-mark {
+            width: 2.55rem;
+            height: 2.55rem;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--teal-900), var(--teal-700));
+            color: #fff;
+            box-shadow: 0 10px 24px rgba(20,160,133,.24);
+            font-size: 1rem;
+            flex: 0 0 2.55rem;
         }
 
-        .main-link {
-            color: var(--text-sec) !important;
-            font-size: 13px;
+        .brand small {
+            display: block;
+            font-size: .72rem;
+            letter-spacing: .18px;
+            color: var(--text-sec);
+            margin-left: 0;
             font-weight: 500;
         }
 
-        .main-link:hover { color: var(--bleu) !important; }
+        .navbar-nav { gap: .15rem; }
+
+        .main-link {
+            color: var(--text-sec) !important;
+            font-size: .95rem;
+            font-weight: 600;
+            position: relative;
+            padding: .9rem .95rem !important;
+            transition: color .2s ease;
+        }
+
+        .main-link::after {
+            content: '';
+            position: absolute;
+            left: .95rem;
+            right: .95rem;
+            bottom: .38rem;
+            height: 2px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--teal-900), var(--teal-700));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .2s ease;
+        }
+
+        .main-link:hover,
+        .main-link:focus {
+            color: var(--teal-900) !important;
+        }
+
+        .main-link:hover::after,
+        .main-link:focus::after,
+        .main-link.active-accent::after {
+            transform: scaleX(1);
+        }
 
         .main-link.active-accent {
-            color: var(--teal) !important;
-            font-weight: 700;
+            color: var(--teal-900) !important;
         }
+
+        .main-link.active-accent { color: var(--teal-900) !important; }
+
+        .user-nav-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .45rem .65rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: #fff;
+            box-shadow: 0 8px 18px rgba(15,23,42,.04);
+        }
+
+        .nav-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: .78rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--teal-900), var(--teal-700));
+            box-shadow: 0 8px 18px rgba(20,160,133,.22);
+            overflow: hidden;
+        }
+
+        .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .profile-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .profile-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: .78rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--teal-900), var(--teal-700));
+            box-shadow: 0 8px 18px rgba(20,160,133,.22);
+        }
+
+        .notif-icon {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.45rem;
+            height: 1.45rem;
+            color: var(--teal-900);
+        }
+
+        .notif-icon svg { width: 100%; height: 100%; }
+
+        .notif-dot {
+            position: absolute;
+            top: -2px;
+            right: -1px;
+            width: .58rem;
+            height: .58rem;
+            border-radius: 50%;
+            background: var(--amber);
+            box-shadow: 0 0 0 2px #fff;
+        }
+
+        .nav-notif-badge {
+            background: var(--amber) !important;
+            color: #fff;
+            border-radius: 999px;
+            box-shadow: 0 8px 18px rgba(240,165,0,.24);
+        }
+
+        .notif-dropdown {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .notif-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.1rem;
+            height: 2.1rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--teal-900);
+            box-shadow: 0 8px 18px rgba(15,23,42,.04);
+            position: relative;
+        }
+
+        .notif-toggle svg { width: 1rem; height: 1rem; }
+
+        .notif-menu {
+            position: absolute;
+            top: calc(100% + .65rem);
+            left: 0;
+            width: min(360px, calc(100vw - 1rem));
+            background: rgba(255,255,255,.96);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            padding: .65rem;
+            display: none;
+            z-index: 1050;
+            backdrop-filter: blur(12px);
+        }
+
+        .notif-dropdown:hover .notif-menu,
+        .notif-dropdown.show .notif-menu {
+            display: block;
+        }
+
+        .notif-menu-header {
+            display:flex;
+            justify-content: space-between;
+            align-items:center;
+            padding: .25rem .35rem .55rem;
+            margin-bottom: .35rem;
+            border-bottom: 1px solid rgba(13,115,119,.12);
+        }
+
+        .notif-menu-title {
+            font-size: .9rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .notif-menu-link {
+            color: var(--teal-900);
+            font-size: .8rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .notif-list {
+            max-height: 320px;
+            overflow: auto;
+            display:flex;
+            flex-direction:column;
+            gap:.45rem;
+        }
+
+        .notif-item {
+            display:block;
+            text-decoration:none;
+            color: var(--text);
+            padding: .75rem .8rem;
+            border-radius: 16px;
+            border: 1px solid rgba(13,115,119,.08);
+            background: #fff;
+            transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+        }
+
+        .notif-item:hover {
+            transform: translateY(-1px);
+            border-color: rgba(13,115,119,.18);
+            box-shadow: 0 10px 20px rgba(15,23,42,.05);
+        }
+
+        .notif-item.unread { background: linear-gradient(135deg, rgba(20,160,133,.08), rgba(255,255,255,.98)); }
+        .notif-item-top { display:flex; justify-content:space-between; gap:.6rem; align-items:flex-start; }
+        .notif-item-type { font-size:.72rem; font-weight:800; color: var(--teal-900); background: rgba(20,160,133,.12); padding: .2rem .45rem; border-radius:999px; }
+        .notif-item-content { font-size:.88rem; line-height:1.35; margin-top:.45rem; }
+        .notif-item-time { font-size:.72rem; color: var(--text-sec); margin-top:.3rem; }
+        .notif-empty { padding:.8rem .4rem; color: var(--text-sec); font-size:.9rem; text-align:center; }
 
         .logout-btn {
             border-color: var(--border);
-            color: var(--dark);
+            color: var(--text);
             background: var(--white);
+            border-radius: 999px;
         }
 
         .logout-btn:hover {
-            background: var(--bleu-light);
-            color: var(--bleu);
+            background: rgba(20,160,133,.08);
+            color: var(--teal-900);
         }
 
         .site-footer {
             border-top: 1px solid var(--border);
-            background: var(--white);
-            padding: 1rem 0;
+            background: rgba(255,255,255,.78);
+            padding: .95rem 0;
             margin-top: 1rem;
+            backdrop-filter: blur(12px);
         }
 
         .site-footer span {
-            font-size: 12px;
+            font-size: .85rem;
             color: var(--text-sec);
         }
 
         .site-footer a {
-            color: var(--bleu);
+            color: var(--teal-900);
             text-decoration: none;
             font-weight: 600;
+        }
+
+        .nav-link .badge { margin-left: .35rem; }
+
+        .nav-right-tools {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+        }
+
+        .nav-bell-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        @@media (max-width: 992px) {
+            .navbar-nav { gap: 0; }
+            .main-link { padding: .65rem .5rem !important; }
+            .main-link::after { left: .5rem; right: .5rem; }
         }
     </style>
 </head>
@@ -96,9 +354,31 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm main-nav mb-3">
             <div class="container-fluid">
-                @{ var authenticated = User.Identity?.IsAuthenticated ?? false; var isAdmin = authenticated && User.IsInRole("Admin"); var homeAction = authenticated ? (isAdmin ? "Profile" : "Index") : "Login"; var homeController = authenticated ? (isAdmin ? "Admin" : "Dashboard") : "User"; }
+                @{
+                    var authenticated = User.Identity?.IsAuthenticated ?? false;
+                    var isAdmin = authenticated && User.IsInRole("Admin");
+                    var homeAction = authenticated ? (isAdmin ? "Profile" : "Index") : "Login";
+                    var homeController = authenticated ? (isAdmin ? "Admin" : "Dashboard") : "User";
+                    var currentController = (ViewContext.RouteData.Values["Controller"]?.ToString() ?? string.Empty);
+                    var currentAction = (ViewContext.RouteData.Values["Action"]?.ToString() ?? string.Empty);
+
+                    var displayName = User.Identity?.Name ?? string.Empty;
+                    var userInitials = string.Concat(displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+                    if (string.IsNullOrWhiteSpace(userInitials)) userInitials = "U";
+
+                    string IsActive(string controller, string action = "")
+                    {
+                        var controllerMatch = string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase);
+                        var actionMatch = string.IsNullOrWhiteSpace(action) || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase);
+                        return controllerMatch && actionMatch ? "active-accent" : string.Empty;
+                    }
+                }
                 <a class="brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    ITBS Careers <small>Institut Technologique</small>
+                    <span class="brand-mark">IT</span>
+                    <span>
+                        ITBS Careers
+                        <small>Institut Technologique</small>
+                    </span>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
                         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -107,54 +387,79 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1 align-items-sm-center">
                         <li class="nav-item">
-                            <a class="nav-link main-link" href="@Url.Action(homeAction, homeController)">Accueil</a>
+                            <a class="nav-link main-link @IsActive(homeController, homeAction)" href="@Url.Action(homeAction, homeController)">Accueil</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             if (isAdmin)
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link main-link active-accent" href="@Url.Action("Profile", "Admin")">Profil admin</a>
+                                    <a class="nav-link main-link @IsActive("Admin", "Profile")" href="@Url.Action("Profile", "Admin")">Profil admin</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link main-link active-accent" href="@Url.Action("Users", "Admin")">Utilisateurs</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link main-link active-accent" href="@Url.Action("Index", "Admin")">Demandes alumni</a>
+                                    <a class="nav-link main-link @IsActive("Forum", "Categories")" href="@Url.Action("Categories", "Forum")">Forum</a>
                                 </li>
                             }
                             else
                             {
                                 <li class="nav-item">
-                                    <a class="nav-link main-link active-accent" asp-controller="Dashboard" asp-action="Index">Tableau de bord</a>
+                                    <a class="nav-link main-link @IsActive("Forum", "Index")" asp-controller="Forum" asp-action="Index">Forum</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link main-link active-accent" asp-controller="JobOffer" asp-action="Feed">Offres</a>
+                                    <a class="nav-link main-link @IsActive("JobOffer", "Feed")" asp-controller="JobOffer" asp-action="Feed">Offres</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link main-link active-accent" asp-controller="Notification" asp-action="Index">Notifications</a>
+                                    <a class="nav-link main-link @IsActive("Messaging", "Index")" asp-controller="Messaging" asp-action="Index">Messagerie</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link main-link active-accent" href="@Url.Action("Profile", "User")">Profil</a>
+                                    <a class="nav-link main-link @IsActive("User", "Profile")" href="@Url.Action("Profile", "User")">
+                                        <span class="profile-pill">
+                                            <span class="profile-avatar">@userInitials</span>
+                                            <span class="d-none d-md-inline">Profil</span>
+                                        </span>
+                                    </a>
                                 </li>
                             }
                         }
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link main-link active-accent" asp-controller="User" asp-action="Login">Connexion</a>
+                                <a class="nav-link main-link @IsActive("User", "Login")" asp-controller="User" asp-action="Login">Connexion</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link main-link active-accent" asp-controller="User" asp-action="Create">Inscription</a>
+                                <a class="nav-link main-link @IsActive("User", "Create")" asp-controller="User" asp-action="Create">Inscription</a>
                             </li>
                         }
                     </ul>
                     @if (User.Identity?.IsAuthenticated ?? false)
                     {
-                        <form asp-controller="User" asp-action="Logout" method="post" class="d-flex">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm logout-btn">Logout</button>
-                        </form>
+                        <div class="nav-right-tools">
+                            <div class="notif-dropdown nav-bell-wrap" id="navbarNotifDropdown">
+                                <a class="notif-toggle @IsActive("Notification", "Index")" asp-controller="Notification" asp-action="Index" aria-label="Notifications">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+                                    <span class="notif-dot" id="navbarNotifDot"></span>
+                                </a>
+                                <div class="notif-menu" id="navbarNotifMenu">
+                                    <div class="notif-menu-header">
+                                        <div class="notif-menu-title">Notifications</div>
+                                        <a class="notif-menu-link" asp-controller="Notification" asp-action="Index">Ouvrir</a>
+                                    </div>
+                                    <div class="notif-list" id="navbarNotifList">
+                                        <div class="notif-empty">Chargement...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <a class="user-nav-pill text-decoration-none" href="@Url.Action("Profile", "User")" title="Ouvrir le profil">
+                                <span class="nav-avatar">@userInitials</span>
+                                <span class="d-none d-md-inline small text-muted">@displayName</span>
+                            </a>
+
+                            <form asp-controller="User" asp-action="Logout" method="post" class="d-flex">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm logout-btn">Déconnexion</button>
+                            </form>
+                        </div>
                     }
                 </div>
             </div>
@@ -166,17 +471,67 @@
         </main>
     </div>
 
-    <footer class="site-footer">
+    <footer class="site-footer mt-4">
         <div class="container">
-            <span>
-                &copy; 2026 ITBS Careers —
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span>&copy; 2026 ITBS Careers</span>
                 <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-            </span>
+            </div>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            const dropdown = document.getElementById('navbarNotifDropdown');
+            const list = document.getElementById('navbarNotifList');
+            const dot = document.getElementById('navbarNotifDot');
+            if (!dropdown || !list) return;
+
+            let loaded = false;
+
+            async function loadNotifications() {
+                if (loaded) return;
+                loaded = true;
+
+                try {
+                    const response = await fetch('@Url.Action("Recent", "Notification")?count=5', { headers: { 'Accept': 'application/json' } });
+                    if (!response.ok) throw new Error('fetch failed');
+
+                    const items = await response.json();
+                    if (!Array.isArray(items) || items.length === 0) {
+                        list.innerHTML = '<div class="notif-empty">Aucune notification.</div>';
+                        if (dot) dot.style.display = 'none';
+                        return;
+                    }
+
+                    const unreadExists = items.some(i => !i.isRead);
+                    if (dot && !unreadExists) dot.style.display = 'none';
+
+                    list.innerHTML = items.map(i => {
+                        const type = (i.type || 'Notification').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        const content = (i.content || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                        const date = i.createdAt ? new Date(i.createdAt).toLocaleString([], { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+                        return `
+                            <a class="notif-item ${i.isRead ? '' : 'unread'}" href="@Url.Action("Index", "Notification")">
+                                <div class="notif-item-top">
+                                    <span class="notif-item-type">${type}</span>
+                                    ${i.isRead ? '' : '<span class="badge rounded-pill nav-notif-badge">nouveau</span>'}
+                                </div>
+                                <div class="notif-item-content">${content || 'Nouvelle notification'}</div>
+                                <div class="notif-item-time">${date}</div>
+                            </a>`;
+                    }).join('');
+                } catch {
+                    list.innerHTML = '<div class="notif-empty">Impossible de charger les notifications.</div>';
+                }
+            }
+
+            dropdown.addEventListener('mouseenter', loadNotifications);
+            dropdown.addEventListener('focusin', loadNotifications);
+        })();
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

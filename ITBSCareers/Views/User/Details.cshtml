@@ -1,0 +1,180 @@
+@using ITBSCareers.Models.Carriere
+@model ITBSCareers.Models.Carriere.User
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = Model.FullName;
+
+    var roles = Model.UserRoles
+        .Where(ur => ur.Role != null)
+        .Select(ur => ur.Role!.Name)
+        .Distinct()
+        .ToList();
+
+    var isAlumni = roles.Contains("Alumni");
+    var initials = string.Concat((Model.FullName ?? "U").Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    if (string.IsNullOrWhiteSpace(initials)) initials = "U";
+}
+
+<style>
+    .public-profile {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 1rem 0 2rem;
+    }
+
+    .public-card {
+        background: #fff;
+        border: 1px solid #DCDCE1;
+        border-radius: 16px;
+        box-shadow: 0 8px 20px rgba(24,95,165,.06);
+        padding: 1.2rem;
+    }
+
+    .public-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .avatar-lg {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #185FA5, #0F6E56);
+        color: #fff;
+        font-size: 1.7rem;
+        font-weight: 800;
+        flex: 0 0 84px;
+    }
+
+    .public-name { font-size: 1.6rem; font-weight: 800; color: #1E1E28; }
+    .public-sub { color: #64646E; }
+
+    .pill {
+        display: inline-block;
+        margin: 0 .35rem .35rem 0;
+        padding: .22rem .58rem;
+        border-radius: 999px;
+        font-size: .76rem;
+        font-weight: 700;
+    }
+
+    .pill-blue { background: #E6F1FB; color: #185FA5; }
+    .pill-green { background: #E1F5EE; color: #0F6E56; }
+    .pill-amber { background: #FAEEDA; color: #8A5A12; }
+
+    .box {
+        border: 1px solid #E7E7EB;
+        border-radius: 14px;
+        padding: 1rem;
+        margin-bottom: .85rem;
+        background: #fff;
+    }
+
+    .section-title { font-weight: 800; color: #1E1E28; margin-bottom: .6rem; }
+    .small-muted { color: #64646E; font-size: .84rem; }
+    .btn-soft {
+        border: 1px solid #DCDCE1;
+        border-radius: 10px;
+        padding: .5rem .8rem;
+        background: #F7F8FA;
+        text-decoration: none;
+        color: #32323C;
+        font-weight: 600;
+    }
+    .btn-main {
+        border: 0;
+        border-radius: 10px;
+        padding: .5rem .8rem;
+        background: linear-gradient(135deg, #185FA5, #0F6E56);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+    }
+</style>
+
+<div class="container public-profile">
+    <div class="public-card">
+        <div class="public-head">
+            <div class="d-flex align-items-center gap-3">
+                <div class="avatar-lg">@initials</div>
+                <div>
+                    <div class="public-name">@Model.FullName</div>
+                    <div class="public-sub">@(isAlumni ? (Model.Alumni?.Position ?? "Alumni") : "Étudiant")</div>
+                    <div class="mt-2">
+                        @foreach (var role in roles)
+                        {
+                            <span class="pill pill-blue">@role</span>
+                        }
+                        @if (isAlumni)
+                        {
+                            <span class="pill @(Model.Alumni?.IsContactPublic == true ? "pill-green" : "pill-amber")">@(Model.Alumni?.IsContactPublic == true ? "Contact public" : "Contact privé")</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a asp-controller="Messaging" asp-action="Index" class="btn-soft">Retour messagerie</a>
+            </div>
+        </div>
+
+        <div class="box">
+            <div class="section-title">Coordonnées</div>
+            <div class="small-muted">Email: @Model.Email</div>
+            @if (isAlumni && !string.IsNullOrWhiteSpace(Model.Alumni?.CompanyName))
+            {
+                <div class="small-muted">Entreprise: @Model.Alumni?.CompanyName</div>
+            }
+        </div>
+
+        <div class="box">
+            <div class="section-title">Compétences</div>
+            @if (Model.UserSkills.Any())
+            {
+                @foreach (var skill in Model.UserSkills)
+                {
+                    <span class="pill pill-blue">@skill.Skill.Name</span>
+                }
+            }
+            else
+            {
+                <div class="small-muted">Aucune compétence renseignée.</div>
+            }
+        </div>
+
+        <div class="box">
+            <div class="section-title">Centres d’intérêt</div>
+            @if (Model.UserInterests.Any())
+            {
+                @foreach (var interest in Model.UserInterests)
+                {
+                    <span class="pill pill-green">@interest.Interest.Name</span>
+                }
+            }
+            else
+            {
+                <div class="small-muted">Aucun centre d’intérêt renseigné.</div>
+            }
+        </div>
+
+        <div class="box">
+            <div class="section-title">À propos</div>
+            <div class="small-muted">
+                @if (isAlumni)
+                {
+                    <span>Ce profil correspond à un alumni de la plateforme.</span>
+                }
+                else
+                {
+                    <span>Ce profil correspond à un étudiant ITBS.</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>

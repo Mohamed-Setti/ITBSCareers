@@ -13,5 +13,7 @@ public partial class Alumni
 
     public int? ExperienceYears { get; set; }
 
+    public bool IsContactPublic { get; set; }
+
     public virtual User AlumniNavigation { get; set; } = null!;
 }
