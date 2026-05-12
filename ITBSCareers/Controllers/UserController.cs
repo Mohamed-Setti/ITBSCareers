@@ -2,6 +2,7 @@
 using IBSTCareers.Models;
 using ITBSCareers.Models.Carriere;
 using ITBSCareers.Models.Messaging;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -357,6 +358,28 @@ namespace IBSTCareers.Controllers
                     .ToListAsync();
             }
 
+            if (await IsAlumniRequestsTableAvailableAsync())
+            {
+                ViewBag.AlumniRequests = await (from request in _context.AlumniRequests.AsNoTracking()
+                                                join reviewer in _context.Users.AsNoTracking() on request.ReviewedBy equals reviewer.UserId into reviewerGroup
+                                                from reviewer in reviewerGroup.DefaultIfEmpty()
+                                                where request.UserId == user.UserId
+                                                orderby request.CreatedAt descending
+                                                select new AlumniRequestListItemViewModel
+                                                {
+                                                    AlumniRequestId = request.AlumniRequestId,
+                                                    UserId = request.UserId,
+                                                    UserName = user.FullName,
+                                                    CompanyName = request.CompanyName,
+                                                    Position = request.Position,
+                                                    ProofFilePath = request.ProofFilePath,
+                                                    Status = request.Status,
+                                                    ReviewedByName = reviewer != null ? reviewer.FullName : null,
+                                                    ReviewedAt = request.ReviewedAt,
+                                                    CreatedAt = request.CreatedAt
+                                                }).ToListAsync();
+            }
+
             return View(user);
         }
 
@@ -412,6 +435,19 @@ namespace IBSTCareers.Controllers
             }
 
             return HttpContext.Session.GetInt32("UserId");
+        }
+
+        private async Task<bool> IsAlumniRequestsTableAvailableAsync()
+        {
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync("SELECT TOP (1) 1 FROM [dbo].[AlumniRequests]");
+                return true;
+            }
+            catch (SqlException ex) when (ex.Message.Contains("Invalid object name 'AlumniRequests'"))
+            {
+                return false;
+            }
         }
 
         private async Task AssignSingleRoleAsync(int userId, string roleName)

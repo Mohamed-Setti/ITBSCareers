@@ -41,10 +41,19 @@ namespace IBSTCareers.Controllers
                 ? await _context.AlumniRequests.CountAsync(r => r.Status == "Pending")
                 : 0;
 
+            var initialsParts = (admin.FullName ?? "A")
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var initials = string.Concat(initialsParts.Take(2).Select(p => char.ToUpperInvariant(p[0])));
+            if (string.IsNullOrWhiteSpace(initials))
+            {
+                initials = "A";
+            }
+
             var vm = new AdminProfileViewModel
             {
                 FullName = admin.FullName,
                 Email = admin.Email,
+                Initials = initials,
                 Roles = admin.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role!.Name).Distinct().ToList(),
                 TotalUsers = await _context.Users.CountAsync(),
                 StudentsCount = await _context.Users.CountAsync(u => u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student")),
@@ -58,7 +67,10 @@ namespace IBSTCareers.Controllers
                 InterviewProposals = await _context.Notifications.CountAsync(n => n.Type == "InterviewProposal"),
                 NotificationsLast14Days = await _context.Notifications.CountAsync(n => n.CreatedAt != null && n.CreatedAt >= DateTime.Now.AddDays(-14)),
                 NewUsersLast14Days = await _context.Users.CountAsync(u => u.CreatedAt != null && u.CreatedAt >= DateTime.Now.AddDays(-14)),
-                NewOffersLast14Days = await _context.JobOffers.CountAsync(o => o.CreatedAt != null && o.CreatedAt >= DateTime.Now.AddDays(-14))
+                NewOffersLast14Days = await _context.JobOffers.CountAsync(o => o.CreatedAt != null && o.CreatedAt >= DateTime.Now.AddDays(-14)),
+                PendingCandidaturesCount = await _context.Applications.CountAsync(a => a.Status == "Pending"),
+                ValidatedAlumniCount = await _context.Users.CountAsync(u => u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Alumni") && u.Alumni != null),
+                ActiveUsersCount = await _context.Users.CountAsync(u => u.CreatedAt != null && u.CreatedAt >= DateTime.Now.AddDays(-30))
             };
 
             ViewBag.HasAlumniRequestsTable = hasAlumniRequestsTable;

@@ -6,56 +6,94 @@
 }
 
 <style>
-    .feed-head, .offer-card, .search-card, .suggestion-card {
-        background: #fff;
-        border: 1px solid #DCDCE1;
+    :root{
+        --teal-dark: #085041;
+        --teal: #1D9E75;
+        --teal-light: #E1F5EE;
+        --amber: #EF9F27;
+        --bg: #F0F5F3;
+        --card-border: rgba(8,80,65,0.12);
+        --white: #ffffff;
+        --muted: #64756f;
+        --radius: 12px;
+        --card-border-thin: 0.5px;
+    }
+
+    .feed-wrap { background: var(--bg); padding: 1rem 0 3rem; }
+
+    .hero {
+        background: var(--white);
+        border: var(--card-border-thin) solid var(--card-border);
         border-radius: 14px;
-        box-shadow: 0 6px 18px rgba(24,95,165,.05);
+        padding: 1rem 1.1rem;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:1rem;
+        box-shadow: 0 6px 18px rgba(8,80,65,0.04);
     }
-    .feed-head { padding: 1rem; margin-bottom: .9rem; }
-    .search-card { padding: .9rem; margin-bottom: .9rem; }
-    .offer-card, .suggestion-card { padding: .95rem; }
-    .feed-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; margin-bottom: .2rem; }
-    .feed-sub { color: #64646E; }
-    .match-badge, .match-pill {
-        display: inline-block;
-        padding: .2rem .55rem;
-        border-radius: 999px;
-        font-size: .74rem;
-        font-weight: 700;
-        background: #E1F5EE;
-        color: #0F6E56;
-    }
-    .match-low { background: #FAEEDA; color: #8A5A12; }
-    .match-none { background: #EEF1F4; color: #5C6470; }
-    .small-muted { color: #64646E; font-size: .82rem; }
-    .suggestion-grid .col-md-6 { margin-bottom: 0.75rem; }
+
+    .hero-left { display:flex; gap:1rem; align-items:center; }
+    .hero-icon{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg, rgba(29,158,117,0.12), rgba(8,80,65,0.06)); display:flex; align-items:center; justify-content:center; }
+    .hero-title{ font-weight:800; font-size:1.35rem; color:var(--teal-dark); margin:0; }
+    .hero-sub{ color:var(--muted); margin-top:.18rem; }
+
+    .hero-actions{ display:flex; gap:.6rem; align-items:center; }
+    .badge-counter{ display:inline-flex; align-items:center; gap:.5rem; padding:.36rem .6rem; border-radius:999px; background:var(--teal-light); color:var(--teal-dark); font-weight:700; border: var(--card-border-thin) solid rgba(29,158,117,0.18); }
+
+    .btn-solid-teal{ background:var(--teal); color:#fff; border-radius:12px; padding:.55rem .9rem; display:inline-flex; align-items:center; gap:.5rem; font-weight:700; border:0; }
+
+    .search-card{ background:var(--white); border: var(--card-border-thin) solid var(--card-border); border-radius:14px; padding:.9rem; box-shadow: 0 6px 18px rgba(8,80,65,0.03); margin-top:.9rem; }
+    .form-control, .form-select{ border-radius:10px; border:1px solid rgba(10,10,10,0.06); }
+    .form-control:focus, .form-select:focus{ outline:none; box-shadow:0 6px 18px rgba(29,158,117,0.12); border-color:var(--teal); }
+    .btn-filter{ background:var(--teal); color:#fff; border:0; border-radius:10px; padding:.45rem .7rem; font-weight:700; }
+
+    .suggestion-card, .offer-card{ background:var(--white); border: var(--card-border-thin) solid var(--card-border); border-radius:14px; padding:1rem; transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+    .offer-card:hover{ transform: translateY(-4px); box-shadow: 0 18px 40px rgba(8,80,65,0.06); border-color: rgba(29,158,117,0.28); }
+
+    .type-badge{ display:inline-flex; padding:.22rem .6rem; border-radius:999px; font-weight:700; font-size:.78rem; }
+    .type-stage{ background: rgba(239,159,39,0.08); color: var(--amber); border: 1px solid rgba(239,159,39,0.12); }
+    .type-job{ background: rgba(29,158,117,0.08); color: var(--teal); border: 1px solid rgba(29,158,117,0.12); }
+
+    .location{ display:inline-flex; gap:.45rem; color:var(--muted); align-items:center; }
+    .avatar-initial{ width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-weight:800; color:#fff; background:linear-gradient(135deg, var(--teal-dark), var(--teal)); }
+
+    .meta-row{ display:flex; gap:1rem; align-items:center; flex-wrap:wrap; }
+    .applications-pill{ display:inline-flex; gap:.4rem; align-items:center; padding:.22rem .5rem; border-radius:999px; background:var(--teal-light); color:var(--teal-dark); font-weight:700; border: var(--card-border-thin) solid rgba(29,158,117,0.12); }
+
+    .btn-outline-teal{ border-radius:10px; padding:.35rem .6rem; border:1px solid var(--teal); color:var(--teal); background:transparent; font-weight:700; }
+
+    .offer-title{ font-weight:800; color:var(--teal-dark); }
+
 </style>
 
-<div class="container mt-4">
-    <div class="feed-head">
-        <div class="feed-title">Offres de stage & emploi</div>
-        <div class="feed-sub">
-            @if (isStudent)
+<div class="container feed-wrap mt-4">
+    <div class="hero">
+        <div class="hero-left">
+            <div class="hero-icon" aria-hidden>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 11h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 22h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+                <h3 class="hero-title">Offres de stage & emploi</h3>
+                <div class="hero-sub">Consultez toutes les offres publiées par la communauté ITBS.</div>
+            </div>
+        </div>
+
+        <div class="hero-actions">
+            <div class="badge-counter">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>@(Model.Results?.Count ?? 0) offres</span>
+            </div>
+            @if (User.IsInRole("Alumni"))
             {
-                <span>Feed personnalisé selon vos compétences, intérêts et profil.</span>
-            }
-            else
-            {
-                <span>Consultez toutes les offres publiées.</span>
+                <a asp-action="Create" class="btn-solid-teal"><span>+</span><span>Publier une offre</span></a>
             }
         </div>
-        @if (User.IsInRole("Alumni"))
-        {
-            <div class="mt-2">
-                <a asp-action="Create" class="btn btn-primary btn-sm">Publier une offre</a>
-            </div>
-        }
     </div>
 
     <div class="search-card">
         <form method="get" asp-action="Feed">
-            <div class="row g-2">
+            <div class="row g-2 align-items-center">
                 <div class="col-md-2">
                     <select name="type" class="form-select">
                         <option value="">Type</option>
@@ -75,7 +113,7 @@
                     <input name="publisher" value="@Model.Publisher" class="form-control" placeholder="Publié par" />
                 </div>
                 <div class="col-md-1 d-grid">
-                    <button class="btn btn-outline-primary" type="submit">Filtrer</button>
+                    <button class="btn-filter" type="submit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="margin-right:.4rem;"><path d="M21 21l-4.35-4.35" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Filtrer</button>
                 </div>
             </div>
         </form>
@@ -83,29 +121,29 @@
 
     @if (isStudent && Model.Suggestions.Any())
     {
-        <div class="mb-3">
+        <div class="mb-3 mt-3">
             <div class="d-flex align-items-center justify-content-between mb-2">
                 <h5 class="mb-0">Suggestions pour vous</h5>
-                <span class="small-muted">Basées sur vos skills et intérêts</span>
+                <span class="small text-muted">Basées sur votre profil</span>
             </div>
-            <div class="row suggestion-grid g-3">
+            <div class="row g-3">
                 @foreach (var offer in Model.Suggestions.Take(3))
                 {
                     <div class="col-md-6">
                         <div class="suggestion-card h-100">
                             <div class="d-flex justify-content-between align-items-start gap-2">
                                 <div>
-                                    <h5 class="mb-1">@offer.OfferTitle</h5>
-                                    <div class="small-muted">@offer.Location · @offer.Type</div>
+                                    <h6 class="offer-title mb-1">@offer.OfferTitle</h6>
+                                    <div class="location"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1 1 18 0z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> @offer.Location · <span class="type-@((offer.Type=="Stage")?"stage":"job") type-badge">@offer.Type</span></div>
                                 </div>
-                                <span class="match-badge">Match @offer.MatchScore</span>
+                                <span class="applications-pill">Match @offer.MatchScore</span>
                             </div>
                             <div class="small text-muted my-2">Publié par <strong>@offer.PublisherName</strong></div>
                             @if (!string.IsNullOrWhiteSpace(offer.MatchSummary))
                             {
                                 <div class="small text-muted mb-2">@offer.MatchSummary</div>
                             }
-                            <a asp-action="Details" asp-route-id="@offer.JobId" class="btn btn-sm btn-outline-primary">Voir détails</a>
+                            <a asp-action="Details" asp-route-id="@offer.JobId" class="btn btn-outline-teal btn-sm">Voir détails</a>
                         </div>
                     </div>
                 }
@@ -113,14 +151,14 @@
         </div>
     }
 
-    <div class="d-flex align-items-center justify-content-between mb-2">
+    <div class="d-flex align-items-center justify-content-between mb-2 mt-3">
         <h5 class="mb-0">@(isStudent ? "Autres offres" : "Toutes les offres")</h5>
-        <span class="small-muted">@Model.Results.Count offres</span>
+        <span class="small text-muted">@Model.Results.Count offres trouvées</span>
     </div>
 
     @if (!Model.Results.Any())
     {
-        <div class="alert alert-info">Aucune offre trouvée.</div>
+        <div class="suggestion-card text-center py-5">Aucune offre trouvée.</div>
     }
     else
     {
@@ -129,35 +167,27 @@
             {
                 <div class="col-md-6">
                     <div class="offer-card h-100">
-                        <div class="d-flex justify-content-between	align-items-start gap-2">
-                            <div>
-                                <h5 class="mb-1">@offer.OfferTitle</h5>
-                                <div class="small-muted">@offer.Location · @offer.Type</div>
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div style="flex:1 1 auto;">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h5 class="offer-title mb-1">@offer.OfferTitle</h5>
+                                    <span class="type-badge @(offer.Type=="Stage"?"type-stage":"type-job")">@offer.Type</span>
+                                </div>
+                                <div class="location mt-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1 1 18 0z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> @offer.Location</div>
                             </div>
-                            @if (isStudent)
-                            {
-                                <span class="match-badge @(offer.MatchScore == 0 ? "match-none" : offer.MatchScore < 4 ? "match-low" : "")">
-                                    Match @offer.MatchScore
-                                </span>
-                            }
                         </div>
 
                         <p class="mt-2 mb-2">@(string.IsNullOrWhiteSpace(offer.Description) ? "Sans description" : offer.Description)</p>
 
-                        <div class="small text-muted mb-2">
-                            Publié par <strong>@offer.PublisherName</strong> · @offer.PublisherEmail
+                        <div class="meta-row small text-muted mb-2">
+                            <div class="d-flex align-items-center gap-2"><span class="avatar-initial">@offer.PublisherName?.Split(' ').Select(s=>s.First()).Take(2).Aggregate("",(a,b)=>a+b).ToUpper()</span> Publié par <strong>@offer.PublisherName</strong></div>
+                            <div class="d-flex align-items-center">@offer.CreatedAt?.ToString("dd/MM/yyyy")</div>
+                            <div class="d-flex align-items-center"><span class="applications-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M3 7h18v11H3z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg> @offer.ApplicationsCount candidature(s)</span></div>
                         </div>
 
-                        @if (isStudent && !string.IsNullOrWhiteSpace(offer.MatchSummary))
-                        {
-                            <div class="small text-muted mb-2">@offer.MatchSummary</div>
-                        }
-
-                        <div class="small text-muted mb-3">
-                            @offer.CreatedAt?.ToString("dd/MM/yyyy HH:mm") · @offer.ApplicationsCount candidatures
+                        <div class="d-flex gap-2">
+                            <a asp-action="Details" asp-route-id="@offer.JobId" class="btn btn-outline-teal">Voir détails</a>
                         </div>
-
-                        <a asp-action="Details" asp-route-id="@offer.JobId" class="btn btn-sm btn-outline-primary">Voir détails</a>
                     </div>
                 </div>
             }

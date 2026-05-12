@@ -1,4 +1,5 @@
-﻿@using ITBSCareers.Models.Carriere
+﻿@using IBSTCareers.Models
+@using ITBSCareers.Models.Carriere
 @using ITBSCareers.Models.Messaging
 @model ITBSCareers.Models.Carriere.User
 @{
@@ -438,9 +439,36 @@
                 else if (isStudent)
                 {
                     <div class="small-muted mb-2">Demandez le statut alumni. Validation admin obligatoire.</div>
-                    <a asp-controller="AlumniRequest" asp-action="Create" class="btn-main teal">Demander statut alumni</a>
+                    <div class="action-row">
+                        <a asp-controller="AlumniRequest" asp-action="Create" class="btn-main teal">Demander statut alumni</a>
+                        <a asp-controller="AlumniRequest" asp-action="MyRequests" class="btn-main soft">Mes demandes alumni</a>
+                    </div>
                 }
             </section>
+
+            @if (ViewBag.AlumniRequests is List<AlumniRequestListItemViewModel> alumniRequests)
+            {
+                <section class="box">
+                    <div class="section-title">Historique des demandes alumni</div>
+                    @if (!alumniRequests.Any())
+                    {
+                        <div class="small-muted">Aucune demande enregistrée.</div>
+                    }
+                    else
+                    {
+                        foreach (var request in alumniRequests)
+                        {
+                            <div class="exp-item d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <div><strong>@request.CompanyName</strong> — @request.Position</div>
+                                    <div class="small-muted">Soumise le @request.CreatedAt?.ToString("dd/MM/yyyy HH:mm") · Révisée le @(request.ReviewedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</div>
+                                </div>
+                                <span class="pill @(request.Status == "Approved" ? "pill-green" : request.Status == "Rejected" ? "pill-amber" : "pill-blue")">@request.Status</span>
+                            </div>
+                        }
+                    }
+                </section>
+            }
         </main>
     </div>
 </div>

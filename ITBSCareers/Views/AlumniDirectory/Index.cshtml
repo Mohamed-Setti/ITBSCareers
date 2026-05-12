@@ -1,0 +1,429 @@
+@model IBSTCareers.Models.AlumniDirectoryViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Réseau alumni";
+
+    var currentVisibility = (Model.Visibility ?? "All").Trim();
+    string IsActive(string value) => string.Equals(currentVisibility, value, StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty;
+}
+
+<style>
+    :root {
+        --teal-dark: #085041;
+        --teal: #1D9E75;
+        --teal-soft: #E1F5EE;
+        --blue: #185FA5;
+        --blue-soft: #E6F1FB;
+        --amber: #B77900;
+        --amber-soft: #FAEEDA;
+        --gray: #667085;
+        --gray-soft: #EEF2F7;
+        --bg: #F0F5F3;
+        --white: #fff;
+        --border: rgba(8,80,65,.12);
+        --text: #1E293B;
+        --muted: #64756f;
+    }
+
+    .directory-shell { max-width: 1240px; margin: 0 auto; padding: 1rem 0 2rem; }
+    .hero-card, .stat-card, .panel-card, .alumni-card, .empty-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 10px 24px rgba(24,95,165,.06);
+    }
+
+    .hero-card { padding: 1.1rem 1.2rem; margin-bottom: .9rem; overflow: hidden; position: relative; }
+    .hero-card::after {
+        content: '';
+        position: absolute;
+        inset: auto -40px -55px auto;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(29,158,117,.09) 0%, rgba(29,158,117,0) 72%);
+        pointer-events: none;
+    }
+
+    .hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; align-items: center; }
+    .hero-title { font-size: 2rem; line-height: 1.05; font-weight: 800; color: var(--text); margin: 0; }
+    .hero-sub { color: var(--muted); margin-top: .35rem; }
+    .hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+    .hero-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .28rem .62rem;
+        border-radius: 999px;
+        font-size: .76rem;
+        font-weight: 800;
+        background: rgba(29,158,117,.10);
+        color: var(--teal-dark);
+        border: 1px solid rgba(29,158,117,.16);
+        margin-right: .35rem;
+    }
+
+    .search-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 220px auto;
+        gap: .75rem;
+        margin-bottom: .9rem;
+    }
+
+    .search-card, .filter-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 8px 18px rgba(24,95,165,.05); }
+    .search-card { padding: .9rem 1rem; }
+    .filter-card { padding: .8rem; display: flex; gap: .5rem; align-items: center; justify-content: space-between; }
+
+    .form-control, .form-select {
+        border-radius: 12px;
+        border-color: rgba(8,80,65,.16);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--teal);
+        box-shadow: 0 0 0 .18rem rgba(29,158,117,.12);
+    }
+
+    .filter-link {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .45rem .75rem;
+        border-radius: 999px;
+        border: 1px solid rgba(8,80,65,.14);
+        text-decoration: none;
+        color: var(--teal-dark);
+        font-weight: 700;
+        background: #fff;
+        white-space: nowrap;
+    }
+
+    .filter-link.active {
+        background: var(--teal-dark);
+        color: #fff;
+        border-color: var(--teal-dark);
+    }
+
+    .summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; margin-bottom: .9rem; }
+    .stat-card { padding: .95rem; }
+    .stat-top { display: flex; justify-content: space-between; align-items: flex-start; gap: .6rem; }
+    .stat-icon {
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .tone-teal { background: var(--teal-soft); color: var(--teal-dark); }
+    .tone-blue { background: var(--blue-soft); color: var(--blue); }
+    .tone-amber { background: var(--amber-soft); color: var(--amber); }
+    .tone-gray { background: var(--gray-soft); color: var(--gray); }
+    .stat-value { font-size: 1.9rem; font-weight: 900; line-height: 1; margin-top: .7rem; }
+    .stat-label { color: var(--muted); font-size: .84rem; margin-top: .25rem; }
+
+    .alumni-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+
+    .alumni-card { padding: 1rem; display: flex; flex-direction: column; gap: .85rem; }
+    .alumni-head { display: flex; gap: .85rem; align-items: flex-start; }
+    .avatar {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1rem;
+        background: linear-gradient(135deg, #0B4A3E 0%, #0F6E56 100%);
+        flex: 0 0 56px;
+        box-shadow: 0 10px 20px rgba(11,74,62,.22);
+    }
+    .avatar.private { background: linear-gradient(135deg, #6B7280 0%, #94A3B8 100%); }
+
+    .alumni-name { font-size: 1.05rem; font-weight: 800; color: var(--text); margin: 0; }
+    .alumni-mail { color: var(--muted); font-size: .84rem; }
+    .meta-line { color: var(--muted); font-size: .86rem; }
+
+    .badge-status, .badge-public, .badge-private, .badge-pending {
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        padding: .22rem .55rem;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 800;
+        line-height: 1;
+    }
+    .badge-public { background: rgba(29,158,117,.12); color: var(--teal-dark); }
+    .badge-private { background: rgba(185,119,0,.12); color: var(--amber); }
+    .badge-pending { background: rgba(245,158,11,.14); color: #9A6400; }
+
+    .info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+    .info-box {
+        border: 1px solid rgba(8,80,65,.10);
+        background: linear-gradient(135deg, #fff 0%, #FBFCFB 100%);
+        border-radius: 14px;
+        padding: .72rem .8rem;
+    }
+    .info-label { color: var(--muted); font-size: .74rem; text-transform: uppercase; letter-spacing: .04em; }
+    .info-value { font-weight: 800; color: var(--text); margin-top: .08rem; }
+
+    .chip-row { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        padding: .24rem .56rem;
+        border-radius: 999px;
+        background: #F4FBF8;
+        color: var(--teal-dark);
+        font-size: .72rem;
+        font-weight: 700;
+    }
+
+    .card-actions { display: flex; justify-content: space-between; align-items: center; gap: .75rem; flex-wrap: wrap; }
+    .contact-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .45rem;
+        border-radius: 14px;
+        border: 0;
+        padding: .75rem 1rem;
+        font-weight: 800;
+        text-decoration: none;
+        background: linear-gradient(135deg, #0F6E56 0%, #115B47 100%);
+        color: #fff;
+        min-width: 180px;
+    }
+    .contact-btn.secondary {
+        background: #fff;
+        color: var(--teal-dark);
+        border: 1px solid rgba(15,110,86,.18);
+    }
+    .contact-btn.disabled {
+        background: #EDF2F7;
+        color: #64748B;
+        border: 1px solid #E2E8F0;
+        pointer-events: none;
+    }
+
+    .panel-card { padding: 1rem; }
+    .section-title { font-weight: 800; color: var(--text); margin-bottom: .75rem; display: flex; align-items: center; gap: .5rem; }
+    .section-icon {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 10px;
+        background: #F1F8F6;
+        color: var(--teal-dark);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .empty-card { padding: 2rem; text-align: center; }
+    .empty-illustration {
+        width: 88px;
+        height: 88px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(29,158,117,.08), rgba(24,95,165,.06));
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    @@media (max-width: 1100px) {
+        .hero-grid, .search-row, .summary-grid, .alumni-grid { grid-template-columns: 1fr; }
+        .filter-card { justify-content: flex-start; flex-wrap: wrap; }
+    }
+</style>
+
+<div class="container directory-shell">
+    @if (TempData["Message"] != null)
+    {
+        <div class="alert alert-info">@TempData["Message"]</div>
+    }
+
+    <div class="hero-card">
+        <div class="hero-grid">
+            <div>
+                <h1 class="hero-title">Réseau alumni</h1>
+                <div class="hero-sub">Consultez tous les alumnis, leurs spécialités et leur entreprise, puis contactez-les en un clic.</div>
+                <div class="mt-2">
+                    <span class="hero-pill">@Model.TotalCount alumnis</span>
+                    <span class="hero-pill">@Model.PublicCount publics</span>
+                    <span class="hero-pill">@Model.PrivateCount privés</span>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <a asp-controller="Messaging" asp-action="Index" class="contact-btn secondary">Ouvrir la messagerie</a>
+            </div>
+        </div>
+    </div>
+
+    <form method="get" asp-action="Index" class="search-row">
+        <div class="search-card">
+            <label class="form-label fw-bold mb-2" for="query">Recherche</label>
+            <input id="query" name="query" value="@Model.Query" class="form-control" placeholder="Nom, entreprise, spécialité, poste..." />
+        </div>
+        <div class="search-card">
+            <label class="form-label fw-bold mb-2" for="visibility">Visibilité</label>
+            <select id="visibility" name="visibility" class="form-select">
+                <option value="All" selected="@(string.Equals(currentVisibility, "All", StringComparison.OrdinalIgnoreCase))">Tous</option>
+                <option value="Public" selected="@(string.Equals(currentVisibility, "Public", StringComparison.OrdinalIgnoreCase))">Publics</option>
+                <option value="Private" selected="@(string.Equals(currentVisibility, "Private", StringComparison.OrdinalIgnoreCase))">Privés</option>
+            </select>
+        </div>
+        <div class="filter-card">
+            <button type="submit" class="contact-btn" style="min-width:auto;">Filtrer</button>
+            <a asp-action="Index" class="filter-link">Réinitialiser</a>
+        </div>
+    </form>
+
+    <div class="summary-grid">
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-teal">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.7"/><path d="M4 20a8 8 0 0 1 16 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </div>
+                <span class="badge-status">Total</span>
+            </div>
+            <div class="stat-value" style="color:var(--teal-dark)">@Model.TotalCount</div>
+            <div class="stat-label">Alumnis disponibles</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-blue">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5 11h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7 22h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </div>
+                <span class="badge-public">Publics</span>
+            </div>
+            <div class="stat-value" style="color:var(--blue)">@Model.PublicCount</div>
+            <div class="stat-label">Contacter directement</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-amber">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5 11h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7 22h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </div>
+                <span class="badge-private">Privés</span>
+            </div>
+            <div class="stat-value" style="color:var(--amber)">@Model.PrivateCount</div>
+            <div class="stat-label">Demande de contact requise</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-top">
+                <div class="stat-icon tone-gray">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 7h18v10H3z" stroke="currentColor" stroke-width="1.7"/><path d="M7 7V5h10v2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </div>
+                <span class="badge-pending">En attente</span>
+            </div>
+            <div class="stat-value" style="color:var(--gray)">@Model.PendingContactRequestsCount</div>
+            <div class="stat-label">Demandes déjà envoyées</div>
+        </div>
+    </div>
+
+    <div class="panel-card mb-3">
+        <div class="section-title">
+            <span class="section-icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.7"/><path d="M4 9h16" stroke="currentColor" stroke-width="1.7"/></svg>
+            </span>
+            Filtres rapides
+        </div>
+        <div class="chip-row">
+            <a asp-action="Index" asp-route-visibility="All" asp-route-query="@Model.Query" class="filter-link @IsActive("All")">Tous</a>
+            <a asp-action="Index" asp-route-visibility="Public" asp-route-query="@Model.Query" class="filter-link @IsActive("Public")">Publics</a>
+            <a asp-action="Index" asp-route-visibility="Private" asp-route-query="@Model.Query" class="filter-link @IsActive("Private")">Privés</a>
+        </div>
+    </div>
+
+    @if (!Model.Alumni.Any())
+    {
+        <div class="empty-card">
+            <div class="empty-illustration">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="#0F6E56" stroke-width="1.6"/><path d="M4 20a8 8 0 0 1 16 0" stroke="#0F6E56" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </div>
+            <h5>Aucun alumni trouvé</h5>
+            <p class="text-muted mb-3">Essayez de modifier vos filtres ou votre recherche.</p>
+            <a asp-action="Index" class="contact-btn">Réinitialiser</a>
+        </div>
+    }
+    else
+    {
+        <div class="alumni-grid">
+            @foreach (var alumni in Model.Alumni)
+            {
+                <div class="alumni-card">
+                    <div class="alumni-head">
+                        <div class="avatar @(alumni.IsContactPublic ? string.Empty : "private")">@alumni.Initials</div>
+                        <div style="min-width:0;flex:1;">
+                            <div class="d-flex justify-content-between gap-2 align-items-start">
+                                <div style="min-width:0;">
+                                    <h3 class="alumni-name text-truncate">@alumni.FullName</h3>
+                                    <div class="alumni-mail text-truncate">@alumni.Email</div>
+                                </div>
+                                <span class="@(alumni.IsContactPublic ? "badge-public" : "badge-private")">@alumni.StatusLabel</span>
+                            </div>
+                            <div class="meta-line mt-2">@alumni.SpecialityLabel</div>
+                        </div>
+                    </div>
+
+                    <div class="info-grid">
+                        <div class="info-box">
+                            <div class="info-label">Entreprise</div>
+                            <div class="info-value">@(string.IsNullOrWhiteSpace(alumni.CompanyName) ? "—" : alumni.CompanyName)</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">Poste</div>
+                            <div class="info-value">@(string.IsNullOrWhiteSpace(alumni.Position) ? "—" : alumni.Position)</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">Diplôme</div>
+                            <div class="info-value">@(string.IsNullOrWhiteSpace(alumni.DegreeName) ? "—" : alumni.DegreeName)</div>
+                        </div>
+                        <div class="info-box">
+                            <div class="info-label">Expérience</div>
+                            <div class="info-value">@(alumni.ExperienceYears.HasValue ? $"{alumni.ExperienceYears} ans" : "—")</div>
+                        </div>
+                    </div>
+
+                    <div class="chip-row">
+                        <span class="chip">@(alumni.Field ?? "Spécialité à découvrir")</span>
+                        <span class="chip">@(alumni.IsContactPublic ? "Contact direct" : "Demande de contact")</span>
+                        @if (alumni.HasPendingContactRequest)
+                        {
+                            <span class="badge-pending">Demande envoyée</span>
+                        }
+                    </div>
+
+                    <div class="card-actions">
+                        <div class="text-muted small">
+                            @if (alumni.IsContactPublic)
+                            {
+                                <span>Profil public, discussion immédiate possible.</span>
+                            }
+                            else if (alumni.HasPendingContactRequest)
+                            {
+                                <span>Votre demande de contact est en attente.</span>
+                            }
+                            else
+                            {
+                                <span>Profil privé, demande de contact requise.</span>
+                            }
+                        </div>
+
+                        <form asp-action="Contact" method="post" class="m-0">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="alumniId" value="@alumni.AlumniId" />
+                            <button type="submit" class="contact-btn @(alumni.HasPendingContactRequest ? "disabled" : string.Empty)" @(alumni.HasPendingContactRequest ? "disabled" : string.Empty)>
+                                @alumni.ActionLabel
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

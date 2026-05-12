@@ -1,0 +1,255 @@
+@model IEnumerable<IBSTCareers.Models.AlumniRequestListItemViewModel>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Gestion des demandes alumni";
+
+    var items = Model.ToList();
+    var currentFilter = (ViewBag.Filter as string ?? "All").Trim();
+    var normalizedFilter = currentFilter.ToLowerInvariant();
+
+    var totalCount = ViewBag.TotalCount is int total ? total : items.Count;
+    var pendingCount = ViewBag.PendingCount is int pending ? pending : items.Count(x => x.Status == "Pending");
+    var approvedCount = ViewBag.ApprovedCount is int approved ? approved : items.Count(x => x.Status == "Approved");
+    var rejectedCount = ViewBag.RejectedCount is int rejected ? rejected : items.Count(x => x.Status == "Rejected");
+
+    var pendingItems = normalizedFilter == "all"
+        ? items.Where(x => x.Status == "Pending").ToList()
+        : items.Where(x => x.Status == "Pending").ToList();
+
+    var historyItems = normalizedFilter == "all"
+        ? items.Where(x => x.Status != "Pending").ToList()
+        : items;
+}
+
+<style>
+    :root {
+        --teal-dark: #085041;
+        --teal: #1D9E75;
+        --teal-light: #E1F5EE;
+        --amber: #EF9F27;
+        --amber-light: #FAEEDA;
+        --red: #D64545;
+        --red-light: #FDECEC;
+        --blue: #2F80ED;
+        --blue-light: #EAF3FF;
+        --bg: #F0F5F3;
+        --white: #fff;
+        --border: rgba(8,80,65,.12);
+        --muted: #64756f;
+    }
+
+    .page-wrap { background: var(--bg); padding: 1rem 0 3rem; }
+    .hero,
+    .panel,
+    .request-card,
+    .summary-card,
+    .empty-state { background: var(--white); border: .5px solid var(--border); border-radius: 14px; box-shadow: 0 6px 18px rgba(8,80,65,.04); }
+    .hero { padding: 1rem 1.1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:.9rem; }
+    .hero-left{ display:flex; gap:1rem; align-items:center; }
+    .hero-icon{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg, rgba(29,158,117,.12), rgba(8,80,65,.06)); display:flex; align-items:center; justify-content:center; }
+    .title{ font-size:1.35rem; font-weight:800; color:var(--teal-dark); margin:0; }
+    .sub{ color:var(--muted); }
+    .btn-solid-teal{ background:var(--teal); color:#fff; border:0; border-radius:12px; padding:.58rem .95rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:.5rem; }
+    .btn-outline-teal{ border:1px solid var(--teal); color:var(--teal); background:#fff; border-radius:12px; padding:.52rem .9rem; font-weight:700; text-decoration:none; }
+
+    .summary-grid{ display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:.75rem; margin-bottom:.9rem; }
+    .summary-card{ padding:.9rem; }
+    .summary-value{ font-size:1.7rem; font-weight:800; line-height:1; color:var(--teal-dark); }
+    .summary-label{ color:var(--muted); font-size:.82rem; }
+
+    .tabs-row{ display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:.9rem; }
+    .tab-link{ padding:.5rem .85rem; border-radius:999px; border:1px solid rgba(8,80,65,.14); color:var(--teal-dark); text-decoration:none; font-weight:700; background:#fff; }
+    .tab-link.active{ background:var(--teal-dark); color:#fff; border-color:var(--teal-dark); }
+    .tab-link .count{ display:inline-flex; margin-left:.45rem; padding:.1rem .38rem; border-radius:999px; background:rgba(255,255,255,.2); }
+    .tab-link:not(.active) .count{ background:rgba(8,80,65,.08); color:var(--teal-dark); }
+
+    .section-title{ font-weight:800; color:var(--teal-dark); margin:0 0 .75rem; display:flex; align-items:center; gap:.5rem; }
+    .section-icon{ width:28px; height:28px; border-radius:8px; background:#E9F7F1; display:inline-flex; align-items:center; justify-content:center; }
+
+    .request-list{ display:grid; gap:.75rem; }
+    .request-card{ padding:1rem; }
+    .request-top{ display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; }
+    .request-name{ font-weight:800; color:var(--teal-dark); }
+    .request-sub{ color:var(--muted); font-size:.88rem; }
+    .status-pill{ display:inline-flex; align-items:center; padding:.22rem .56rem; border-radius:999px; font-size:.76rem; font-weight:700; }
+    .status-pending{ background: rgba(239,159,39,.12); color: #9A6400; }
+    .status-approved{ background: rgba(29,158,117,.12); color: var(--teal-dark); }
+    .status-rejected{ background: rgba(214,69,69,.10); color: #A61D2A; }
+    .meta-row{ display:flex; gap:.9rem; flex-wrap:wrap; color:var(--muted); font-size:.84rem; margin-top:.75rem; }
+    .actions-row{ display:flex; gap:.5rem; flex-wrap:wrap; margin-top:.85rem; }
+    .action-btn{ border-radius:12px; padding:.52rem .85rem; font-weight:700; border:0; }
+    .action-btn.approve{ background:var(--teal); color:#fff; }
+    .action-btn.reject{ background:#fff; color:var(--red); border:1px solid rgba(214,69,69,.3); }
+    .empty-state{ padding:2rem; text-align:center; }
+    .empty-illustration{ width:92px; height:92px; border-radius:18px; margin:0 auto 1rem; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(29,158,117,.08), rgba(239,159,39,.05)); }
+
+    @@media (max-width: 992px){
+        .hero{ flex-direction:column; align-items:flex-start; }
+        .summary-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+
+    @@media (max-width: 640px){
+        .summary-grid{ grid-template-columns:1fr; }
+        .request-top{ flex-direction:column; }
+    }
+</style>
+
+<div class="container page-wrap mt-4">
+    <div class="hero">
+        <div class="hero-left">
+            <div class="hero-icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2v6" stroke="#1D9E75" stroke-width="1.6" stroke-linecap="round"/><path d="M5 11h14" stroke="#1D9E75" stroke-width="1.6" stroke-linecap="round"/><path d="M7 22h10" stroke="#1D9E75" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+                <h3 class="title">Gestion des demandes alumni</h3>
+                <div class="sub">Filtrez les demandes en attente ou consultez l’historique complet des décisions.</div>
+            </div>
+        </div>
+        <a asp-action="Pending" class="btn-solid-teal">Voir les en attente</a>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card"><div class="summary-value">@totalCount</div><div class="summary-label">Demandes totales</div></div>
+        <div class="summary-card"><div class="summary-value" style="color:var(--amber)">@pendingCount</div><div class="summary-label">En attente</div></div>
+        <div class="summary-card"><div class="summary-value" style="color:var(--teal)">@approvedCount</div><div class="summary-label">Validées</div></div>
+        <div class="summary-card"><div class="summary-value" style="color:var(--red)">@rejectedCount</div><div class="summary-label">Refusées</div></div>
+    </div>
+
+    <div class="tabs-row">
+        <a asp-action="Manage" asp-route-filter="All" class="tab-link @(normalizedFilter == "all" ? "active" : "")">Historique complet <span class="count">@totalCount</span></a>
+        <a asp-action="Manage" asp-route-filter="Pending" class="tab-link @(normalizedFilter == "pending" ? "active" : "")">En attente <span class="count">@pendingCount</span></a>
+        <a asp-action="Manage" asp-route-filter="Approved" class="tab-link @(normalizedFilter == "approved" ? "active" : "")">Validées <span class="count">@approvedCount</span></a>
+        <a asp-action="Manage" asp-route-filter="Rejected" class="tab-link @(normalizedFilter == "rejected" ? "active" : "")">Refusées <span class="count">@rejectedCount</span></a>
+    </div>
+
+    @if (!items.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-illustration">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none"><path d="M12 2v6" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round"/><path d="M5 11h14" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round"/><path d="M7 22h10" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <h5>Aucune demande à afficher</h5>
+            <p class="sub mb-3">Aucun élément ne correspond au filtre sélectionné.</p>
+            <a asp-action="Manage" asp-route-filter="All" class="btn-solid-teal">Voir l’historique complet</a>
+        </div>
+    }
+    else if (normalizedFilter == "all")
+    {
+        <div class="panel p-3 mb-3">
+            <div class="section-title">
+                <span class="section-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2v6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M5 11h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M7 22h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </span>
+                Demandes en attente
+            </div>
+
+            @if (!pendingItems.Any())
+            {
+                <div class="sub">Aucune demande en attente pour le moment.</div>
+            }
+            else
+            {
+                <div class="request-list">
+                    @foreach (var request in pendingItems)
+                    {
+                        <div class="request-card">
+                            <div class="request-top">
+                                <div>
+                                    <div class="request-name">@request.CompanyName</div>
+                                    <div class="request-sub">@request.Position · @request.UserName</div>
+                                </div>
+                                <span class="status-pill status-pending">En attente</span>
+                            </div>
+                            <div class="meta-row">
+                                <span>Soumise le @(request.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</span>
+                                <span>Preuve : @(string.IsNullOrWhiteSpace(request.ProofFilePath) ? "—" : request.ProofFilePath)</span>
+                            </div>
+                            <div class="actions-row">
+                                <form asp-action="Approve" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@request.AlumniRequestId" />
+                                    <button type="submit" class="action-btn approve">Valider</button>
+                                </form>
+                                <form asp-action="Reject" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@request.AlumniRequestId" />
+                                    <button type="submit" class="action-btn reject">Refuser</button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="panel p-3">
+            <div class="section-title">
+                <span class="section-icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4h16v16H4z" stroke="currentColor" stroke-width="1.7"/><path d="M4 9h16" stroke="currentColor" stroke-width="1.7"/></svg>
+                </span>
+                Historique complet
+            </div>
+
+            @if (!historyItems.Any())
+            {
+                <div class="sub">Aucune décision historique enregistrée.</div>
+            }
+            else
+            {
+                <div class="request-list">
+                    @foreach (var request in historyItems)
+                    {
+                        <div class="request-card">
+                            <div class="request-top">
+                                <div>
+                                    <div class="request-name">@request.CompanyName</div>
+                                    <div class="request-sub">@request.Position · @request.UserName</div>
+                                </div>
+                                <span class="status-pill @(request.Status == "Approved" ? "status-approved" : request.Status == "Rejected" ? "status-rejected" : "status-pending")">
+                                    @(request.Status == "Approved" ? "Validée" : request.Status == "Rejected" ? "Refusée" : "En attente")
+                                </span>
+                            </div>
+                            <div class="meta-row">
+                                <span>Soumise le @(request.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</span>
+                                <span>Révisée le @(request.ReviewedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</span>
+                                <span>Par @(request.ReviewedByName ?? "—")</span>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(request.ProofFilePath))
+                            {
+                                <div class="request-sub mt-2">Preuve : @request.ProofFilePath</div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="request-list">
+            @foreach (var request in items)
+            {
+                <div class="request-card">
+                    <div class="request-top">
+                        <div>
+                            <div class="request-name">@request.CompanyName</div>
+                            <div class="request-sub">@request.Position · @request.UserName</div>
+                        </div>
+                        <span class="status-pill @(request.Status == "Approved" ? "status-approved" : request.Status == "Rejected" ? "status-rejected" : "status-pending")">
+                            @(request.Status == "Approved" ? "Validée" : request.Status == "Rejected" ? "Refusée" : "En attente")
+                        </span>
+                    </div>
+                    <div class="meta-row">
+                        <span>Soumise le @(request.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</span>
+                        <span>Révisée le @(request.ReviewedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</span>
+                        <span>Par @(request.ReviewedByName ?? "—")</span>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(request.ProofFilePath))
+                    {
+                        <div class="request-sub mt-2">Preuve : @request.ProofFilePath</div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,113 @@
+@model IEnumerable<IBSTCareers.Models.AlumniRequestListItemViewModel>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Mes demandes alumni";
+    var items = Model.ToList();
+}
+
+<style>
+    :root {
+        --teal-dark: #085041;
+        --teal: #1D9E75;
+        --teal-light: #E1F5EE;
+        --amber: #EF9F27;
+        --bg: #F0F5F3;
+        --white: #fff;
+        --border: rgba(8,80,65,.12);
+        --muted: #64756f;
+    }
+
+    .page-wrap { background: var(--bg); padding: 1rem 0 3rem; }
+    .hero, .request-card, .empty-state, .summary-card { background: var(--white); border: .5px solid var(--border); border-radius: 14px; box-shadow: 0 6px 18px rgba(8,80,65,.04); }
+    .hero { padding: 1rem 1.1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; margin-bottom:.9rem; }
+    .hero-left{ display:flex; gap:1rem; align-items:center; }
+    .hero-icon{ width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg, rgba(29,158,117,.12), rgba(8,80,65,.06)); display:flex; align-items:center; justify-content:center; }
+    .title{ font-size:1.35rem; font-weight:800; color:var(--teal-dark); margin:0; }
+    .sub{ color:var(--muted); }
+    .btn-solid-teal{ background:var(--teal); color:#fff; border:0; border-radius:12px; padding:.58rem .95rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:.5rem; }
+    .btn-outline-teal{ border:1px solid var(--teal); color:var(--teal); background:#fff; border-radius:12px; padding:.52rem .9rem; font-weight:700; text-decoration:none; }
+
+    .summary-grid{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:.75rem; margin-bottom:.9rem; }
+    .summary-card{ padding:.9rem; }
+    .summary-value{ font-size:1.7rem; font-weight:800; line-height:1; color:var(--teal-dark); }
+    .summary-label{ color:var(--muted); font-size:.82rem; }
+
+    .request-list{ display:grid; grid-template-columns: 1fr; gap:.75rem; }
+    .request-card{ padding:1rem; }
+    .request-top{ display:flex; justify-content:space-between; gap:1rem; align-items:flex-start; }
+    .request-name{ font-weight:800; color:var(--teal-dark); }
+    .request-sub{ color:var(--muted); font-size:.88rem; }
+    .status-pill{ display:inline-flex; align-items:center; padding:.22rem .56rem; border-radius:999px; font-size:.76rem; font-weight:700; }
+    .status-pending{ background: rgba(239,159,39,.12); color: #9A6400; }
+    .status-approved{ background: rgba(29,158,117,.12); color: var(--teal-dark); }
+    .status-rejected{ background: rgba(220,53,69,.10); color: #A61D2A; }
+    .meta-row{ display:flex; gap:.9rem; flex-wrap:wrap; color:var(--muted); font-size:.84rem; margin-top:.75rem; }
+    .empty-state{ padding:2rem; text-align:center; }
+    .empty-illustration{ width:92px; height:92px; border-radius:18px; margin:0 auto 1rem; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, rgba(29,158,117,.08), rgba(239,159,39,.05)); }
+
+    @@media (max-width: 992px){
+        .hero{ flex-direction:column; align-items:flex-start; }
+        .summary-grid{ grid-template-columns:1fr; }
+    }
+</style>
+
+<div class="container page-wrap mt-4">
+    <div class="hero">
+        <div class="hero-left">
+            <div class="hero-icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#1D9E75" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+                <h3 class="title">Mes demandes alumni</h3>
+                <div class="sub">Suivez l'évolution de vos demandes, les dates de soumission et les décisions de l'administration.</div>
+            </div>
+        </div>
+        <a asp-action="Create" class="btn-solid-teal">Nouvelle demande</a>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card"><div class="summary-value">@items.Count</div><div class="summary-label">Demandes</div></div>
+        <div class="summary-card"><div class="summary-value" style="color:var(--amber)">@items.Count(x => x.Status == "Pending")</div><div class="summary-label">En attente</div></div>
+        <div class="summary-card"><div class="summary-value" style="color:var(--teal)">@items.Count(x => x.Status == "Approved")</div><div class="summary-label">Approuvées</div></div>
+    </div>
+
+    @if (!items.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-illustration">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h5>Aucune demande pour le moment</h5>
+            <p class="sub mb-3">Vous pouvez envoyer votre première demande alumni dès maintenant.</p>
+            <a asp-action="Create" class="btn-solid-teal">Créer la première demande</a>
+        </div>
+    }
+    else
+    {
+        <div class="request-list">
+            @foreach (var request in items)
+            {
+                <div class="request-card">
+                    <div class="request-top">
+                        <div>
+                            <div class="request-name">@request.CompanyName</div>
+                            <div class="request-sub">@request.Position</div>
+                        </div>
+                        <span class="status-pill @(request.Status == "Approved" ? "status-approved" : request.Status == "Rejected" ? "status-rejected" : "status-pending")">@request.Status</span>
+                    </div>
+
+                    <div class="meta-row">
+                        <span>Soumise le @request.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
+                        <span>Révisée le @(request.ReviewedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</span>
+                        <span>Par @(request.ReviewedByName ?? "—")</span>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(request.ProofFilePath))
+                    {
+                        <div class="small mt-2"><span class="request-sub">Preuve :</span> <span>@request.ProofFilePath</span></div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

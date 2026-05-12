@@ -1,34 +1,77 @@
 @model ITBSCareers.Models.Carriere.AlumniRequest
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = "Alumni Request";
+    ViewData["Title"] = "Demande alumni";
 }
 
-<div class="container mt-4">
-    <h2>Request Alumni Access</h2>
+<style>
+    :root {
+        --teal-dark: #085041;
+        --teal: #1D9E75;
+        --teal-light: #E1F5EE;
+        --amber: #EF9F27;
+        --bg: #F0F5F3;
+        --white: #fff;
+        --border: rgba(8,80,65,.12);
+        --text-sec: #64756f;
+    }
 
-    <form asp-action="Create" method="post">
-        @Html.AntiForgeryToken()
-        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    .req-wrap { background: var(--bg); padding: 1rem 0 3rem; }
+    .hero, .form-card { background: var(--white); border: .5px solid var(--border); border-radius: 14px; box-shadow: 0 6px 18px rgba(8,80,65,.04); }
+    .hero { padding: 1rem 1.1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+    .hero-title { font-size: 1.35rem; font-weight: 800; color: var(--teal-dark); margin:0; }
+    .hero-sub { color: var(--text-sec); }
+    .hero-icon { width:56px; height:56px; border-radius:12px; background: linear-gradient(135deg, rgba(29,158,117,.12), rgba(8,80,65,.06)); display:flex; align-items:center; justify-content:center; }
+    .btn-solid-teal { background: var(--teal); color:#fff; border:0; border-radius:12px; padding:.58rem .95rem; font-weight:700; display:inline-flex; align-items:center; gap:.5rem; text-decoration:none; }
+    .btn-outline-teal { border:1px solid var(--teal); color: var(--teal); background:#fff; border-radius:12px; padding:.58rem .95rem; font-weight:700; text-decoration:none; }
+    .form-card { padding: 1rem; margin-top: .9rem; }
+    .form-label { font-weight:700; color: var(--teal-dark); }
+    .form-control { border-radius: 10px; }
+    .form-control:focus { border-color: var(--teal); box-shadow: 0 0 0 .18rem rgba(29,158,117,.12); }
+    .helper { color: var(--text-sec); font-size: .88rem; }
+</style>
 
-        <div class="mb-3">
-            <label asp-for="CompanyName" class="form-label"></label>
-            <input asp-for="CompanyName" class="form-control" />
+<div class="container req-wrap mt-4">
+    <div class="hero">
+        <div class="d-flex align-items-center gap-3">
+            <div class="hero-icon" aria-hidden="true">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2v6" stroke="#1D9E75" stroke-width="1.6" stroke-linecap="round"/><path d="M5 11h14" stroke="#1D9E75" stroke-width="1.6" stroke-linecap="round"/><path d="M7 22h10" stroke="#1D9E75" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+                <h3 class="hero-title">Demande d'accès alumni</h3>
+                <div class="hero-sub">Complétez les informations de votre parcours professionnel pour soumettre votre demande.</div>
+            </div>
         </div>
+        <a asp-action="MyRequests" class="btn-outline-teal">Mes demandes</a>
+    </div>
 
-        <div class="mb-3">
-            <label asp-for="Position" class="form-label"></label>
-            <input asp-for="Position" class="form-control" />
-        </div>
+    <div class="form-card">
+        <form asp-action="Create" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <div class="mb-3">
-            <label asp-for="ProofFilePath" class="form-label">Proof (optional URL/path)</label>
-            <input asp-for="ProofFilePath" class="form-control" />
-        </div>
+            <div class="col-md-6">
+                <label asp-for="CompanyName" class="form-label">Entreprise</label>
+                <input asp-for="CompanyName" class="form-control" placeholder="Nom de l'entreprise" />
+            </div>
 
-        <button type="submit" class="btn btn-primary">Submit request</button>
-        <a asp-controller="User" asp-action="Profile" class="btn btn-secondary">Cancel</a>
-    </form>
+            <div class="col-md-6">
+                <label asp-for="Position" class="form-label">Poste</label>
+                <input asp-for="Position" class="form-control" placeholder="Votre fonction actuelle" />
+            </div>
+
+            <div class="col-12">
+                <label asp-for="ProofFilePath" class="form-label">Preuve</label>
+                <input asp-for="ProofFilePath" class="form-control" placeholder="URL ou chemin du justificatif (optionnel)" />
+                <div class="helper mt-1">Vous pouvez ajouter un lien vers un document ou un chemin partagé.</div>
+            </div>
+
+            <div class="col-12 d-flex gap-2 flex-wrap pt-2">
+                <button type="submit" class="btn-solid-teal">Soumettre la demande</button>
+                <a asp-controller="User" asp-action="Profile" class="btn-outline-teal">Retour profil</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
