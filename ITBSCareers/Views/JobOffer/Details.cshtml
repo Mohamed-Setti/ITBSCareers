@@ -5,8 +5,8 @@
     var isStudent = ViewBag.IsStudent is bool s && s;
     var isOwner = ViewBag.IsOwner is bool o && o;
     var alreadyApplied = ViewBag.AlreadyApplied is bool a && a;
-    var requiredSkills = ViewBag.RequiredSkills as List<int> ?? new List<int>();
-    var requiredInterests = ViewBag.RequiredInterests as List<int> ?? new List<int>();
+    var requiredSkills = ViewBag.RequiredSkills as List<string> ?? new List<string>();
+    var requiredInterests = ViewBag.RequiredInterests as List<string> ?? new List<string>();
 }
 
 <div class="container mt-4">

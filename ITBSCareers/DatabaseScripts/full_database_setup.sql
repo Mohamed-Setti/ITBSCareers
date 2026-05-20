@@ -218,6 +218,21 @@ BEGIN
 END
 GO
 
+IF OBJECT_ID('dbo.EmailLogs', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.EmailLogs (
+        EmailLogID INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        UserID INT NULL,
+        ToEmail NVARCHAR(100) NULL,
+        Subject NVARCHAR(200) NULL,
+        Body NVARCHAR(MAX) NULL,
+        CreatedAt DATETIME NOT NULL CONSTRAINT DF_EmailLogs_CreatedAt DEFAULT (GETDATE()),
+        CONSTRAINT FK_EmailLogs_User FOREIGN KEY (UserID) REFERENCES dbo.Users(UserID)
+    );
+    CREATE INDEX IX_EmailLogs_UserID_CreatedAt ON dbo.EmailLogs(UserID, CreatedAt DESC);
+END
+GO
+
 /* Alumni requests */
 IF OBJECT_ID('dbo.AlumniRequests', 'U') IS NULL
 BEGIN
@@ -480,7 +495,7 @@ GO
 /* Utility table used by the project */
 IF OBJECT_ID('dbo.Table', 'U') IS NULL
 BEGIN
-    CREATE TABLE dbo.Table (
+    CREATE TABLE dbo.[Table] (
         Id INT NOT NULL PRIMARY KEY
     );
 END
@@ -554,8 +569,8 @@ BEGIN
     VALUES
     (N'Orientation carri?re', N'Questions sur les parcours, stages et premiers emplois.', 1),
     (N'Comp?tences techniques', N'Discussions autour du d?veloppement, data, cloud et outils.', 1),
-    (N'Entretiens', N'Astuces pour les entretiens et retours d'exp?rience.', 1),
-    (N'Vie professionnelle', N'Culture d'entreprise, soft skills et ?volution de carri?re.', 1),
+    (N'Entretiens', N'Astuces pour les entretiens et retours d''exp?rience.', 1),
+    (N'Vie professionnelle', N'Culture d''entreprise, soft skills et ?volution de carri?re.', 1),
     (N'Responsabilit? num?rique', N'Veille sur les bonnes pratiques et la s?curit?.', 1);
 END
 GO

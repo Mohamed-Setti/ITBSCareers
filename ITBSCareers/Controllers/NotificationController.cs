@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Json;
 using ITBSCareers.Models.Carriere;
+using ITBSCareers.Services.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,12 @@ namespace IBSTCareers.Controllers
     public class NotificationController : Controller
     {
         private readonly CarriereDbContext _context;
+        private readonly INotificationService _notificationService;
 
-        public NotificationController(CarriereDbContext context)
+        public NotificationController(CarriereDbContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         public async Task<IActionResult> Index()
@@ -22,36 +25,58 @@ namespace IBSTCareers.Controllers
             var userId = GetCurrentUserId();
             if (userId == null) return RedirectToAction("Login", "User");
 
-            var notifications = await _context.Notifications
-                .Where(n => n.UserId == userId.Value)
-                .OrderByDescending(n => n.CreatedAt)
-                .ToListAsync();
+            var notifications = await _notificationService.GetRecentAsync(userId.Value, 50);
 
             return View(notifications);
         }
 
-    [HttpGet]
-    public async Task<IActionResult> Recent(int count = 5)
-    {
-        var userId = GetCurrentUserId();
-        if (userId == null) return Unauthorized();
+        [HttpGet]
+        public async Task<IActionResult> Recent(int count = 5)
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
 
-        var notifications = await _context.Notifications
-            .Where(n => n.UserId == userId.Value)
-            .OrderByDescending(n => n.CreatedAt)
-            .Take(Math.Clamp(count, 1, 10))
-            .Select(n => new
+            var notifications = await _notificationService.GetRecentAsync(userId.Value, count);
+
+            var payload = notifications.Select(n => new
             {
                 n.NotificationId,
                 n.Type,
                 n.Content,
                 n.IsRead,
                 n.CreatedAt
-            })
-            .ToListAsync();
+            });
 
-        return Json(notifications);
-    }
+            return Json(payload);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UnreadCount()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return Unauthorized();
+
+            var unreadCount = await _notificationService.GetUnreadCountAsync(userId.Value);
+            return Json(new { unreadCount });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkAllAsRead()
+        {
+            var userId = GetCurrentUserId();
+            if (userId == null) return RedirectToAction("Login", "User");
+
+            await _notificationService.MarkAllAsReadAsync(userId.Value);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { unreadCount = 0 });
+            }
+
+            TempData["Message"] = "Toutes les notifications ont été marquées comme lues.";
+            return RedirectToAction(nameof(Index));
+        }
 
         [Authorize(Roles = "Student")]
         [HttpPost]
@@ -84,6 +109,9 @@ namespace IBSTCareers.Controllers
             notification.IsRead = true;
             await _context.SaveChangesAsync();
 
+            var unreadCount = await _notificationService.GetUnreadCountAsync(userId.Value);
+            await _notificationService.BroadcastUnreadCountAsync(userId.Value, unreadCount);
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -110,18 +138,14 @@ namespace IBSTCareers.Controllers
 
             notification.IsRead = true;
 
-            _context.Notifications.Add(new Notification
-            {
-                UserId = payload.AlumniId,
-                Type = accepted ? "InterviewAccepted" : "InterviewDeclined",
-                Content = accepted
+            await _notificationService.CreateAsync(
+                payload.AlumniId,
+                accepted ? "InterviewAccepted" : "InterviewDeclined",
+                accepted
                     ? $"{payload.StudentName} a confirmé l'entretien pour l'offre '{payload.JobTitle}'. Créneau proposé: {payload.TimeSlot}."
                     : $"{payload.StudentName} a refusé l'entretien pour l'offre '{payload.JobTitle}'.",
-                IsRead = false,
-                CreatedAt = DateTime.Now
-            });
-
-            await _context.SaveChangesAsync();
+                false,
+                accepted ? $"Entretien accepté - {payload.JobTitle}" : $"Entretien refusé - {payload.JobTitle}");
 
             TempData["Message"] = accepted
                 ? "Entretien confirmé. L'alumni a été notifié."

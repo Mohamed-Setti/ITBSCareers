@@ -1,0 +1,189 @@
+@model IBSTCareers.Models.AdminEmailLogsViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Email logs";
+}
+
+<style>
+    .email-hero,
+    .email-card {
+        background: #fff;
+        border: 1px solid #DCE4EC;
+        border-radius: 16px;
+        box-shadow: 0 10px 24px rgba(24,95,165,.06);
+    }
+
+    .email-hero {
+        padding: 1rem 1.1rem;
+        margin-bottom: .9rem;
+    }
+
+    .email-title {
+        font-size: 1.45rem;
+        font-weight: 800;
+        margin-bottom: .2rem;
+        color: #1E293B;
+    }
+
+    .email-sub {
+        color: #667085;
+        font-size: .92rem;
+    }
+
+    .email-stat {
+        padding: .9rem 1rem;
+        border-radius: 14px;
+        border: 1px solid #E6EDF5;
+        background: linear-gradient(135deg, #fff, #F9FBFD);
+        height: 100%;
+    }
+
+    .email-stat .label {
+        color: #667085;
+        font-size: .82rem;
+    }
+
+    .email-stat .value {
+        font-size: 1.7rem;
+        font-weight: 900;
+        line-height: 1;
+        color: #0F6E56;
+        margin-top: .25rem;
+    }
+
+    .email-toolbar {
+        display: flex;
+        gap: .7rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .email-toolbar .form-control {
+        min-width: 280px;
+    }
+
+    .email-table td,
+    .email-table th {
+        vertical-align: top;
+    }
+
+    .email-preview {
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: #334155;
+        font-size: .9rem;
+        line-height: 1.45;
+        max-width: 520px;
+    }
+
+    .email-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: .2rem .55rem;
+        font-size: .72rem;
+        font-weight: 800;
+        background: #E6F1FB;
+        color: #185FA5;
+    }
+
+    .email-meta {
+        color: #667085;
+        font-size: .82rem;
+    }
+</style>
+
+<div class="container mt-4 mb-4">
+    @if (ViewBag.Warning != null)
+    {
+        <div class="alert alert-warning">@ViewBag.Warning</div>
+    }
+
+    <div class="email-hero d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div>
+            <div class="email-title">Email logs</div>
+            <div class="email-sub">Visualisation simple des emails enregistrés par l'application.</div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a asp-action="Profile" class="btn btn-outline-secondary btn-sm">Retour au profil admin</a>
+            <a asp-action="Users" class="btn btn-primary btn-sm">Utilisateurs</a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="email-stat">
+                <div class="label">Total des logs</div>
+                <div class="value">@Model.TotalCount</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="email-stat">
+                <div class="label">Sur 24 heures</div>
+                <div class="value">@Model.Last24HoursCount</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="email-stat">
+                <div class="label">Sur 14 jours</div>
+                <div class="value">@Model.Last14DaysCount</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="email-card p-3 mb-3">
+        <form method="get" class="email-toolbar">
+            <input type="text" name="query" value="@Model.Query" class="form-control" placeholder="Rechercher par email, sujet, utilisateur ou contenu" />
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+            <a asp-action="EmailLogs" class="btn btn-outline-secondary">Réinitialiser</a>
+        </form>
+    </div>
+
+    <div class="email-card p-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div class="fw-bold">Derniers 100 logs</div>
+            <span class="email-pill">@Model.Logs.Count résultat(s)</span>
+        </div>
+
+        @if (!Model.Logs.Any())
+        {
+            <div class="alert alert-info mb-0">Aucun log trouvé.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle email-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Utilisateur</th>
+                            <th>Destinataire</th>
+                            <th>Sujet</th>
+                            <th>Contenu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model.Logs)
+                        {
+                            <tr>
+                                <td>@log.EmailLogId</td>
+                                <td>
+                                    <div>@log.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                    <div class="email-meta">@log.CreatedAt.ToString("HH:mm")</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">@(log.UserFullName ?? "Système")</div>
+                                    <div class="email-meta">@(log.UserEmail ?? "—")</div>
+                                </td>
+                                <td>@(string.IsNullOrWhiteSpace(log.ToEmail) ? "—" : log.ToEmail)</td>
+                                <td>@(string.IsNullOrWhiteSpace(log.Subject) ? "—" : log.Subject)</td>
+                                <td class="email-preview">@(log.BodyPreview ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

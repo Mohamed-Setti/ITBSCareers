@@ -1,4 +1,5 @@
 using ITBSCareers.Models.Carriere;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace ITBSCareers.Services.Forum;
@@ -19,15 +20,25 @@ public class ForumRepository : IForumRepository
     public Task<ForumCategory?> GetCategoryAsync(int id, CancellationToken cancellationToken = default)
         => _context.ForumCategories.FirstOrDefaultAsync(c => c.ForumCategoryId == id, cancellationToken);
 
-    public Task<ForumTopic?> GetTopicAsync(int id, CancellationToken cancellationToken = default)
-        => _context.ForumTopics
+    public async Task<ForumTopic?> GetTopicAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var includeHistories = await ForumTopicHistoriesTableExistsAsync(cancellationToken);
+
+        var query = _context.ForumTopics
             .Include(t => t.Category)
             .Include(t => t.CreatedBy)
             .Include(t => t.Comments.Where(c => !c.IsDeleted))
                 .ThenInclude(c => c.CreatedBy)
-            .Include(t => t.Histories)
-                .ThenInclude(h => h.ChangedBy)
-            .FirstOrDefaultAsync(t => t.ForumTopicId == id && !t.IsDeleted, cancellationToken);
+            .AsQueryable();
+
+        if (includeHistories)
+        {
+            query = query.Include(t => t.Histories)
+                .ThenInclude(h => h.ChangedBy);
+        }
+
+        return await query.FirstOrDefaultAsync(t => t.ForumTopicId == id && !t.IsDeleted, cancellationToken);
+    }
 
     public Task<ForumComment?> GetCommentAsync(int id, CancellationToken cancellationToken = default)
         => _context.ForumComments
@@ -42,4 +53,29 @@ public class ForumRepository : IForumRepository
 
     public Task SaveChangesAsync(CancellationToken cancellationToken = default)
         => _context.SaveChangesAsync(cancellationToken);
+
+    private async Task<bool> ForumTopicHistoriesTableExistsAsync(CancellationToken cancellationToken = default)
+    {
+        var connectionString = _context.Database.GetConnectionString();
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            return false;
+        }
+
+        try
+        {
+            await using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync(cancellationToken);
+
+            await using var command = connection.CreateCommand();
+            command.CommandText = "SELECT CASE WHEN OBJECT_ID('dbo.ForumTopicHistories', 'U') IS NOT NULL THEN 1 ELSE 0 END";
+
+            var result = await command.ExecuteScalarAsync(cancellationToken);
+            return result is int value && value == 1;
+        }
+        catch
+        {
+            return false;
+        }
+    }
 }
