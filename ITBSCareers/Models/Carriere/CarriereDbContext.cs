@@ -29,6 +29,8 @@ public partial class CarriereDbContext : DbContext
 
     public virtual DbSet<Experience> Experiences { get; set; }
 
+    public virtual DbSet<EmailLog> EmailLogs { get; set; }
+
     public virtual DbSet<Interest> Interests { get; set; }
 
     public virtual DbSet<JobOffer> JobOffers { get; set; }
@@ -203,6 +205,23 @@ public partial class CarriereDbContext : DbContext
             entity.HasOne(d => d.User).WithMany(p => p.Experiences)
                 .HasForeignKey(d => d.UserId)
                 .HasConstraintName("FK__Experienc__UserI__4E88ABD4");
+        });
+
+        modelBuilder.Entity<EmailLog>(entity =>
+        {
+            entity.HasKey(e => e.EmailLogId);
+            entity.ToTable("EmailLogs");
+
+            entity.Property(e => e.EmailLogId).HasColumnName("EmailLogID");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+            entity.Property(e => e.ToEmail).HasMaxLength(100);
+            entity.Property(e => e.Subject).HasMaxLength(200);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())").HasColumnType("datetime");
+
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .HasConstraintName("FK_EmailLogs_User");
         });
 
         modelBuilder.Entity<Interest>(entity =>

@@ -1,5 +1,6 @@
 using ITBSCareers.Models.Carriere;
 using ITBSCareers.Models.Forum;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace ITBSCareers.Services.Forum;
@@ -422,6 +423,13 @@ public class ForumService : IForumService
     public async Task<bool> IsUserBannedAsync(int userId, CancellationToken cancellationToken = default)
     {
         var now = DateTime.Now;
-        return await _context.ForumUserBans.AnyAsync(b => b.UserId == userId && b.IsActive && (b.EndsAt == null || b.EndsAt > now), cancellationToken);
+        try
+        {
+            return await _context.ForumUserBans.AnyAsync(b => b.UserId == userId && b.IsActive && (b.EndsAt == null || b.EndsAt > now), cancellationToken);
+        }
+        catch (SqlException ex) when (ex.Message.Contains("Invalid object name 'ForumUserBans'"))
+        {
+            return false;
+        }
     }
 }

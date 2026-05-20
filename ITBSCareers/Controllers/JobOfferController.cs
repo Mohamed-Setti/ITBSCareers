@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using IBSTCareers.Models;
 using ITBSCareers.Models.Carriere;
+using ITBSCareers.Services.Notifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +13,12 @@ namespace IBSTCareers.Controllers
     public class JobOfferController : Controller
     {
         private readonly CarriereDbContext _context;
+        private readonly INotificationService _notificationService;
 
-        public JobOfferController(CarriereDbContext context)
+        public JobOfferController(CarriereDbContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         [Authorize(Policy = "VerifiedAlumni")]
@@ -206,11 +209,30 @@ namespace IBSTCareers.Controllers
             var isOwner = currentUserId.HasValue && offer.AlumniId == currentUserId.Value;
             var alreadyApplied = currentUserId.HasValue && offer.Applications.Any(a => a.StudentId == currentUserId.Value);
 
+            var skillIds = ParseCsvIds(offer.RequiredSkillsCsv);
+            var interestIds = ParseCsvIds(offer.RequiredInterestsCsv);
+
+            var skillNames = skillIds.Count > 0
+                ? await _context.Skills
+                    .Where(s => skillIds.Contains(s.SkillId))
+                    .OrderBy(s => s.Name)
+                    .Select(s => s.Name)
+                    .ToListAsync()
+                : new List<string>();
+
+            var interestNames = interestIds.Count > 0
+                ? await _context.Interests
+                    .Where(i => interestIds.Contains(i.InterestId))
+                    .OrderBy(i => i.Name)
+                    .Select(i => i.Name)
+                    .ToListAsync()
+                : new List<string>();
+
             ViewBag.IsStudent = isStudent;
             ViewBag.IsOwner = isOwner;
             ViewBag.AlreadyApplied = alreadyApplied;
-            ViewBag.RequiredSkills = ParseCsvIds(offer.RequiredSkillsCsv);
-            ViewBag.RequiredInterests = ParseCsvIds(offer.RequiredInterestsCsv);
+            ViewBag.RequiredSkills = skillNames;
+            ViewBag.RequiredInterests = interestNames;
 
             return View(offer);
         }
@@ -323,14 +345,12 @@ namespace IBSTCareers.Controllers
 
             application.Status = "Accepted";
 
-            _context.Notifications.Add(new Notification
-            {
-                UserId = application.StudentId,
-                Type = "Application",
-                Content = $"Votre candidature à l'offre '{application.Job.Title}' a été acceptée par {application.Job.Alumni.FullName}.",
-                IsRead = false,
-                CreatedAt = DateTime.Now
-            });
+            await _notificationService.CreateAsync(
+                application.StudentId,
+                "Application",
+                $"Votre candidature à l'offre '{application.Job.Title}' a été acceptée par {application.Job.Alumni.FullName}.",
+                false,
+                $"Candidature acceptée - {application.Job.Title}");
 
             await _context.SaveChangesAsync();
 
@@ -357,14 +377,12 @@ namespace IBSTCareers.Controllers
 
             application.Status = "Rejected";
 
-            _context.Notifications.Add(new Notification
-            {
-                UserId = application.StudentId,
-                Type = "Application",
-                Content = $"Votre candidature à l'offre '{application.Job.Title}' a été refusée par {application.Job.Alumni.FullName}.",
-                IsRead = false,
-                CreatedAt = DateTime.Now
-            });
+            await _notificationService.CreateAsync(
+                application.StudentId,
+                "Application",
+                $"Votre candidature à l'offre '{application.Job.Title}' a été refusée par {application.Job.Alumni.FullName}.",
+                false,
+                $"Candidature refusée - {application.Job.Title}");
 
             await _context.SaveChangesAsync();
 
@@ -438,16 +456,12 @@ namespace IBSTCareers.Controllers
                 Message = message.Trim()
             };
 
-            _context.Notifications.Add(new Notification
-            {
-                UserId = application.StudentId,
-                Type = "InterviewProposal",
-                Content = JsonSerializer.Serialize(payload),
-                IsRead = false,
-                CreatedAt = DateTime.Now
-            });
-
-            await _context.SaveChangesAsync();
+            await _notificationService.CreateAsync(
+                application.StudentId,
+                "InterviewProposal",
+                JsonSerializer.Serialize(payload),
+                false,
+                $"Proposition d'entretien - {application.Job.Title}");
 
             TempData["JobOfferSuccess"] = "Proposition d'entretien envoyée à l'étudiant.";
             return RedirectToAction(nameof(Applications), new { id = application.JobId });

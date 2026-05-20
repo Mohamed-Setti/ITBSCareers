@@ -3,6 +3,7 @@ using ITBSCareers.Hubs;
 using ITBSCareers.Security;
 using ITBSCareers.Services.Forum;
 using ITBSCareers.Services.Messaging;
+using ITBSCareers.Services.Notifications;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -43,6 +44,7 @@ builder.Services.AddScoped<IForumService, ForumService>();
 builder.Services.AddSingleton<MessagingPresenceTracker>();
 builder.Services.AddScoped<IPrivateMessagingRepository, PrivateMessagingRepository>();
 builder.Services.AddScoped<IPrivateMessagingService, PrivateMessagingService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddDbContext<CarriereDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("CarriereCS")));

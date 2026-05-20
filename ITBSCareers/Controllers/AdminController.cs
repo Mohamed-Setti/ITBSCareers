@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace IBSTCareers.Controllers
 {
@@ -139,6 +140,77 @@ namespace IBSTCareers.Controllers
             });
         }
 
+        public async Task<IActionResult> EmailLogs(string? query)
+        {
+            if (!await IsEmailLogsTableAvailableAsync())
+            {
+                ViewBag.Warning = "La table EmailLogs est absente. Crée-la avec le script de base de données pour afficher les logs.";
+                return View(new AdminEmailLogsViewModel
+                {
+                    Query = query,
+                    Logs = new List<AdminEmailLogItemViewModel>()
+                });
+            }
+
+            var logsQuery = from log in _context.EmailLogs.AsNoTracking()
+                            join user in _context.Users.AsNoTracking() on log.UserId equals user.UserId into userGroup
+                            from user in userGroup.DefaultIfEmpty()
+                            select new AdminEmailLogItemViewModel
+                            {
+                                EmailLogId = log.EmailLogId,
+                                UserId = log.UserId,
+                                UserFullName = user != null ? user.FullName : null,
+                                UserEmail = user != null ? user.Email : null,
+                                ToEmail = log.ToEmail,
+                                Subject = log.Subject,
+                                Body = log.Body,
+                                CreatedAt = log.CreatedAt
+                            };
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                var q = query.Trim();
+                logsQuery = logsQuery.Where(x =>
+                    (x.UserFullName ?? string.Empty).Contains(q) ||
+                    (x.UserEmail ?? string.Empty).Contains(q) ||
+                    (x.ToEmail ?? string.Empty).Contains(q) ||
+                    (x.Subject ?? string.Empty).Contains(q) ||
+                    (x.Body ?? string.Empty).Contains(q));
+            }
+
+            var totalCount = await _context.EmailLogs.CountAsync();
+            var last14Days = await _context.EmailLogs.CountAsync(l => l.CreatedAt >= DateTime.Now.AddDays(-14));
+            var last24Hours = await _context.EmailLogs.CountAsync(l => l.CreatedAt >= DateTime.Now.AddDays(-1));
+
+            var logs = await logsQuery
+                .OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.EmailLogId)
+                .Take(100)
+                .ToListAsync();
+
+            foreach (var log in logs)
+            {
+                if (string.IsNullOrWhiteSpace(log.Body))
+                {
+                    log.BodyPreview = "—";
+                    continue;
+                }
+
+                log.BodyPreview = log.Body.Length <= 160
+                    ? log.Body
+                    : log.Body.Substring(0, 160) + "…";
+            }
+
+            return View(new AdminEmailLogsViewModel
+            {
+                Query = query,
+                TotalCount = totalCount,
+                Last14DaysCount = last14Days,
+                Last24HoursCount = last24Hours,
+                Logs = logs
+            });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateRole(int userId, string roleName)
@@ -179,14 +251,43 @@ namespace IBSTCareers.Controllers
 
         private async Task<bool> IsAlumniRequestsTableAvailableAsync()
         {
+            return await TableExistsAsync("dbo.AlumniRequests");
+        }
+
+        private async Task<bool> IsEmailLogsTableAvailableAsync()
+        {
+            return await TableExistsAsync("dbo.EmailLogs");
+        }
+
+        private async Task<bool> TableExistsAsync(string fullyQualifiedTableName)
+        {
+            var connection = _context.Database.GetDbConnection();
+            var shouldClose = connection.State != System.Data.ConnectionState.Open;
+
+            if (shouldClose)
+            {
+                await connection.OpenAsync();
+            }
+
             try
             {
-                await _context.Database.ExecuteSqlRawAsync("SELECT TOP (1) 1 FROM [dbo].[AlumniRequests]");
-                return true;
+                await using var command = connection.CreateCommand();
+                command.CommandText = "SELECT OBJECT_ID(@tableName, 'U')";
+
+                var parameter = command.CreateParameter();
+                parameter.ParameterName = "@tableName";
+                parameter.Value = fullyQualifiedTableName;
+                command.Parameters.Add(parameter);
+
+                var result = await command.ExecuteScalarAsync();
+                return result != null && result != DBNull.Value;
             }
-            catch (SqlException ex) when (ex.Message.Contains("Invalid object name 'AlumniRequests'"))
+            finally
             {
-                return false;
+                if (shouldClose)
+                {
+                    await connection.CloseAsync();
+                }
             }
         }
 
